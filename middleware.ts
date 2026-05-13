@@ -2,28 +2,63 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  const role = request.cookies.get("role")?.value;
 
-  const pathname = request.nextUrl.pathname;
+  const role =
+    request.cookies.get("role")?.value;
 
-  // Admin protection
-  if (pathname.startsWith("/admin")) {
+  const pathname =
+    request.nextUrl.pathname;
+
+  // If no role cookie → allow login page only
+
+  if (
+    !role &&
+    pathname !== "/login"
+  ) {
+    return NextResponse.redirect(
+      new URL("/login", request.url)
+    );
+  }
+
+  // ADMIN ROUTES
+
+  if (
+    pathname.startsWith("/admin")
+  ) {
+
     if (role !== "admin") {
-      return NextResponse.redirect(new URL("/login", request.url));
+
+      return NextResponse.redirect(
+        new URL("/login", request.url)
+      );
     }
   }
 
-  // Teacher protection
-  if (pathname.startsWith("/teacher")) {
+  // TEACHER ROUTES
+
+  if (
+    pathname.startsWith("/teacher")
+  ) {
+
     if (role !== "teacher") {
-      return NextResponse.redirect(new URL("/login", request.url));
+
+      return NextResponse.redirect(
+        new URL("/login", request.url)
+      );
     }
   }
 
-  // Student dashboard protection
-  if (pathname.startsWith("/dashboard")) {
+  // STUDENT ROUTES
+
+  if (
+    pathname.startsWith("/dashboard")
+  ) {
+
     if (role !== "student") {
-      return NextResponse.redirect(new URL("/login", request.url));
+
+      return NextResponse.redirect(
+        new URL("/login", request.url)
+      );
     }
   }
 
@@ -31,5 +66,9 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/teacher/:path*", "/dashboard/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/teacher/:path*",
+    "/dashboard/:path*",
+  ],
 };

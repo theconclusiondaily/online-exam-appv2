@@ -58,8 +58,8 @@ if (
   "admin"
 ) {
 
-  document.cookie =
-    `role=admin; path=/`;
+ document.cookie =
+  `role=admin; path=/; SameSite=Lax`;
 
   router.push(
     "/admin"
@@ -70,8 +70,8 @@ if (
   "teacher"
 ) {
 
-  document.cookie =
-    `role=teacher; path=/`;
+      document.cookie =
+  `role=teacher; path=/; SameSite=Lax`;
 
   router.push(
     "/teacher"
@@ -80,7 +80,7 @@ if (
 } else {
 
   document.cookie =
-    `role=student; path=/`;
+  `role=student; path=/; SameSite=Lax`;
 
   router.push(
     "/dashboard"
