@@ -330,7 +330,43 @@ if (
             </p>
 
           </Link>
+            <Link
+  href="/admin/create-exam"
+  className="border rounded-3xl p-6 bg-white shadow-sm hover:shadow-md transition"
+>
 
+  <h2 className="text-2xl font-bold mb-2">
+
+    Create Exam
+
+  </h2>
+
+  <p className="text-gray-600">
+
+    Create and manage exams
+
+  </p>
+
+</Link>
+
+<Link
+  href="/admin/leaderboards"
+  className="border rounded-3xl p-6 bg-white shadow-sm hover:shadow-md transition"
+>
+
+  <h2 className="text-2xl font-bold mb-2">
+
+    Leaderboards
+
+  </h2>
+
+  <p className="text-gray-600">
+
+    View rankings and performance
+
+  </p>
+
+</Link>
         </div>
 
         {/* STATS */}
