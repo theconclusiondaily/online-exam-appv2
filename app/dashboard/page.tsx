@@ -104,25 +104,26 @@ console.log(profile);
       // FETCH ATTEMPTS
 
       const {
-        data: attemptsData,
-      } = await supabase
-        .from("exam_attempts")
-        .select(`
-          *,
-          exams (
-            title,
-            reward_pool,
-            start_time,
-            end_time
-          )
-        `)
-        .eq(
-          "user_id",
-          user.id
-        )
-        .order("id", {
-          ascending: false,
-        });
+  data: attemptsData,
+  error: attemptsError,
+} = await supabase
+  .from("exam_attempts")
+  .select("*")
+  .eq(
+    "user_id",
+    user.id
+  )
+  .order("created_at", {
+    ascending: false,
+  });
+
+console.log(
+  attemptsData
+);
+
+console.log(
+  attemptsError
+);
 
       if (attemptsData) {
 
