@@ -1,27 +1,164 @@
 "use client";
 
-import { useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
 import Link from "next/link";
 
+import {
+  useRouter,
+} from "next/navigation";
+
+import { supabase } from "@/lib/supabase";
+
 export default function TeacherAnalyticsPage() {
 
-  const [students] =
+  const router = useRouter();
+
+  const [authorized,
+    setAuthorized] =
+    useState(false);
+
+  const [loading,
+    setLoading] =
+    useState(true);
+
+  const [students,
+    setStudents] =
     useState(0);
 
-  const [exams] =
+  const [exams,
+    setExams] =
     useState(0);
 
-  const [attempts] =
+  const [attempts,
+    setAttempts] =
     useState(0);
+
+  useEffect(() => {
+
+    async function checkAuth() {
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+
+        router.push("/login");
+
+        return;
+      }
+
+      const {
+        data: profile,
+      } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (
+        profile?.role !==
+        "teacher"
+      ) {
+
+        router.push("/dashboard");
+
+        return;
+      }
+
+      setAuthorized(true);
+
+      // STUDENTS
+
+      const {
+        data: studentsData,
+      } = await supabase
+        .from("users")
+        .select("*")
+        .eq(
+          "institute_id",
+          profile.institute_id
+        )
+        .eq(
+          "role",
+          "student"
+        );
+
+      setStudents(
+        studentsData?.length || 0
+      );
+
+      // EXAMS
+
+      const {
+        data: examsData,
+      } = await supabase
+        .from("exams")
+        .select("*")
+        .eq(
+          "institute_id",
+          profile.institute_id
+        );
+
+      setExams(
+        examsData?.length || 0
+      );
+
+      // ATTEMPTS
+
+      const examIds =
+        examsData?.map(
+          (exam) => exam.id
+        ) || [];
+
+      if (
+        examIds.length > 0
+      ) {
+
+        const {
+          data: attemptsData,
+        } = await supabase
+          .from("exam_attempts")
+          .select("*")
+          .in(
+            "exam_id",
+            examIds
+          );
+
+        setAttempts(
+          attemptsData?.length || 0
+        );
+      }
+
+      setLoading(false);
+    }
+
+    checkAuth();
+
+  }, [router]);
+
+  if (loading) {
+
+    return (
+      <main className="p-10">
+        Loading...
+      </main>
+    );
+  }
+
+  if (!authorized) {
+    return null;
+  }
 
   return (
 
     <main className="min-h-screen bg-gray-50 p-6">
 
       <div className="max-w-6xl mx-auto">
-
-        {/* HEADER */}
 
         <div className="flex justify-between items-center mb-10">
 
@@ -41,8 +178,6 @@ export default function TeacherAnalyticsPage() {
           </Link>
 
         </div>
-
-        {/* ANALYTICS */}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 

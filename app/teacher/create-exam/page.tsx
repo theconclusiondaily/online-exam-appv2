@@ -1,11 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
+
 import Link from "next/link";
+
+import {
+  useRouter,
+} from "next/navigation";
+
+import { supabase } from "@/lib/supabase";
 
 export default function TeacherCreateExamPage() {
 
-  const [title, setTitle] =
+  const router = useRouter();
+
+  const [authorized,
+    setAuthorized] =
+    useState(false);
+
+  const [loading,
+    setLoading] =
+    useState(true);
+
+  const [title,
+    setTitle] =
     useState("");
 
   const [description,
@@ -20,13 +41,66 @@ export default function TeacherCreateExamPage() {
     setRewardPool] =
     useState("");
 
+  useEffect(() => {
+
+    async function checkAuth() {
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+
+        router.push("/login");
+
+        return;
+      }
+
+      const {
+        data: profile,
+      } = await supabase
+        .from("users")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      if (
+        profile?.role !==
+        "teacher"
+      ) {
+
+        router.push("/dashboard");
+
+        return;
+      }
+
+      setAuthorized(true);
+
+      setLoading(false);
+    }
+
+    checkAuth();
+
+  }, [router]);
+
+  if (loading) {
+
+    return (
+      <main className="p-10">
+        Loading...
+      </main>
+    );
+  }
+
+  if (!authorized) {
+    return null;
+  }
+
   return (
 
     <main className="min-h-screen bg-gray-50 p-6">
 
       <div className="max-w-4xl mx-auto">
-
-        {/* HEADER */}
 
         <div className="flex justify-between items-center mb-10">
 
@@ -46,8 +120,6 @@ export default function TeacherCreateExamPage() {
           </Link>
 
         </div>
-
-        {/* FORM */}
 
         <div className="bg-white border rounded-3xl p-8 shadow-sm space-y-6">
 
