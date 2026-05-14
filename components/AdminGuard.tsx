@@ -28,7 +28,7 @@ export default function AdminGuard({
 
     async function checkAdmin() {
 
-      // GET AUTH USER
+      // AUTH USER
 
       const {
         data: { user },
@@ -50,51 +50,64 @@ export default function AdminGuard({
         return;
       }
 
-      // FETCH ROLE
+      // PROFILE
 
       const {
-        data,
+        data: profile,
         error,
       } = await supabase
         .from("users")
-        .select(`
-          id,
-          email,
-          role
-        `)
+        .select("*")
         .eq(
-          "id",
-          user.id
+          "email",
+          user.email
         )
         .maybeSingle();
 
       console.log(
-        "ADMIN CHECK:",
-        data
+        "PROFILE:",
+        profile
       );
 
       console.log(
-        "ADMIN ERROR:",
+        "ERROR:",
         error
       );
 
-      
+      // PROFILE NOT FOUND
 
-      
-      if (
-  data?.role !== "admin" &&
-  data?.role !== "teacher"
-) {
+      if (!profile) {
+
+        alert(
+          "Profile not found"
+        );
 
         router.push(
-          "/dashboard"
+          "/login"
+        );
+
+        return;
+      }
+
+      // BLOCK NON ADMINS
+
+      if (
+        profile.role !==
+        "admin"
+      ) {
+
+        alert(
+          "Access Denied"
+        );
+
+        router.push(
+          "/teacher"
         );
 
         return;
       }
 
       setLoading(false);
-      
     }
 
     checkAdmin();
