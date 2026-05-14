@@ -305,7 +305,7 @@ export default function TeacherDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
 
           <Link
-            href="/admin/create-exam"
+            href="/teacher/create-exam"
             className="bg-white border rounded-3xl p-6 shadow-sm hover:shadow-md transition"
           >
 
@@ -324,7 +324,7 @@ export default function TeacherDashboard() {
           </Link>
 
           <Link
-            href="/admin/questions"
+            href="/teacher/questions"
             className="bg-white border rounded-3xl p-6 shadow-sm hover:shadow-md transition"
           >
 
@@ -343,7 +343,7 @@ export default function TeacherDashboard() {
           </Link>
 
           <Link
-            href="/admin/leaderboards"
+            href="/teacher/leaderboards"
             className="bg-white border rounded-3xl p-6 shadow-sm hover:shadow-md transition"
           >
 
@@ -362,7 +362,7 @@ export default function TeacherDashboard() {
           </Link>
 
           <Link
-            href="/admin/analytics"
+            href="/teacher/analytics"
             className="bg-white border rounded-3xl p-6 shadow-sm hover:shadow-md transition"
           >
 
