@@ -6,14 +6,14 @@ import {
 } from "react";
 
 import Link from "next/link";
-import AdminGuard from "@/components/AdminGuard";
+
 import {
   useRouter,
 } from "next/navigation";
 
 import { supabase } from "@/lib/supabase";
 
-export default function AdminLeaderboardsPage() {
+export default function TeacherLeaderboardsPage() {
 
   const router = useRouter();
 
@@ -37,7 +37,11 @@ export default function AdminLeaderboardsPage() {
     setAverageScore] =
     useState(0);
 
-  // ADMIN CHECK + FETCH EXAMS
+  const [profile,
+    setProfile] =
+    useState<any>(null);
+
+  // LOAD PAGE
 
   useEffect(() => {
 
@@ -51,63 +55,57 @@ export default function AdminLeaderboardsPage() {
 
       if (!user) {
 
-        router.push("/");
+        router.push("/login");
 
         return;
       }
 
-     const {
-  data: profile,
-} = await supabase
-  .from("users")
-  .select("role")
-  .eq(
-    "id",
-    user.id
-  )
-  .single();
+      // GET PROFILE
 
-console.log(profile);
+      const {
+        data: profileData,
+      } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", user.id)
+        .single();
 
-if (
-  profile?.role !== "admin" &&
-  profile?.role !== "teacher"
-) {
+      if (
+        profileData?.role !==
+        "teacher"
+      ) {
 
-  alert(
-    "Access Denied"
-  );
+        router.push("/dashboard");
 
-  router.push(
-    "/dashboard"
-  );
+        return;
+      }
 
-  return;
-}
+      setProfile(profileData);
 
-      // FETCH EXAMS
+      // FETCH ONLY TEACHER INSTITUTE EXAMS
 
       const {
         data,
-        error,
       } = await supabase
         .from("exams")
         .select("*")
+        .eq(
+          "institute_id",
+          profileData.institute_id
+        )
         .order("created_at", {
           ascending: false,
         });
 
-      console.log(data);
-      console.log(error);
-
       if (data) {
+
         setExams(data);
       }
     }
 
     initializePage();
 
-  }, []);
+  }, [router]);
 
   // FETCH LEADERBOARD
 
@@ -119,7 +117,6 @@ if (
 
       const {
         data,
-        error,
       } = await supabase
         .from("exam_attempts")
         .select("*")
@@ -131,36 +128,25 @@ if (
           ascending: false,
         });
 
-      console.log(data);
-      console.log(error);
-
       if (data) {
 
-        const sorted =
-          [...data].sort(
-            (a, b) =>
-              b.score - a.score
-          );
-
-        setAttempts(sorted);
+        setAttempts(data);
 
         setParticipantCount(
-          sorted.length
+          data.length
         );
 
-        // AVERAGE SCORE
-
         const total =
-          sorted.reduce(
+          data.reduce(
             (sum, item) =>
               sum + item.score,
             0
           );
 
         const avg =
-          sorted.length > 0
+          data.length > 0
 
-            ? total / sorted.length
+            ? total / data.length
 
             : 0;
 
@@ -178,58 +164,28 @@ if (
 
   return (
 
-  <AdminGuard>
-
     <main className="min-h-screen p-4 md:p-8 bg-gray-50">
 
       <div className="max-w-7xl mx-auto">
 
-        {/* NAVIGATION */}
+        {/* HEADER */}
 
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div className="flex justify-between items-center mb-8">
 
           <h1 className="text-4xl font-bold">
-            Admin Leaderboards
+
+            Teacher Leaderboards
+
           </h1>
 
-          <div className="flex flex-wrap gap-3">
+          <Link
+            href="/teacher"
+            className="bg-black text-white px-5 py-2 rounded-xl"
+          >
 
-            <Link
-              href="/admin"
-              className="bg-white border px-4 py-2 rounded-xl"
-            >
-              Dashboard
-            </Link>
+            Dashboard
 
-            <Link
-              href="/admin/questions"
-              className="bg-white border px-4 py-2 rounded-xl"
-            >
-              Questions
-            </Link>
-
-            <Link
-              href="/admin/users"
-              className="bg-white border px-4 py-2 rounded-xl"
-            >
-              Users
-            </Link>
-
-            <Link
-              href="/admin/leaderboards"
-              className="bg-black text-white px-4 py-2 rounded-xl"
-            >
-              Leaderboards
-            </Link>
-
-            <Link
-              href="/admin/papers"
-              className="bg-white border px-4 py-2 rounded-xl"
-            >
-              Question Papers
-            </Link>
-
-          </div>
+          </Link>
 
         </div>
 
@@ -238,7 +194,9 @@ if (
         <div className="bg-white border rounded-2xl p-6 mb-8">
 
           <h2 className="text-2xl font-bold mb-4">
+
             Select Exam
+
           </h2>
 
           <select
@@ -261,7 +219,9 @@ if (
                 key={exam.id}
                 value={exam.id}
               >
+
                 {exam.title}
+
               </option>
 
             ))}
@@ -279,11 +239,15 @@ if (
             <div className="bg-white border rounded-2xl p-6">
 
               <p className="text-gray-500 text-sm mb-2">
+
                 Participants
+
               </p>
 
               <h2 className="text-4xl font-bold">
+
                 {participantCount}
+
               </h2>
 
             </div>
@@ -291,11 +255,15 @@ if (
             <div className="bg-white border rounded-2xl p-6">
 
               <p className="text-gray-500 text-sm mb-2">
+
                 Average Score
+
               </p>
 
               <h2 className="text-4xl font-bold text-green-600">
+
                 {averageScore}
+
               </h2>
 
             </div>
@@ -311,7 +279,9 @@ if (
           <div>
 
             <h2 className="text-3xl font-bold mb-6">
+
               Leaderboard
+
             </h2>
 
             <div className="space-y-4">
@@ -321,21 +291,7 @@ if (
 
                   <div
                     key={attempt.id}
-                    className={`border rounded-2xl p-5 shadow-sm ${
-                      index === 0
-
-                        ? "bg-yellow-100"
-
-                        : index === 1
-
-                        ? "bg-gray-100"
-
-                        : index === 2
-
-                        ? "bg-orange-100"
-
-                        : "bg-white"
-                    }`}
+                    className="bg-white border rounded-2xl p-5"
                   >
 
                     <div className="flex justify-between items-center">
@@ -348,27 +304,20 @@ if (
 
                         </h2>
 
-                        <p className="text-gray-600 mt-1">
-
-                          User ID:
-                          {" "}
-                          {attempt.user_id.slice(
-                            0,
-                            8
-                          )}
-
-                        </p>
-
                       </div>
 
                       <div className="text-right">
 
                         <p className="text-4xl font-bold text-green-600">
+
                           {attempt.score}
+
                         </p>
 
                         <p className="text-sm text-gray-500">
+
                           Score
+
                         </p>
 
                       </div>
@@ -389,7 +338,5 @@ if (
       </div>
 
     </main>
-
-</AdminGuard>
-);
+  );
 }
