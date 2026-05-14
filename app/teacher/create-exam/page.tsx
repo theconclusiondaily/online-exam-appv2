@@ -41,6 +41,14 @@ export default function TeacherCreateExamPage() {
     setRewardPool] =
     useState("");
 
+  const [userId,
+    setUserId] =
+    useState("");
+
+  const [instituteId,
+    setInstituteId] =
+    useState("");
+
   useEffect(() => {
 
     async function checkAuth() {
@@ -60,19 +68,25 @@ export default function TeacherCreateExamPage() {
         data: profile,
       } = await supabase
         .from("users")
-        .select("role")
+        .select("*")
         .eq("id", user.id)
         .single();
 
       if (
-        profile?.role !==
-        "teacher"
+        profile?.role !== "teacher" &&
+        profile?.role !== "admin"
       ) {
 
         router.push("/dashboard");
 
         return;
       }
+
+      setUserId(user.id);
+
+      setInstituteId(
+        profile.institute_id
+      );
 
       setAuthorized(true);
 
@@ -82,6 +96,44 @@ export default function TeacherCreateExamPage() {
     checkAuth();
 
   }, [router]);
+
+  async function createExam() {
+
+    const {
+      error,
+    } = await supabase
+      .from("exams")
+      .insert([
+        {
+          title,
+          description,
+          duration:
+            Number(duration),
+          reward_pool:
+            Number(rewardPool),
+          created_by:
+            userId,
+          institute_id:
+            instituteId,
+        },
+      ]);
+
+    if (error) {
+
+      alert(error.message);
+
+    } else {
+
+      alert(
+        "Exam Created Successfully"
+      );
+
+      setTitle("");
+      setDescription("");
+      setDuration("");
+      setRewardPool("");
+    }
+  }
 
   if (loading) {
 
@@ -163,6 +215,7 @@ export default function TeacherCreateExamPage() {
           />
 
           <button
+            onClick={createExam}
             className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold"
           >
 

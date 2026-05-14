@@ -62,26 +62,40 @@ export default function AdminPage() {
 
       // GET USER PROFILE
 
-      const {
-        data: profile,
-      } = await supabase
-        .from("users")
-        .select("role")
-        .eq("id", user.id)
-        .single();
+     const {
+  data: profile,
+  error,
+} = await supabase
+  .from("users")
+  .select("*")
+  .eq("id", user.id)
+  .single();
 
-      // BLOCK NON ADMINS
+console.log("AUTH USER:", user);
+console.log("PROFILE:", profile);
+console.log("PROFILE ERROR:", error);
 
-      if (
-        profile?.role !== "admin"
-      ) {
+// PROFILE NOT FOUND
 
-        alert("Access Denied");
+if (!profile) {
 
-        router.push("/teacher");
+  alert("Profile not found");
 
-        return;
-      }
+  return;
+}
+
+// BLOCK NON ADMINS
+
+if (
+  profile.role !== "admin"
+) {
+
+  alert("Access Denied");
+
+  router.push("/teacher");
+
+  return;
+}
 
       // TOTAL USERS
 
