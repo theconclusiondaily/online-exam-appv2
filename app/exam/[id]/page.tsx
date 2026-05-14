@@ -694,7 +694,7 @@ localStorage.setItem(
   if (error) {
 
     alert(
-      "Failed to submit exam"
+     error.message
     );
 
     setIsSubmitting(
