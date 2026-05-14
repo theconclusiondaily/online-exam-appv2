@@ -609,9 +609,17 @@ localStorage.setItem(
     return;
   }
 
-  setIsSubmitting(
-    true
-  );
+  setSubmitted(
+  true
+);
+
+setAntiCheatEnabled(
+  false
+);
+
+setIsSubmitting(
+  true
+);
 
   if (
     Object.keys(
