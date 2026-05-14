@@ -1,8 +1,24 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 
 export default function TeacherCreateExamPage() {
+
+  const [title, setTitle] =
+    useState("");
+
+  const [description,
+    setDescription] =
+    useState("");
+
+  const [duration,
+    setDuration] =
+    useState("");
+
+  const [rewardPool,
+    setRewardPool] =
+    useState("");
 
   return (
 
@@ -38,23 +54,39 @@ export default function TeacherCreateExamPage() {
           <input
             type="text"
             placeholder="Exam Title"
+            value={title}
+            onChange={(e) =>
+              setTitle(e.target.value)
+            }
             className="border p-4 rounded-xl w-full"
           />
 
           <textarea
             placeholder="Exam Description"
+            value={description}
+            onChange={(e) =>
+              setDescription(e.target.value)
+            }
             className="border p-4 rounded-xl w-full h-32"
           />
 
           <input
             type="number"
             placeholder="Duration (Minutes)"
+            value={duration}
+            onChange={(e) =>
+              setDuration(e.target.value)
+            }
             className="border p-4 rounded-xl w-full"
           />
 
           <input
             type="number"
             placeholder="Reward Pool"
+            value={rewardPool}
+            onChange={(e) =>
+              setRewardPool(e.target.value)
+            }
             className="border p-4 rounded-xl w-full"
           />
 
