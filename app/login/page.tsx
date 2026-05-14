@@ -44,8 +44,8 @@ const {
     role
   `)
   .eq(
-    "id",
-    user.id
+    "email",
+    user.email
   )
   .single();
 
