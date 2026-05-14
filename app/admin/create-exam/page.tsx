@@ -38,6 +38,10 @@ export default function CreateExamPage() {
     setSelectedInstitute] =
     useState("");
 
+const [duration,
+  setDuration] =
+  useState("30");
+
   const [startTime,
     setStartTime] =
     useState("");
@@ -82,11 +86,12 @@ export default function CreateExamPage() {
   async function createExam() {
 
     if (
-      !title ||
-      !startTime ||
-      !endTime ||
-      !selectedInstitute
-    ) {
+  !title ||
+  !startTime ||
+  !endTime ||
+  !selectedInstitute ||
+  !duration
+) {
 
       alert(
         "Fill all required fields"
@@ -107,6 +112,8 @@ export default function CreateExamPage() {
             reward_pool:
               rewardPool,
 
+              duration:
+  Number(duration),
             institute_id:
               selectedInstitute,
 
@@ -256,6 +263,28 @@ export default function CreateExamPage() {
               </select>
 
             </div>
+            {/* DURATION */}
+
+<div>
+
+  <p className="font-semibold mb-2">
+
+    Duration (Minutes)
+
+  </p>
+
+  <input
+    type="number"
+    value={duration}
+    onChange={(e) =>
+      setDuration(
+        e.target.value
+      )
+    }
+    className="w-full border rounded-2xl p-4"
+  />
+
+</div>
 
             {/* START TIME */}
 
