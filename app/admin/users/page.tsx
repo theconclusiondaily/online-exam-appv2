@@ -103,11 +103,24 @@ export default function UsersPage() {
 
         <div className="max-w-7xl mx-auto">
 
-          <h1 className="text-4xl font-bold mb-8">
+          <div className="flex justify-between items-center mb-8">
 
-            User Management
+  <h1 className="text-4xl font-bold">
 
-          </h1>
+    Users
+
+  </h1>
+
+  <a
+    href="/admin"
+    className="bg-black text-white px-5 py-2 rounded-xl"
+  >
+
+    Dashboard
+
+  </a>
+
+</div>
 
           <div className="space-y-5">
 

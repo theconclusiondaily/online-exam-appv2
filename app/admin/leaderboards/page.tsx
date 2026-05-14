@@ -188,9 +188,24 @@ if (
 
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
 
-          <h1 className="text-4xl font-bold">
-            Admin Leaderboards
-          </h1>
+          <div className="flex justify-between items-center mb-8">
+
+  <h1 className="text-4xl font-bold">
+
+    Leaderboards
+
+  </h1>
+
+  <a
+    href="/admin"
+    className="bg-black text-white px-5 py-2 rounded-xl"
+  >
+
+    Dashboard
+
+  </a>
+
+</div>
 
           <div className="flex flex-wrap gap-3">
 

@@ -198,11 +198,24 @@ export default function AnalyticsPage() {
 
         <div className="max-w-7xl mx-auto">
 
-          <h1 className="text-4xl font-bold mb-10">
+          <div className="flex justify-between items-center mb-8">
 
-            Institute Analytics
+  <h1 className="text-4xl font-bold">
 
-          </h1>
+    Analytics
+
+  </h1>
+
+  <a
+    href="/admin"
+    className="bg-black text-white px-5 py-2 rounded-xl"
+  >
+
+    Dashboard
+
+  </a>
+
+</div>
 
           <div className="space-y-6">
 

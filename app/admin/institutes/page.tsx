@@ -102,11 +102,24 @@ export default function InstitutesPage() {
 
         <div className="max-w-6xl mx-auto">
 
-          <h1 className="text-4xl font-bold mb-8">
+          <div className="flex justify-between items-center mb-8">
 
-            Institute Management
+  <h1 className="text-4xl font-bold">
 
-          </h1>
+    Institutes
+
+  </h1>
+
+  <a
+    href="/admin"
+    className="bg-black text-white px-5 py-2 rounded-xl"
+  >
+
+    Dashboard
+
+  </a>
+
+</div>
 
           {/* CREATE */}
 
