@@ -5,13 +5,13 @@ import {
   useState,
 } from "react";
 
-import Link from "next/link";
 import AdminGuard from "@/components/AdminGuard";
+
 import { supabase } from "@/lib/supabase";
 
 export default function AdminLeaderboardsPage() {
 
-    const [exams,
+  const [exams,
     setExams] =
     useState<any[]>([]);
 
@@ -31,14 +31,11 @@ export default function AdminLeaderboardsPage() {
     setAverageScore] =
     useState(0);
 
-  // ADMIN CHECK + FETCH EXAMS
+  // FETCH EXAMS
 
   useEffect(() => {
 
-    async function initializePage() {
-
-      
-      // FETCH EXAMS
+    async function fetchExams() {
 
       const {
         data,
@@ -50,15 +47,23 @@ export default function AdminLeaderboardsPage() {
           ascending: false,
         });
 
-      console.log(data);
-      console.log(error);
+      console.log(
+        "EXAMS:",
+        data
+      );
+
+      console.log(
+        "EXAMS ERROR:",
+        error
+      );
 
       if (data) {
+
         setExams(data);
       }
     }
 
-    initializePage();
+    fetchExams();
 
   }, []);
 
@@ -68,7 +73,11 @@ export default function AdminLeaderboardsPage() {
 
     async function fetchLeaderboard() {
 
-      if (!selectedExam) return;
+      if (!selectedExam) {
+
+        setAttempts([]);
+        return;
+      }
 
       const {
         data,
@@ -84,36 +93,49 @@ export default function AdminLeaderboardsPage() {
           ascending: false,
         });
 
-      console.log(data);
-      console.log(error);
+      console.log(
+        "ATTEMPTS:",
+        data
+      );
+
+      console.log(
+        "ATTEMPTS ERROR:",
+        error
+      );
+
+      if (error) {
+
+        alert(
+          error.message
+        );
+
+        return;
+      }
 
       if (data) {
 
-        const sorted =
-          [...data].sort(
-            (a, b) =>
-              b.score - a.score
-          );
-
-        setAttempts(sorted);
+        setAttempts(data);
 
         setParticipantCount(
-          sorted.length
+          data.length
         );
 
-        // AVERAGE SCORE
-
-        const total =
-          sorted.reduce(
-            (sum, item) =>
-              sum + item.score,
+        const totalScore =
+          data.reduce(
+            (
+              sum,
+              item
+            ) =>
+              sum +
+              (item.score || 0),
             0
           );
 
         const avg =
-          sorted.length > 0
+          data.length > 0
 
-            ? total / sorted.length
+            ? totalScore /
+              data.length
 
             : 0;
 
@@ -131,196 +153,238 @@ export default function AdminLeaderboardsPage() {
 
   return (
 
-  <AdminGuard>
+    <AdminGuard>
 
-    <main className="min-h-screen p-4 md:p-8 bg-gray-50">
+      <main className="min-h-screen bg-gray-50 p-6 md:p-8">
 
-      <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto">
 
-        {/* NAVIGATION */}
+          {/* HEADER */}
 
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+          <div className="flex justify-between items-center mb-10">
 
-          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-4xl font-bold">
 
-  <h1 className="text-4xl font-bold">
+              Leaderboards
 
-    Leaderboards
+            </h1>
 
-  </h1>
+            <a
+              href="/admin"
+              className="bg-black text-white px-5 py-2 rounded-xl"
+            >
 
-  <a
-    href="/admin"
-    className="bg-black text-white px-5 py-2 rounded-xl"
-  >
+              Dashboard
 
-    Dashboard
-
-  </a>
-
-</div>
-
-          
-
-        </div>
-
-        {/* SELECT EXAM */}
-
-        <div className="bg-white border rounded-2xl p-6 mb-8">
-
-          <h2 className="text-2xl font-bold mb-4">
-            Select Exam
-          </h2>
-
-          <select
-            value={selectedExam}
-            onChange={(e) =>
-              setSelectedExam(
-                e.target.value
-              )
-            }
-            className="border p-3 rounded-xl w-full"
-          >
-
-            <option value="">
-              Select Exam
-            </option>
-
-            {exams.map((exam) => (
-
-              <option
-                key={exam.id}
-                value={exam.id}
-              >
-                {exam.title}
-              </option>
-
-            ))}
-
-          </select>
-
-        </div>
-
-        {/* ANALYTICS */}
-
-        {selectedExam && (
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-
-            <div className="bg-white border rounded-2xl p-6">
-
-              <p className="text-gray-500 text-sm mb-2">
-                Participants
-              </p>
-
-              <h2 className="text-4xl font-bold">
-                {participantCount}
-              </h2>
-
-            </div>
-
-            <div className="bg-white border rounded-2xl p-6">
-
-              <p className="text-gray-500 text-sm mb-2">
-                Average Score
-              </p>
-
-              <h2 className="text-4xl font-bold text-green-600">
-                {averageScore}
-              </h2>
-
-            </div>
+            </a>
 
           </div>
 
-        )}
+          {/* SELECT EXAM */}
 
-        {/* LEADERBOARD */}
+          <div className="bg-white border rounded-3xl p-6 shadow-sm mb-10">
 
-        {selectedExam && (
+            <h2 className="text-2xl font-bold mb-4">
 
-          <div>
+              Select Exam
 
-            <h2 className="text-3xl font-bold mb-6">
-              Leaderboard
             </h2>
 
-            <div className="space-y-4">
+            <select
+              value={selectedExam}
+              onChange={(e) =>
+                setSelectedExam(
+                  e.target.value
+                )
+              }
+              className="w-full border rounded-2xl p-4"
+            >
 
-              {attempts.map(
-                (attempt, index) => (
+              <option value="">
+                Select Exam
+              </option>
 
-                  <div
-                    key={attempt.id}
-                    className={`border rounded-2xl p-5 shadow-sm ${
-                      index === 0
+              {exams.map(
+                (exam) => (
 
-                        ? "bg-yellow-100"
-
-                        : index === 1
-
-                        ? "bg-gray-100"
-
-                        : index === 2
-
-                        ? "bg-orange-100"
-
-                        : "bg-white"
-                    }`}
+                  <option
+                    key={exam.id}
+                    value={exam.id}
                   >
 
-                    <div className="flex justify-between items-center">
+                    {exam.title}
 
-                      <div>
+                  </option>
 
-                        <h2 className="text-2xl font-bold">
+                )
+              )}
 
-                          #{index + 1}
+            </select>
 
-                        </h2>
+          </div>
 
-                        <p className="text-gray-600 mt-1">
+          {/* ANALYTICS */}
 
-                          User ID:
-                          {" "}
-                          {attempt.user_id.slice(
-                            0,
-                            8
-                          )}
+          {selectedExam && (
 
-                        </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
 
-                      </div>
+              <div className="bg-white border rounded-3xl p-6 shadow-sm">
 
-                      <div className="text-right">
+                <p className="text-gray-500 mb-2">
 
-                        <p className="text-4xl font-bold text-green-600">
-                          {attempt.score}
-                        </p>
+                  Participants
 
-                        <p className="text-sm text-gray-500">
-                          Score
-                        </p>
+                </p>
+
+                <h2 className="text-5xl font-bold">
+
+                  {participantCount}
+
+                </h2>
+
+              </div>
+
+              <div className="bg-white border rounded-3xl p-6 shadow-sm">
+
+                <p className="text-gray-500 mb-2">
+
+                  Average Score
+
+                </p>
+
+                <h2 className="text-5xl font-bold text-green-600">
+
+                  {averageScore}
+
+                </h2>
+
+              </div>
+
+            </div>
+
+          )}
+
+          {/* LEADERBOARD */}
+
+          {selectedExam && (
+
+            <div>
+
+              <div className="flex items-center justify-between mb-6">
+
+                <h2 className="text-3xl font-bold">
+
+                  Leaderboard
+
+                </h2>
+
+                <div className="bg-blue-100 text-blue-700 border border-blue-300 px-4 py-2 rounded-2xl font-bold">
+
+                  Attempts:
+                  {" "}
+                  {attempts.length}
+
+                </div>
+
+              </div>
+
+              <div className="space-y-4">
+
+                {attempts.map(
+                  (
+                    attempt,
+                    index
+                  ) => (
+
+                    <div
+                      key={attempt.id}
+                      className={`border rounded-3xl p-6 shadow-sm ${
+                        index === 0
+
+                          ? "bg-yellow-100"
+
+                          : index === 1
+
+                          ? "bg-gray-100"
+
+                          : index === 2
+
+                          ? "bg-orange-100"
+
+                          : "bg-white"
+                      }`}
+                    >
+
+                      <div className="flex justify-between items-center">
+
+                        <div>
+
+                          <h2 className="text-3xl font-bold mb-2">
+
+                            Rank
+                            {" "}
+                            #{index + 1}
+
+                          </h2>
+
+                          <p className="text-gray-600">
+
+                            User:
+                            {" "}
+
+                            {attempt.user_id.slice(
+                              0,
+                              8
+                            )}
+
+                          </p>
+
+                        </div>
+
+                        <div className="text-right">
+
+                          <h2 className="text-5xl font-bold text-green-600">
+
+                            {attempt.score}
+
+                          </h2>
+
+                          <p className="text-gray-500 mt-1">
+
+                            Score
+
+                          </p>
+
+                        </div>
 
                       </div>
 
                     </div>
 
+                  )
+                )}
+
+                {attempts.length === 0 && (
+
+                  <div className="bg-white border rounded-3xl p-10 text-center text-gray-500 shadow-sm">
+
+                    No attempts yet for this exam
+
                   </div>
 
-                )
-              )}
+                )}
+
+              </div>
 
             </div>
 
-          </div>
+          )}
 
-        )}
+        </div>
 
-      </div>
+      </main>
 
-    </main>
-
-</AdminGuard>
-);
+    </AdminGuard>
+  );
 }
