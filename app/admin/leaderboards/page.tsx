@@ -7,17 +7,11 @@ import {
 
 import Link from "next/link";
 import AdminGuard from "@/components/AdminGuard";
-import {
-  useRouter,
-} from "next/navigation";
-
 import { supabase } from "@/lib/supabase";
 
 export default function AdminLeaderboardsPage() {
 
-  const router = useRouter();
-
-  const [exams,
+    const [exams,
     setExams] =
     useState<any[]>([]);
 
@@ -43,48 +37,7 @@ export default function AdminLeaderboardsPage() {
 
     async function initializePage() {
 
-      const {
-        data: { user },
-      } = await supabase
-        .auth
-        .getUser();
-
-      if (!user) {
-
-        router.push("/");
-
-        return;
-      }
-
-     const {
-  data: profile,
-} = await supabase
-  .from("users")
-  .select("role")
-  .eq(
-    "id",
-    user.id
-  )
-  .single();
-
-console.log(profile);
-
-if (
-  profile?.role !== "admin" &&
-  profile?.role !== "teacher"
-) {
-
-  alert(
-    "Access Denied"
-  );
-
-  router.push(
-    "/dashboard"
-  );
-
-  return;
-}
-
+      
       // FETCH EXAMS
 
       const {
