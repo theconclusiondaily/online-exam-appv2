@@ -603,127 +603,146 @@ localStorage.setItem(
 
   async function submitExam() {
 
-    setIsSubmitting(
-  true
-);
+  if (
+    isSubmitting ||
+    alreadyAttempted
+  ) {
 
-setSubmitted(
-  true
-); {
-
-      return;
-    }
-localStorage.removeItem(
-  `exam-answers-${examId}`
-);
-    setIsSubmitting(
-      true
-    );
-if (
-  Object.keys(
-    answers
-  ).length === 0
-) {
-
-  alert(
-    "Attempt at least one question"
-  );
-
-  setIsSubmitting(
-    false
-  );
-
-  return;
-}
-const confirmSubmit =
-  confirm(
-    "Are you sure you want to submit the exam?"
-  );
-
-if (!confirmSubmit) {
-
-  setIsSubmitting(
-    false
-  );
-
-  return;
-}
-    let correct = 0;
-
-    questions.forEach(
-      (q) => {
-
-        if (
-          answers[q.id] ===
-          q.correct_answer
-        ) {
-
-          correct++;
-        }
-      }
-    );
-
-    setScore(correct);
-
-    const { error } =
-      await supabase
-        .from(
-          "exam_attempts"
-        )
-        .insert([
-          {
-            user_id:
-              userId,
-
-            exam_id:
-              examId,
-
-            score:
-  correct,
-
-percentage:
-  Number(
-    (
-      (
-        correct /
-        questions.length
-      ) * 100
-    ).toFixed(2)
-  ),
-          },
-        ]);
-
-    console.log(error);
-
-    localStorage.removeItem(
-      `exam-start-${examId}`
-    );
-
-    localStorage.removeItem(
-      `exam-active-${examId}`
-    );
-
-    if (wakeLock) {
-
-      await wakeLock.release();
-    }
-
-    if (
-      document.fullscreenElement
-    ) {
-
-      await document
-        .exitFullscreen();
-    }
-
-    setAlreadyAttempted(
-      true
-    );
-
-    router.push(
-      `/leaderboard/${examId}`
-    );
+    return;
   }
+
+  setIsSubmitting(
+    true
+  );
+
+  if (
+    Object.keys(
+      answers
+    ).length === 0
+  ) {
+
+    alert(
+      "Attempt at least one question"
+    );
+
+    setIsSubmitting(
+      false
+    );
+
+    return;
+  }
+
+  const confirmSubmit =
+    confirm(
+      "Are you sure you want to submit the exam?"
+    );
+
+  if (!confirmSubmit) {
+
+    setIsSubmitting(
+      false
+    );
+
+    return;
+  }
+
+  let correct = 0;
+
+  questions.forEach(
+    (q) => {
+
+      if (
+        answers[q.id] ===
+        q.correct_answer
+      ) {
+
+        correct++;
+      }
+    }
+  );
+
+  setScore(correct);
+
+  const { error } =
+    await supabase
+      .from(
+        "exam_attempts"
+      )
+      .insert([
+        {
+          user_id:
+            userId,
+
+          exam_id:
+            examId,
+
+          score:
+            correct,
+
+          percentage:
+            Number(
+              (
+                (
+                  correct /
+                  questions.length
+                ) * 100
+              ).toFixed(2)
+            ),
+        },
+      ]);
+
+  console.log(error);
+
+  if (error) {
+
+    alert(
+      "Failed to submit exam"
+    );
+
+    setIsSubmitting(
+      false
+    );
+
+    return;
+  }
+
+  setSubmitted(
+    true
+  );
+
+  localStorage.removeItem(
+    `exam-answers-${examId}`
+  );
+
+  localStorage.removeItem(
+    `exam-start-${examId}`
+  );
+
+  localStorage.removeItem(
+    `exam-active-${examId}`
+  );
+
+  if (wakeLock) {
+
+    await wakeLock.release();
+  }
+
+  if (
+    document.fullscreenElement
+  ) {
+
+    await document
+      .exitFullscreen();
+  }
+
+  setAlreadyAttempted(
+    true
+  );
+
+  router.push(
+    `/leaderboard/${examId}`
+  );
+}
 
   // CAMERA + MIC
 
