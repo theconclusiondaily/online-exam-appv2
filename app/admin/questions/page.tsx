@@ -102,7 +102,7 @@ export default function QuestionsPage() {
 
   useEffect(() => {
 
-    fetchQuestions();
+   fetchQuestions();
 
   }, [selectedExam]);
 
@@ -174,7 +174,9 @@ export default function QuestionsPage() {
     setOptionD("");
     setCorrectAnswer("");
 
-    fetchQuestions();
+    await fetchQuestions();
+
+await fetchExams();
   }
 
   async function deleteQuestion(
@@ -206,7 +208,9 @@ export default function QuestionsPage() {
       return;
     }
 
-    fetchQuestions();
+    await fetchQuestions();
+
+await fetchExams();
   }
       async function handleCSVUpload(
   e: any
@@ -293,10 +297,12 @@ alert(
       }
 
       alert(
-        "Questions uploaded successfully"
-      );
+  "Questions uploaded successfully"
+);
 
-      fetchQuestions();
+await fetchQuestions();
+
+await fetchExams();
     },
   });
 }
@@ -309,9 +315,24 @@ alert(
 
       <div className="max-w-7xl mx-auto">
 
-        <h1 className="text-4xl font-bold mb-8">
-          Question Paper Builder
-        </h1>
+        <div className="flex justify-between items-center mb-8">
+
+  <h1 className="text-4xl font-bold">
+
+    Question Paper Builder
+
+  </h1>
+
+  <a
+    href="/admin"
+    className="bg-black text-white px-5 py-2 rounded-xl"
+  >
+
+    Dashboard
+
+  </a>
+
+</div>
 
         {/* ADD QUESTION */}
 
