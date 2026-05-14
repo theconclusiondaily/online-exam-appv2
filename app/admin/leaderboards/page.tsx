@@ -160,44 +160,7 @@ export default function AdminLeaderboardsPage() {
 
 </div>
 
-          <div className="flex flex-wrap gap-3">
-
-            <Link
-              href="/admin"
-              className="bg-white border px-4 py-2 rounded-xl"
-            >
-              Dashboard
-            </Link>
-
-            <Link
-              href="/admin/questions"
-              className="bg-white border px-4 py-2 rounded-xl"
-            >
-              Questions
-            </Link>
-
-            <Link
-              href="/admin/users"
-              className="bg-white border px-4 py-2 rounded-xl"
-            >
-              Users
-            </Link>
-
-            <Link
-              href="/admin/leaderboards"
-              className="bg-black text-white px-4 py-2 rounded-xl"
-            >
-              Leaderboards
-            </Link>
-
-            <Link
-              href="/admin/papers"
-              className="bg-white border px-4 py-2 rounded-xl"
-            >
-              Question Papers
-            </Link>
-
-          </div>
+          
 
         </div>
 
