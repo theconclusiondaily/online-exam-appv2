@@ -52,47 +52,61 @@ export default function InstitutesPage() {
 
   }, []);
 
-  async function createInstitute() {
+ async function createInstitute() {
 
-    if (!name) {
-
-      alert(
-        "Institute name required"
-      );
-
-      return;
-    }
-
-    const { error } =
-      await supabase
-        .from("institutes")
-        .insert([
-          {
-            name,
-            city,
-          },
-        ]);
-
-    if (error) {
-
-      console.log(error);
-
-      alert(
-        "Failed to create institute"
-      );
-
-      return;
-    }
+  if (
+    !name ||
+    !city
+  ) {
 
     alert(
-      "Institute created"
+      "Fill all fields"
     );
 
-    setName("");
-    setCity("");
-
-    fetchInstitutes();
+    return;
   }
+
+  const {
+    data,
+    error,
+  } = await supabase
+    .from("institutes")
+    .insert([
+      {
+        name: name.trim(),
+        city: city.trim(),
+      },
+    ])
+    .select();
+
+  console.log(
+    "INSERT DATA:",
+    data
+  );
+
+  console.log(
+    "INSERT ERROR:",
+    error
+  );
+
+  if (error) {
+
+    alert(
+      error.message
+    );
+
+    return;
+  }
+
+  alert(
+    "Institute created successfully"
+  );
+
+  setName("");
+  setCity("");
+
+  await fetchInstitutes();
+}
 
   return (
 
