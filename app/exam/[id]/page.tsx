@@ -137,11 +137,9 @@ const [submitted,
           return updated;
         }
 
-        alert(
-          `${reason}. Exam submitted.`
-        );
-
-        submitExam();
+        console.log(
+  "Auto submitting exam"
+);
 
         return updated;
       }
