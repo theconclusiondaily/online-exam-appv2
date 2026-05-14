@@ -67,7 +67,7 @@ export default function TeacherLeaderboardsPage() {
       } = await supabase
         .from("users")
         .select("*")
-        .eq("id", user.id)
+        .eq("email", user.email)
         .single();
 
       if (

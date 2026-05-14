@@ -68,7 +68,7 @@ export default function AdminPage() {
 } = await supabase
   .from("users")
   .select("*")
-  .eq("id", user.id)
+  .eq("email", user.email)
   .single();
 
 console.log("AUTH USER:", user);

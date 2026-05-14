@@ -74,8 +74,8 @@ export default function TeacherDashboard() {
           )
         `)
         .eq(
-          "id",
-          user.id
+          "email",
+          user.email
         )
         .single();
 

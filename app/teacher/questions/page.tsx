@@ -69,7 +69,7 @@ export default function TeacherQuestionsPage() {
       } = await supabase
         .from("users")
         .select("role")
-        .eq("id", user.id)
+        .eq("email", user.email)
         .single();
 
       if (
