@@ -55,7 +55,7 @@ export default function ExamPage() {
 
   const [timeLeft,
     setTimeLeft] =
-    useState(1800);
+    useState(0);
 
   const [userId,
     setUserId] =
@@ -218,7 +218,12 @@ export default function ExamPage() {
           examData
         );
       }
+        if (examData?.duration) {
 
+  setTimeLeft(
+    examData.duration * 60
+  );
+}
       // FETCH QUESTIONS
 
       const {
@@ -595,7 +600,35 @@ localStorage.removeItem(
     setIsSubmitting(
       true
     );
+if (
+  Object.keys(
+    answers
+  ).length === 0
+) {
 
+  alert(
+    "Attempt at least one question"
+  );
+
+  setIsSubmitting(
+    false
+  );
+
+  return;
+}
+const confirmSubmit =
+  confirm(
+    "Are you sure you want to submit the exam?"
+  );
+
+if (!confirmSubmit) {
+
+  setIsSubmitting(
+    false
+  );
+
+  return;
+}
     let correct = 0;
 
     questions.forEach(
@@ -627,7 +660,17 @@ localStorage.removeItem(
               examId,
 
             score:
-              correct,
+  correct,
+
+percentage:
+  Number(
+    (
+      (
+        correct /
+        questions.length
+      ) * 100
+    ).toFixed(2)
+  ),
           },
         ]);
 
