@@ -92,7 +92,9 @@ export default function ExamPage() {
   const [isSubmitting,
     setIsSubmitting] =
     useState(false);
-
+const [submitted,
+  setSubmitted] =
+  useState(false);
   const [antiCheatEnabled,
     setAntiCheatEnabled] =
     useState(false);
@@ -398,33 +400,47 @@ if (savedAnswers) {
       };
 
     const handleVisibility =
-      () => {
+  () => {
 
-        if (
-          examStarted &&
-          antiCheatEnabled &&
-          document.hidden
-        ) {
+    if (
+      submitted ||
+      isSubmitting
+    ) {
+      return;
+    }
 
-          handleViolation(
-            "Tab switching detected"
-          );
-        }
-      };
+    if (
+      examStarted &&
+      antiCheatEnabled &&
+      document.hidden
+    ) {
 
-    const handleBlur =
-      () => {
+      handleViolation(
+        "Tab switching detected"
+      );
+    }
+  };
 
-        if (
-          examStarted &&
-          antiCheatEnabled
-        ) {
+   const handleBlur =
+  () => {
 
-          handleViolation(
-            "Window focus lost"
-          );
-        }
-      };
+    if (
+      submitted ||
+      isSubmitting
+    ) {
+      return;
+    }
+
+    if (
+      examStarted &&
+      antiCheatEnabled
+    ) {
+
+      handleViolation(
+        "Window focus lost"
+      );
+    }
+  };
 
     const handleFullscreen =
       () => {
@@ -587,10 +603,13 @@ localStorage.setItem(
 
   async function submitExam() {
 
-    if (
-      isSubmitting ||
-      alreadyAttempted
-    ) {
+    setIsSubmitting(
+  true
+);
+
+setSubmitted(
+  true
+); {
 
       return;
     }
