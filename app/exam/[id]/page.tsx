@@ -727,7 +727,17 @@ setIsSubmitting(
   localStorage.removeItem(
     `exam-active-${examId}`
   );
+if (
+  streamRef.current
+) {
 
+  streamRef.current
+    .getTracks()
+    .forEach(
+      (track) =>
+        track.stop()
+    );
+}
   if (wakeLock) {
 
     await wakeLock.release();

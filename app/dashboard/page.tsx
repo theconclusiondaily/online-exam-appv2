@@ -94,8 +94,8 @@ export default function DashboardPage() {
     role
   `)
   .eq(
-    "id",
-    user.id
+    "email",
+    user.email
   )
   .single();
 
