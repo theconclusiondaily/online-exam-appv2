@@ -12,9 +12,51 @@ import {
 } from "next/navigation";
 
 import { supabase } from "@/lib/supabase";
-
+import useExamAutosave from "@/hooks/useExamAutosave";
+import useLiveRank from "@/hooks/useLiveRank";
+import useLiveStudents from "@/hooks/useLiveStudents";
+import { toast } from "sonner";
+import ExamTopStats
+from "@/components/exam/ExamTopStats";
+import { retryAsync }
+from "@/lib/retry";
+import QuestionCard
+from "@/components/exam/QuestionCard";
+import ExamLoader
+from "@/components/exam/ExamLoader";
+import useDebouncedLocalStorage
+from "@/hooks/useDebouncedLocalStorage";
+import useAntiCheat
+from "@/hooks/useAntiCheat";
+import {
+  fetchExam,
+  fetchQuestions,
+  fetchAttempt,
+} from "@/services/exam.service";
+import dynamic from "next/dynamic";
 export default function ExamPage() {
 
+  const LiveEventFeed =
+  dynamic(
+    () =>
+      import(
+        "@/components/exam/LiveEventFeed"
+      ),
+    {
+      ssr: false,
+    }
+  );
+
+const QuestionPalette =
+  dynamic(
+    () =>
+      import(
+        "@/components/exam/QuestionPalette"
+      ),
+    {
+      ssr: false,
+    }
+  );
   const params = useParams();
 
   const router = useRouter();
@@ -46,13 +88,17 @@ export default function ExamPage() {
   const [answers,
     setAnswers] =
     useState<any>({});
-
+const [currentQuestion,
+  setCurrentQuestion] =
+  useState(0);
   const [score,
     setScore] =
     useState<number | null>(
       null
     );
-
+const [loading,
+  setLoading] =
+  useState(true);
   const [timeLeft,
     setTimeLeft] =
     useState(0);
@@ -98,6 +144,39 @@ const [submitted,
   const [antiCheatEnabled,
     setAntiCheatEnabled] =
     useState(false);
+const [liveScore,
+  setLiveScore] =
+  useState(0);
+const {
+  liveRank,
+  previousRank,
+  topScore,
+} = useLiveRank({
+  examId,
+  userId,
+});
+const liveStudents =
+  useLiveStudents(
+    examId
+  );
+  useDebouncedLocalStorage({
+
+  keyName:
+    `exam-answers-${examId}`,
+
+  value: answers,
+
+});
+useAntiCheat({
+
+  antiCheatEnabled,
+
+  violations,
+
+  setViolations,
+
+  submitExam,
+});
 
   // HANDLE VIOLATIONS
 
@@ -168,49 +247,63 @@ const [submitted,
       }
 
       setUserId(user.id);
-
+await supabase
+  .from("exam_attempts")
+  .upsert({
+    user_id: user.id,
+    exam_id: examId,
+    status: "in_progress",
+  });
       // CHECK ATTEMPT
 
       const {
-        data: existingAttempt,
-      } = await supabase
-        .from("exam_attempts")
-        .select("*")
-        .eq(
-          "user_id",
-          user.id
-        )
-        .eq(
-          "exam_id",
-          examId
-        )
-        .maybeSingle();
+  data: existingAttempt,
+} = await fetchAttempt({
+  userId: user.id,
+  examId,
+});
 
-      if (existingAttempt) {
+     if (existingAttempt) {
 
-        setAlreadyAttempted(
-          true
-        );
+  if (
+    existingAttempt.status ===
+    "submitted"
+  ) {
 
-        setScore(
-          existingAttempt.score
-        );
+    setAlreadyAttempted(
+      true
+    );
 
-        return;
-      }
+    setScore(
+      existingAttempt.score
+    );
+setLoading(false);
+    return;
+  }
+
+  // RESTORE ATTEMPT
+
+  setAnswers(
+    existingAttempt.answers || {}
+  );
+
+  setTimeLeft(
+    existingAttempt.remaining_time ||
+    1800
+  );
+
+  setExamStarted(true);
+setLoading(false);
+  return;
+}
 
       // FETCH EXAM
 
       const {
-        data: examData,
-      } = await supabase
-        .from("exams")
-        .select("*")
-        .eq(
-          "id",
-          examId
-        )
-        .single();
+  data: examData,
+} = await fetchExam(
+  examId
+);
 
       if (examData) {
 
@@ -227,18 +320,11 @@ const [submitted,
       // FETCH QUESTIONS
 
       const {
-        data,
-        error,
-      } = await supabase
-        .from("questions")
-        .select("*")
-        .eq(
-          "exam_id",
-          examId
-        );
-
-      console.log(data);
-      console.log(error);
+  data,
+  error,
+} = await fetchQuestions(
+  examId
+);
 
       if (data) {
 
@@ -257,6 +343,7 @@ if (savedAnswers) {
     )
   );
 }
+setLoading(false);
       }
     }
 
@@ -270,46 +357,7 @@ if (savedAnswers) {
     router,
   ]);
 
-  // TIMER RESTORE
-
-  useEffect(() => {
-
-    if (!examId) return;
-
-    const savedStart =
-      localStorage.getItem(
-        `exam-start-${examId}`
-      );
-
-    if (savedStart) {
-
-      const elapsedSeconds =
-        Math.floor(
-          (
-            Date.now() -
-            Number(savedStart)
-          ) / 1000
-        );
-
-      const remaining =
-        1800 -
-        elapsedSeconds;
-
-      if (remaining > 0) {
-
-        setTimeLeft(
-          remaining
-        );
-
-        setExamStarted(
-          true
-        );
-      }
-    }
-
-  }, [examId]);
-
-  // MULTIPLE TAB PROTECTION
+    // MULTIPLE TAB PROTECTION
 
   useEffect(() => {
 
@@ -554,6 +602,27 @@ if (savedAnswers) {
     examStarted,
     alreadyAttempted,
   ]);
+  
+// AUTOSAVE
+
+useExamAutosave({
+
+  answers,
+
+  timeLeft,
+
+  examStarted,
+
+  userId,
+
+  examId,
+
+  liveScore,
+
+  questionsLength:
+    questions.length,
+
+});
 
   // VIDEO STREAM
 
@@ -589,13 +658,32 @@ setAnswers(
   updatedAnswers
 );
 
-localStorage.setItem(
-  `exam-answers-${examId}`,
-  JSON.stringify(
-    updatedAnswers
-  )
+calculateLiveScore(
+  updatedAnswers
 );
+
   }
+function calculateLiveScore(
+  updatedAnswers: any
+) {
+
+  let correct = 0;
+
+  questions.forEach((q) => {
+
+    if (
+      updatedAnswers[q.id] ===
+      q.correct_answer
+    ) {
+
+      correct++;
+    }
+  });
+
+  setLiveScore(correct);
+
+  return correct;
+}
 
   // SUBMIT EXAM
 
@@ -627,9 +715,9 @@ setIsSubmitting(
     ).length === 0
   ) {
 
-    alert(
-      "Attempt at least one question"
-    );
+    toast.error(
+  "Attempt at least one question"
+);
 
     setIsSubmitting(
       false
@@ -668,51 +756,166 @@ setIsSubmitting(
   );
 
   setScore(correct);
+// XP CALCULATION
 
-  const { error } =
-    await supabase
-      .from(
-        "exam_attempts"
-      )
-      .insert([
-        {
-          user_id:
-            userId,
+const earnedXP =
+  correct * 10;
 
-          exam_id:
-            examId,
+  const {
+  data: currentUser,
+} = await supabase
+  .from("users")
+  .select(`
+  xp,
+  level,
+  badges,
+  streak,
+  last_exam_date
+`)
+  .eq(
+    "id",
+    userId
+  )
+  .single();
 
-          score:
-            correct,
+if (currentUser) {
+// STREAK SYSTEM
 
-          percentage:
-            Number(
-              (
-                (
-                  correct /
-                  questions.length
-                ) * 100
-              ).toFixed(2)
-            ),
-        },
-      ]);
+const today =
+  new Date()
+    .toISOString()
+    .split("T")[0];
 
-  console.log(error);
+let streak =
+  currentUser.streak || 0;
 
-  if (error) {
+const lastDate =
+  currentUser.last_exam_date;
 
-    alert(
-     error.message
+if (lastDate !== today) {
+
+  const yesterday =
+    new Date();
+
+  yesterday.setDate(
+    yesterday.getDate() - 1
+  );
+
+  const yesterdayString =
+    yesterday
+      .toISOString()
+      .split("T")[0];
+
+  if (
+    lastDate ===
+    yesterdayString
+  ) {
+
+    streak += 1;
+
+  } else {
+
+    streak = 1;
+  }
+}
+  const newXP =
+    (currentUser.xp || 0) +
+    earnedXP;
+
+  const newLevel =
+    Math.floor(
+      newXP / 500
+    ) + 1;
+
+  const badges =
+    currentUser.badges || [];
+
+  // PERFECT SCORE BADGE
+
+  if (
+    correct ===
+    questions.length &&
+    !badges.includes(
+      "Perfect Score"
+    )
+  ) {
+
+    badges.push(
+      "Perfect Score"
     );
-
-    setIsSubmitting(
-      false
-    );
-
-    return;
   }
 
-  setSubmitted(
+  await supabase
+    .from("users")
+    .update({
+
+  xp: newXP,
+
+  level: newLevel,
+
+  badges,
+
+  streak,
+
+  last_exam_date:
+    today,
+
+})
+    .eq(
+      "id",
+      userId
+    );
+}
+try {
+const result =
+  await retryAsync(
+    async () => {
+
+      const response =
+        await fetch(
+          "/api/submit-exam",
+          {
+
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body:
+              JSON.stringify({
+
+                examId,
+
+                userId,
+
+                answers,
+
+              }),
+          }
+        );
+
+      const data =
+  await response.json();
+
+if (!response.ok) {
+
+  throw new Error(
+    data.error ||
+    "Submission failed"
+  );
+}
+
+return data;
+    }
+  );
+
+setScore(
+  result.score
+);
+
+   setSubmitted(
     true
   );
 
@@ -754,12 +957,27 @@ if (
   setAlreadyAttempted(
     true
   );
+  toast.success(
+  "Exam submitted successfully"
+);
 
   router.push(
     `/leaderboard/${examId}`
   );
 }
+  catch (error: any) {
 
+  toast.error(
+    error.message ||
+    "Submission failed"
+  );
+
+  setIsSubmitting(
+    false
+  );
+
+  return;
+}
   // CAMERA + MIC
 
   async function requestPermissions() {
@@ -799,7 +1017,7 @@ if (
 
     } catch (error) {
 
-      alert(
+      toast.error(
         "Camera and microphone access required"
       );
 
@@ -1134,7 +1352,14 @@ if (
   }
 
   // MAIN EXAM
+if (
+  loading ||
+  !examInfo ||
+  questions.length === 0
+) {
 
+  return <ExamLoader />;
+}
   return (
 
     <div
@@ -1148,7 +1373,7 @@ if (
 
       {cameraAllowed && (
 
-        <div className="fixed bottom-24 right-4 w-32 h-40 md:w-48 md:h-60 bg-black rounded-2xl overflow-hidden shadow-2xl z-50 border-4 border-white">
+        <div className="fixed bottom-24 right-4 w-24 h-32 md:w-48 md:h-60 bg-black rounded-2xl overflow-hidden shadow-2xl z-50 border-4 border-white">
 
           <video
             ref={videoRef}
@@ -1162,121 +1387,96 @@ if (
 
       )}
 
-      {/* TOP BAR */}
+{/* TOP BAR */}
 
-      <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-8">
+<div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-8">
 
-        <h1 className="text-3xl font-bold">
-          Exam
-        </h1>
+  <h1 className="text-3xl font-bold">
+    Exam
+  </h1>
 
-        <div className="flex gap-4 flex-wrap">
+  <ExamTopStats
+    timeLeft={timeLeft}
+    formatTime={formatTime}
+    liveScore={liveScore}
+    liveRank={liveRank}
+    previousRank={previousRank}
+    topScore={topScore}
+    liveStudents={liveStudents}
+    violations={violations}
+  />
 
-          <div className="text-2xl font-bold text-red-600 bg-white border px-4 py-2 rounded-2xl shadow-sm">
+</div>
 
-            {formatTime(
-              timeLeft
-            )}
+{/* QUESTIONS */}
 
-          </div>
+<div className="space-y-8 pb-44">
 
-          <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-2 rounded-2xl font-bold">
+ {/* CURRENT QUESTION */}
 
-            Violations:
-            {" "}
-            {violations}/2
+{questions[currentQuestion] && (
 
-          </div>
+  <QuestionCard
+    question={
+      questions[currentQuestion]
+    }
+    currentQuestion={
+      currentQuestion
+    }
+    totalQuestions={
+      questions.length
+    }
+    selectedAnswer={
+      answers[
+        questions[
+          currentQuestion
+        ]?.id
+      ]
+    }
+    selectAnswer={
+      selectAnswer
+    }
+  />
 
-        </div>
+)}
 
-      </div>
+</div>
 
-      {/* QUESTIONS */}
+{/* LIVE EVENT FEED */}
 
-      <div className="space-y-8 pb-44">
+<div className="fixed left-4 top-1/2 -translate-y-1/2 w-72 z-40 hidden xl:block">
 
-        {questions.map(
-          (
-            q,
-            index
-          ) => (
+  <LiveEventFeed />
 
-            <div
-              key={q.id}
-              className="border p-5 rounded-2xl bg-white shadow-sm"
-            >
+</div>
 
-              <h2 className="font-bold mb-5 text-lg leading-relaxed">
+{/* QUESTION NAVIGATION */}
 
-                Q
-                {index + 1}.
-                {" "}
-                {q.question}
+<QuestionPalette
+  questions={questions}
+  answers={answers}
+  currentQuestion={
+    currentQuestion
+  }
+  setCurrentQuestion={
+    setCurrentQuestion
+  }
+/>
 
-              </h2>
+{/* SUBMIT */}
 
-              <div className="space-y-3">
+<button
+  onClick={
+    submitExam
+  }
+  className="fixed bottom-4 left-4 right-4 md:static bg-green-600 text-white px-6 py-4 rounded-2xl font-bold shadow-lg z-50"
+>
 
-                {[
-                  q.option_a,
-                  q.option_b,
-                  q.option_c,
-                  q.option_d,
-                ].map(
-                  (
-                    option
-                  ) => (
+  Submit Exam
 
-                    <button
-                      key={
-                        option
-                      }
-                      onClick={() =>
-                        selectAnswer(
-                          q.id,
-                          option
-                        )
-                      }
-                      className={`block w-full text-left border p-4 rounded-2xl transition-all ${
-                        answers[
-                          q.id
-                        ] ===
-                        option
+</button>
 
-                          ? "bg-blue-500 text-white border-blue-500"
-
-                          : "bg-white"
-                      }`}
-                    >
-
-                      {option}
-
-                    </button>
-
-                  )
-                )}
-
-              </div>
-
-            </div>
-
-          )
-        )}
-
-      </div>
-
-      {/* SUBMIT */}
-
-      <button
-        onClick={
-          submitExam
-        }
-        className="fixed bottom-4 left-4 right-4 md:static bg-green-600 text-white px-6 py-4 rounded-2xl font-bold shadow-lg z-50"
-      >
-        Submit Exam
-      </button>
-
-    </div>
+</div>
   );
+}
 }

@@ -6,12 +6,19 @@ import {
 } from "react";
 
 import Link from "next/link";
-
+import StatCard from "@/components/dashboard/StatCard";
+import AnalyticsChart from "@/components/dashboard/AnalyticsChart";
+import LeaderboardTable from "@/components/dashboard/LeaderboardTable";
+import {
+  Users,
+  FileText,
+  Trophy,
+} from "lucide-react";
 import {
   useRouter,
 } from "next/navigation";
 
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 
 export default function TeacherDashboard() {
 
@@ -211,7 +218,7 @@ export default function TeacherDashboard() {
 
   return (
 
-    <main className="min-h-screen bg-gray-50 p-6 md:p-8">
+    <main className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 p-6 md:p-8">
 
       <div className="max-w-7xl mx-auto">
 
@@ -248,58 +255,36 @@ export default function TeacherDashboard() {
 
         {/* STATS */}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-10">
 
-          <div className="bg-white border rounded-3xl p-6 shadow-sm">
+  <StatCard
+    title="Students"
+    value={studentsCount}
+    icon={<Users size={28} />}
+    color="bg-gradient-to-br from-blue-500 to-blue-700"
+  />
 
-            <p className="text-gray-500 mb-2">
+  <StatCard
+    title="Exams"
+    value={examsCount}
+    icon={<FileText size={28} />}
+    color="bg-gradient-to-br from-violet-500 to-purple-700"
+  />
 
-              Students
+  <StatCard
+    title="Attempts"
+    value={attemptsCount}
+    icon={<Trophy size={28} />}
+    color="bg-gradient-to-br from-emerald-500 to-green-700"
+  />
 
-            </p>
-
-            <h2 className="text-5xl font-bold">
-
-              {studentsCount}
-
-            </h2>
-
-          </div>
-
-          <div className="bg-white border rounded-3xl p-6 shadow-sm">
-
-            <p className="text-gray-500 mb-2">
-
-              Exams
-
-            </p>
-
-            <h2 className="text-5xl font-bold text-blue-600">
-
-              {examsCount}
-
-            </h2>
-
-          </div>
-
-          <div className="bg-white border rounded-3xl p-6 shadow-sm">
-
-            <p className="text-gray-500 mb-2">
-
-              Attempts
-
-            </p>
-
-            <h2 className="text-5xl font-bold text-green-600">
-
-              {attemptsCount}
-
-            </h2>
-
-          </div>
-
-        </div>
-
+</div>
+<div className="mb-10">
+  <AnalyticsChart />
+</div>
+<div className="mb-10">
+  <LeaderboardTable />
+</div>
         {/* ACTIONS */}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
@@ -384,7 +369,7 @@ export default function TeacherDashboard() {
 
         {/* RECENT EXAMS */}
 
-        <div className="bg-white border rounded-3xl p-6 shadow-sm">
+        <div className="bg-white/80 backdrop-blur-xl border border-white/30 rounded-3xl p-6 shadow-xl">
 
           <h2 className="text-3xl font-bold mb-6">
 
