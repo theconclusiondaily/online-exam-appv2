@@ -184,47 +184,71 @@ const user =
 
         // LIVE RANK CALCULATION
 
-        const rankMap: any = {};
+       const rankMap: any = {};
 
-        for (const attempt of attemptsData) {
+for (const attempt of attemptsData) {
 
-          const {
-            data: leaderboardData,
-          } = await supabase
-            .from("exam_attempts")
-            .select("*")
-            .eq(
-              "exam_id",
-              attempt.exam_id
-            )
-            .order("score", {
-              ascending: false,
-            });
+  const {
+    data: leaderboardData,
+  } = await supabase
+    .from("exam_attempts")
+    .select("*")
+    .eq(
+      "exam_id",
+      attempt.exam_id
+    );
 
-          if (leaderboardData) {
+  if (leaderboardData) {
 
-            const sortedAttempts =
-  leaderboardData.sort(
-    (a, b) =>
-      b.score - a.score
-  );
+    const sortedAttempts =
+      leaderboardData
+        .sort(
+          (a, b) => {
 
-const rank =
-  sortedAttempts.findIndex(
-    (item) =>
-      item.user_id ===
-      user.id
-  ) + 1;
+            // HIGHER SCORE FIRST
 
-            rankMap[
-  attempt.id
-] = rank;
+            if (
+              b.score !==
+              a.score
+            ) {
+
+              return (
+                b.score -
+                a.score
+              );
+            }
+
+            // EARLIER SUBMISSION WINS
+
+            return (
+              new Date(
+                a.created_at
+              ).getTime() -
+
+              new Date(
+                b.created_at
+              ).getTime()
+            );
           }
-        }
-console.log(rankMap);
-        setRanks(rankMap);
-      }
+        );
 
+    const rank =
+      sortedAttempts.findIndex(
+        (item) =>
+          item.id ===
+          attempt.id
+      ) + 1;
+
+    rankMap[
+      attempt.id
+    ] = rank;
+  }
+}
+
+setRanks({
+  ...rankMap,
+});
+      }
       // CURRENT TIME
 
       const now =
