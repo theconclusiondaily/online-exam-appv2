@@ -69,7 +69,7 @@ export default function DashboardPage() {
 
     async function loadDashboard() {
 
-      setLoading(true);
+
 
       const {
   data: sessionData,
@@ -204,18 +204,18 @@ const user =
           if (leaderboardData) {
 
             const rank =
-              leaderboardData.findIndex(
-                (item) =>
-                  item.user_id ===
-                  user.id
-              ) + 1;
+  leaderboardData.findIndex(
+    (item) =>
+      item.id ===
+      attempt.id
+  ) + 1;
 
             rankMap[
               attempt.exam_id
             ] = rank;
           }
         }
-
+console.log(rankMap);
         setRanks(rankMap);
       }
 
