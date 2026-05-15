@@ -71,85 +71,124 @@ export default function AdminLeaderboardsPage() {
 
   useEffect(() => {
 
-    async function fetchLeaderboard() {
+   async function fetchLeaderboard() {
 
-      if (!selectedExam) {
+  if (!selectedExam) {
 
-        setAttempts([]);
-        return;
-      }
+    setAttempts([]);
 
-      const {
-        data,
-        error,
-      } = await supabase
-        .from("exam_attempts")
-        .select("*")
-        .eq(
-          "exam_id",
-          selectedExam
-        )
-        .order("score", {
-          ascending: false,
-        });
+    setParticipantCount(0);
 
-      console.log(
-        "ATTEMPTS:",
-        data
-      );
+    setAverageScore(0);
 
-      console.log(
-        "ATTEMPTS ERROR:",
-        error
-      );
+    return;
+  }
 
-      if (error) {
+  const {
+    data,
+    error,
+  } = await supabase
+    .from("exam_attempts")
+    .select("*")
+    .eq(
+      "exam_id",
+      selectedExam
+    );
 
-        alert(
-          error.message
-        );
+  if (error) {
 
-        return;
-      }
+    alert(
+      error.message
+    );
 
-      if (data) {
+    return;
+  }
 
-        setAttempts(data);
+  if (data) {
 
-        setParticipantCount(
-          data.length
-        );
+    // SORT BY SCORE
 
-        const totalScore =
-          data.reduce(
-            (
-              sum,
-              item
-            ) =>
-              sum +
-              (item.score || 0),
-            0
+    const sortedData =
+      data.sort(
+        (a, b) => {
+
+          // HIGHER SCORE FIRST
+
+          if (
+            b.score !==
+            a.score
+          ) {
+
+            return (
+              b.score -
+              a.score
+            );
+          }
+
+          // EARLIER SUBMISSION WINS
+
+          return (
+            new Date(
+              a.created_at
+            ).getTime() -
+
+            new Date(
+              b.created_at
+            ).getTime()
           );
+        }
+      );
 
-        const avg =
-          data.length > 0
+    setAttempts(
+      [...sortedData]
+    );
 
-            ? totalScore /
-              data.length
+    setParticipantCount(
+      sortedData.length
+    );
 
-            : 0;
+    const totalScore =
+      sortedData.reduce(
+        (
+          sum,
+          item
+        ) =>
+          sum +
+          (item.score || 0),
+        0
+      );
 
-        setAverageScore(
-          Number(
-            avg.toFixed(2)
-          )
-        );
-      }
-    }
+    const avg =
+      sortedData.length > 0
+
+        ? totalScore /
+          sortedData.length
+
+        : 0;
+
+    setAverageScore(
+      Number(
+        avg.toFixed(2)
+      )
+    );
+  }
+}
 
     fetchLeaderboard();
 
-  }, [selectedExam]);
+  const interval =
+    setInterval(() => {
+
+      fetchLeaderboard();
+
+    }, 5000);
+
+  return () =>
+    clearInterval(
+      interval
+    );
+
+}, [selectedExam]);
 
   return (
 

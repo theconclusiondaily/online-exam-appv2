@@ -184,7 +184,7 @@ const user =
 
         // LIVE RANK CALCULATION
 
-       const rankMap: any = {};
+      const rankMap: any = {};
 
 for (const attempt of attemptsData) {
 
@@ -201,53 +201,50 @@ for (const attempt of attemptsData) {
   if (leaderboardData) {
 
     const sortedAttempts =
-      leaderboardData
-        .sort(
-          (a, b) => {
+      leaderboardData.sort(
+        (a, b) => {
 
-            // HIGHER SCORE FIRST
+          // HIGHER SCORE FIRST
 
-            if (
-              b.score !==
-              a.score
-            ) {
-
-              return (
-                b.score -
-                a.score
-              );
-            }
-
-            // EARLIER SUBMISSION WINS
+          if (
+            b.score !==
+            a.score
+          ) {
 
             return (
-              new Date(
-                a.created_at
-              ).getTime() -
-
-              new Date(
-                b.created_at
-              ).getTime()
+              b.score -
+              a.score
             );
           }
-        );
 
-    const rank =
+          // EARLIER SUBMISSION WINS
+
+          return (
+            new Date(
+              a.created_at
+            ).getTime() -
+
+            new Date(
+              b.created_at
+            ).getTime()
+          );
+        }
+      );
+
+    const currentIndex =
       sortedAttempts.findIndex(
         (item) =>
-          item.id ===
-          attempt.id
-      ) + 1;
+          item.user_id ===
+          user.id
+      );
 
     rankMap[
-      attempt.id
-    ] = rank;
+      attempt.exam_id
+    ] = currentIndex + 1;
   }
 }
 
-setRanks({
-  ...rankMap,
-});
+setRanks(rankMap);
       }
       // CURRENT TIME
 
@@ -588,8 +585,8 @@ return () =>
 
                     {
                       ranks[
-                        attempt.id
-                      ] || "-"
+  attempt.exam_id
+] || "-"
                     }
 
                   </p>
