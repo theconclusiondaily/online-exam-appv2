@@ -65,7 +65,7 @@ export default function DashboardPage() {
 
   // LOAD DASHBOARD
 
-  useEffect(() => {
+ 
 
     async function loadDashboard() {
 
@@ -283,9 +283,19 @@ const user =
 
       setLoading(false);
     }
+ useEffect(() => {
+    loadDashboard();
+const interval =
+  setInterval(() => {
 
     loadDashboard();
 
+  }, 5000);
+
+return () =>
+  clearInterval(
+    interval
+  );
   }, [router]);
 
   // LOADING
