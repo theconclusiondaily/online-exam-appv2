@@ -203,16 +203,22 @@ const user =
 
           if (leaderboardData) {
 
-            const rank =
-  leaderboardData.findIndex(
+            const sortedAttempts =
+  leaderboardData.sort(
+    (a, b) =>
+      b.score - a.score
+  );
+
+const rank =
+  sortedAttempts.findIndex(
     (item) =>
-      item.id ===
-      attempt.id
+      item.user_id ===
+      user.id
   ) + 1;
 
             rankMap[
-              attempt.exam_id
-            ] = rank;
+  attempt.id
+] = rank;
           }
         }
 console.log(rankMap);
@@ -558,7 +564,7 @@ return () =>
 
                     {
                       ranks[
-                        attempt.exam_id
+                        attempt.id
                       ] || "-"
                     }
 
