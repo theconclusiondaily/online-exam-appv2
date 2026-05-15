@@ -184,9 +184,20 @@ const user =
 
         // LIVE RANK CALCULATION
 
-      const rankMap: any = {};
 
-for (const attempt of attemptsData) {
+const rankMap: any = {};
+
+const examIds =
+  [
+    ...new Set(
+      attemptsData.map(
+        (a) =>
+          a.exam_id
+      )
+    ),
+  ];
+
+for (const examId of examIds) {
 
   const {
     data: leaderboardData,
@@ -195,7 +206,7 @@ for (const attempt of attemptsData) {
     .select("*")
     .eq(
       "exam_id",
-      attempt.exam_id
+      examId
     );
 
   if (leaderboardData) {
@@ -231,20 +242,29 @@ for (const attempt of attemptsData) {
         }
       );
 
-    const currentIndex =
-      sortedAttempts.findIndex(
-        (item) =>
+    sortedAttempts.forEach(
+      (
+        item,
+        index
+      ) => {
+
+        if (
           item.user_id ===
           user.id
-      );
+        ) {
 
-    rankMap[
-      attempt.exam_id
-    ] = currentIndex + 1;
+          rankMap[
+            examId
+          ] = index + 1;
+        }
+      }
+    );
   }
 }
 
 setRanks(rankMap);
+
+
       }
       // CURRENT TIME
 
@@ -485,10 +505,7 @@ return () =>
                       exam.end_time
                     ).toLocaleString(
                       "en-IN",
-                      {
-                        timeZone:
-                          "Asia/Kolkata",
-                      }
+                      
                     )}
 
                   </p>
