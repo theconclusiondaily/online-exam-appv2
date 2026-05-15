@@ -4,7 +4,9 @@ import {
   useEffect,
   useState,
 } from "react";
+
 import Link from "next/link";
+
 import {
   useParams,
 } from "next/navigation";
@@ -13,11 +15,15 @@ import { supabase } from "@/lib/supabase";
 
 export default function LeaderboardPage() {
 
-  const params = useParams();
+  const params =
+    useParams();
 
-  const examId = Array.isArray(params.id)
-    ? params.id[0]
-    : params.id;
+  const examId =
+    Array.isArray(
+      params.id
+    )
+      ? params.id[0]
+      : params.id;
 
   const [attempts,
     setAttempts] =
@@ -27,97 +33,162 @@ export default function LeaderboardPage() {
     setCurrentUserId] =
     useState("");
 
+  // FETCH LEADERBOARD
+
+  async function fetchLeaderboard() {
+
+    if (!examId) {
+      return;
+    }
+
+    // CURRENT USER
+
+    const {
+      data: { user },
+    } = await supabase
+      .auth
+      .getUser();
+
+    if (user) {
+
+      setCurrentUserId(
+        user.id
+      );
+    }
+
+    // FETCH ATTEMPTS
+
+    const {
+      data,
+      error,
+    } = await supabase
+      .from("exam_attempts")
+      .select("*")
+      .eq(
+        "exam_id",
+        examId
+      );
+
+    if (error) {
+
+      console.log(error);
+
+      return;
+    }
+
+    if (data) {
+
+      const sortedData =
+        data.sort(
+          (a, b) => {
+
+            // HIGHER SCORE FIRST
+
+            if (
+              b.score !==
+              a.score
+            ) {
+
+              return (
+                b.score -
+                a.score
+              );
+            }
+
+            // EARLIER SUBMISSION WINS
+
+            return (
+              new Date(
+                a.created_at
+              ).getTime() -
+
+              new Date(
+                b.created_at
+              ).getTime()
+            );
+          }
+        );
+
+      setAttempts(
+        [...sortedData]
+      );
+    }
+  }
+
+  // POLLING
+
   useEffect(() => {
 
-    async function fetchLeaderboard() {
+    fetchLeaderboard();
 
-      // CURRENT USER
+    const interval =
+      setInterval(() => {
 
-      const {
-        data: { user },
-      } = await supabase
-        .auth
-        .getUser();
+        fetchLeaderboard();
 
-      if (user) {
-        setCurrentUserId(user.id);
-      }
+      }, 5000);
 
-      // FETCH ATTEMPTS
-
-      const {
-        data,
-        error,
-      } = await supabase
-        .from("exam_attempts")
-        .select("*")
-        .eq("exam_id", examId)
-        .order("score", {
-          ascending: false,
-        });
-
-      console.log(
-        "LEADERBOARD:",
-        data
+    return () =>
+      clearInterval(
+        interval
       );
-
-      console.log(
-        "ERROR:",
-        error
-      );
-
-      if (data) {
-
-        const sorted =
-          [...data].sort(
-            (a, b) =>
-              b.score - a.score
-          );
-
-        setAttempts(sorted);
-      }
-    }
-
-    if (examId) {
-      fetchLeaderboard();
-    }
 
   }, [examId]);
 
   return (
 
-    <main className="min-h-screen p-4 md:p-8 bg-gray-50">
+    <main className="min-h-screen bg-gray-50 p-4 md:p-8">
 
       <div className="max-w-3xl mx-auto">
 
-        <h1 className="text-4xl font-bold mb-2">
-          Leaderboard
-        </h1>
+        {/* HEADER */}
 
-        <p className="text-gray-600 mb-8">
-          Total Participants:
-          {" "}
-          {attempts.length}
-        </p>
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
 
-    <Link
-    href="/dashboard"
-    className="bg-black text-white px-5 py-3 rounded-2xl font-bold"
-  >
-    Back to Dashboard
-  </Link>
+          <div>
 
-</div>
+            <h1 className="text-4xl font-bold mb-2">
+
+              Leaderboard
+
+            </h1>
+
+            <p className="text-gray-600">
+
+              Total Participants:
+              {" "}
+              {attempts.length}
+
+            </p>
+
+          </div>
+
+          <Link
+            href="/dashboard"
+            className="bg-black text-white px-5 py-3 rounded-2xl font-bold w-fit"
+          >
+
+            Back to Dashboard
+
+          </Link>
+
+        </div>
+
+        {/* LEADERBOARD */}
+
         <div className="space-y-4">
 
           {attempts.map(
-            (attempt, index) => (
+            (
+              attempt,
+              index
+            ) => (
 
               <div
                 key={attempt.id}
                 className={`border rounded-2xl p-5 shadow-sm transition-all ${
-                  attempt.user_id === currentUserId
+                  attempt.user_id ===
+                  currentUserId
 
                     ? "border-blue-500 bg-blue-50"
 
@@ -141,16 +212,17 @@ export default function LeaderboardPage() {
 
                   <div>
 
-                    <h2 className="text-2xl font-bold">
+                    <h2 className="text-3xl font-bold">
 
                       #{index + 1}
 
                     </h2>
 
-                    <p className="text-gray-600 mt-1">
+                    <p className="text-gray-600 mt-2">
 
                       User:
                       {" "}
+
                       {attempt.user_id.slice(
                         0,
                         8
@@ -161,8 +233,10 @@ export default function LeaderboardPage() {
                     {attempt.user_id ===
                       currentUserId && (
 
-                      <p className="text-blue-600 font-bold mt-2">
+                      <p className="text-blue-600 font-bold mt-3">
+
                         You
+
                       </p>
 
                     )}
@@ -171,12 +245,16 @@ export default function LeaderboardPage() {
 
                   <div className="text-right">
 
-                    <p className="text-4xl font-bold text-green-600">
+                    <p className="text-5xl font-bold text-green-600">
+
                       {attempt.score}
+
                     </p>
 
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 mt-1">
+
                       Score
+
                     </p>
 
                   </div>
@@ -186,6 +264,16 @@ export default function LeaderboardPage() {
               </div>
 
             )
+          )}
+
+          {attempts.length === 0 && (
+
+            <div className="bg-white border rounded-2xl p-10 text-center text-gray-500">
+
+              No participants yet
+
+            </div>
+
           )}
 
         </div>
