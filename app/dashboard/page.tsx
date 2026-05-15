@@ -185,19 +185,85 @@ const user =
         // LIVE RANK CALCULATION
 
 
+// KEEP ONLY LATEST ATTEMPT
+// FOR EACH EXAM
+
+const latestAttemptsMap: any = {};
+
+attemptsData.forEach(
+  (attempt) => {
+
+    if (
+      !latestAttemptsMap[
+        attempt.exam_id
+      ]
+    ) {
+
+      latestAttemptsMap[
+        attempt.exam_id
+      ] = attempt;
+
+      return;
+    }
+
+    const existing =
+      latestAttemptsMap[
+        attempt.exam_id
+      ];
+
+    if (
+
+      new Date(
+        attempt.created_at
+      ).getTime()
+
+      >
+
+      new Date(
+        existing.created_at
+      ).getTime()
+
+    ) {
+
+      latestAttemptsMap[
+        attempt.exam_id
+      ] = attempt;
+    }
+  }
+);
+
+const latestAttempts =
+  Object.values(
+    latestAttemptsMap
+  ) as any[];
+
+// SORT NEWEST FIRST
+
+latestAttempts.sort(
+  (a: any, b: any) =>
+
+    new Date(
+      b.created_at
+    ).getTime()
+
+    -
+
+    new Date(
+      a.created_at
+    ).getTime()
+);
+
+// UPDATE ATTEMPTS
+
+setAttempts(
+  latestAttempts
+);
+
+// LIVE RANKS
+
 const rankMap: any = {};
 
-const examIds =
-  [
-    ...new Set(
-      attemptsData.map(
-        (a) =>
-          a.exam_id
-      )
-    ),
-  ];
-
-for (const examId of examIds) {
+for (const attempt of latestAttempts) {
 
   const {
     data: leaderboardData,
@@ -206,60 +272,57 @@ for (const examId of examIds) {
     .select("*")
     .eq(
       "exam_id",
-      examId
+      attempt.exam_id
     );
 
-  if (leaderboardData) {
+  if (!leaderboardData) {
+    continue;
+  }
 
-    const sortedAttempts =
-      leaderboardData.sort(
-        (a, b) => {
+  const sorted =
+    leaderboardData.sort(
+      (a, b) => {
 
-          // HIGHER SCORE FIRST
-
-          if (
-            b.score !==
-            a.score
-          ) {
-
-            return (
-              b.score -
-              a.score
-            );
-          }
-
-          // EARLIER SUBMISSION WINS
-
-          return (
-            new Date(
-              a.created_at
-            ).getTime() -
-
-            new Date(
-              b.created_at
-            ).getTime()
-          );
-        }
-      );
-
-    sortedAttempts.forEach(
-      (
-        item,
-        index
-      ) => {
+        // HIGHER SCORE FIRST
 
         if (
-          item.user_id ===
-          user.id
+          b.score !==
+          a.score
         ) {
 
-          rankMap[
-            examId
-          ] = index + 1;
+          return (
+            b.score -
+            a.score
+          );
         }
+
+        // EARLIER SUBMISSION WINS
+
+        return (
+
+          new Date(
+            a.created_at
+          ).getTime()
+
+          -
+
+          new Date(
+            b.created_at
+          ).getTime()
+        );
       }
     );
-  }
+
+  const rank =
+    sorted.findIndex(
+      (item) =>
+        item.user_id ===
+        user.id
+    ) + 1;
+
+  rankMap[
+    attempt.exam_id
+  ] = rank;
 }
 
 setRanks(rankMap);
@@ -586,10 +649,7 @@ return () =>
                       attempt.created_at
                     ).toLocaleString(
                       "en-IN",
-                      {
-                        timeZone:
-                          "Asia/Kolkata",
-                      }
+                      
                     )}
 
                   </p>
