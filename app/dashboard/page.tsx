@@ -72,10 +72,13 @@ export default function DashboardPage() {
       setLoading(true);
 
       const {
-        data: { user },
-      } = await supabase
-        .auth
-        .getUser();
+  data: sessionData,
+} = await supabase
+  .auth
+  .getSession();
+
+const user =
+  sessionData?.session?.user;
 
       // NOT LOGGED IN
 
