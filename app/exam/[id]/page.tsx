@@ -448,9 +448,6 @@ return () => {
   alreadyAttempted,
   router,
 ]);
-  // ANTI CHEAT EVENTS
-
-
 
   // TIMER
 
@@ -1316,33 +1313,28 @@ if (
 
 <div className="space-y-8 pb-44">
 
- {/* CURRENT QUESTION */}
+  {questions[currentQuestion] && (
 
-{questions[currentQuestion] && (
+    <div className="bg-white p-10 rounded-3xl border">
 
-  <QuestionCard
-    question={
-      questions[currentQuestion]
-    }
-    currentQuestion={
-      currentQuestion
-    }
-    totalQuestions={
-      questions.length
-    }
-    selectedAnswer={
-      answers[
-        questions[
-          currentQuestion
-        ]?.id
-      ]
-    }
-    selectAnswer={
-      selectAnswer
-    }
-  />
+      <h1 className="text-3xl font-bold mb-6">
 
-)}
+        Exam Working
+
+      </h1>
+
+      <p className="text-xl">
+
+        {
+          questions[currentQuestion]
+            ?.question
+        }
+
+      </p>
+
+    </div>
+
+  )}
 
 </div>
 
