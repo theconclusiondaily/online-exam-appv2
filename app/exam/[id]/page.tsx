@@ -932,16 +932,9 @@ if (
     return;
   }
 
-  setExamStarted(true);
-
-  localStorage.setItem(
-    `exam-start-${examId}`,
-    Date.now().toString()
-  );
-
-  // SAFE FULLSCREEN
-
   try {
+
+    // FULLSCREEN FIRST
 
     const isMobile =
       window.innerWidth < 768;
@@ -972,9 +965,9 @@ if (
     );
   }
 
-  // SAFE WAKELOCK
-
   try {
+
+    // WAKE LOCK
 
     if (
       "wakeLock" in navigator
@@ -998,7 +991,16 @@ if (
     );
   }
 
-  // DELAY ANTI CHEAT
+  // START EXAM LAST
+
+  setExamStarted(true);
+
+  localStorage.setItem(
+    `exam-start-${examId}`,
+    Date.now().toString()
+  );
+
+  // ENABLE ANTI CHEAT SAFELY
 
   setTimeout(() => {
 
