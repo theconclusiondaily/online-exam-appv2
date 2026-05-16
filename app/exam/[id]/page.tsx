@@ -155,6 +155,20 @@ const {
   examId,
   userId,
 });
+const [
+  fullscreenEnabled,
+  setFullscreenEnabled
+] = useState(false);
+
+const [
+  cameraEnabled,
+  setCameraEnabled
+] = useState(false);
+
+const [
+  antiCheatReady,
+  setAntiCheatReady
+] = useState(false);
 const liveStudents =
   useLiveStudents(
     examId
@@ -169,7 +183,8 @@ const liveStudents =
 });
 useAntiCheat({
 
-  antiCheatEnabled,
+ antiCheatEnabled:
+  antiCheatReady,
 
   violations,
 
@@ -435,162 +450,7 @@ return () => {
 ]);
   // ANTI CHEAT EVENTS
 
-  useEffect(() => {
 
-    const handleContextMenu =
-      (e: MouseEvent) => {
-
-        e.preventDefault();
-      };
-
-    const handleKeyDown =
-      (e: KeyboardEvent) => {
-
-        if (
-          !examStarted ||
-          !antiCheatEnabled
-        ) {
-          return;
-        }
-
-        const allowedKeys = [
-
-          "ArrowUp",
-          "ArrowDown",
-          "ArrowLeft",
-          "ArrowRight",
-          "Tab",
-        ];
-
-        if (
-          allowedKeys.includes(
-            e.key
-          )
-        ) {
-
-          return;
-        }
-
-        handleViolation(
-          "Keyboard usage detected"
-        );
-      };
-
-    const handleVisibility =
-  () => {
-
-    if (
-      submitted ||
-      isSubmitting
-    ) {
-      return;
-    }
-
-    if (
-      examStarted &&
-      antiCheatEnabled &&
-      document.hidden
-    ) {
-
-      handleViolation(
-        "Tab switching detected"
-      );
-    }
-  };
-
-   const handleBlur =
-  () => {
-
-    if (
-      submitted ||
-      isSubmitting
-    ) {
-      return;
-    }
-
-    if (
-      examStarted &&
-      antiCheatEnabled
-    ) {
-
-      handleViolation(
-        "Window focus lost"
-      );
-    }
-  };
-
-    const handleFullscreen =
-      () => {
-
-        if (
-          examStarted &&
-          antiCheatEnabled &&
-          !document.fullscreenElement
-        ) {
-
-          handleViolation(
-            "Fullscreen exited"
-          );
-        }
-      };
-
-    document.addEventListener(
-      "contextmenu",
-      handleContextMenu
-    );
-
-    document.addEventListener(
-      "keydown",
-      handleKeyDown
-    );
-
-    document.addEventListener(
-      "visibilitychange",
-      handleVisibility
-    );
-
-    window.addEventListener(
-      "blur",
-      handleBlur
-    );
-
-    document.addEventListener(
-      "fullscreenchange",
-      handleFullscreen
-    );
-
-    return () => {
-
-      document.removeEventListener(
-        "contextmenu",
-        handleContextMenu
-      );
-
-      document.removeEventListener(
-        "keydown",
-        handleKeyDown
-      );
-
-      document.removeEventListener(
-        "visibilitychange",
-        handleVisibility
-      );
-
-      window.removeEventListener(
-        "blur",
-        handleBlur
-      );
-
-      document.removeEventListener(
-        "fullscreenchange",
-        handleFullscreen
-      );
-    };
-
-  }, [
-    examStarted,
-    antiCheatEnabled,
-  ]);
 
   // TIMER
 
@@ -1060,87 +920,98 @@ if (
 
   async function startExam() {
 
+  if (
+    !cameraAllowed ||
+    !micAllowed
+  ) {
+
+    alert(
+      "Allow camera and microphone first"
+    );
+
+    return;
+  }
+
+  setExamStarted(true);
+
+  localStorage.setItem(
+    `exam-start-${examId}`,
+    Date.now().toString()
+  );
+
+  // SAFE FULLSCREEN
+
+  try {
+
+    const isMobile =
+      window.innerWidth < 768;
+
     if (
-      !cameraAllowed ||
-      !micAllowed
+
+      !isMobile &&
+
+      examContainerRef.current
+        ?.requestFullscreen
+
     ) {
 
-      alert(
-        "Allow camera and microphone first"
-      );
+      await examContainerRef
+        .current
+        .requestFullscreen();
 
-      return;
+      setFullscreenEnabled(
+        true
+      );
     }
 
-    setExamStarted(
+  } catch (error) {
+
+    console.error(
+      "Fullscreen failed",
+      error
+    );
+  }
+
+  // SAFE WAKELOCK
+
+  try {
+
+    if (
+      "wakeLock" in navigator
+    ) {
+
+      const lock =
+        await (
+          navigator as any
+        )
+          .wakeLock
+          .request("screen");
+
+      setWakeLock(lock);
+    }
+
+  } catch (error) {
+
+    console.error(
+      "WakeLock failed",
+      error
+    );
+  }
+
+  // DELAY ANTI CHEAT
+
+  setTimeout(() => {
+
+    setAntiCheatEnabled(
       true
     );
 
-    localStorage.setItem(
-      `exam-start-${examId}`,
-      Date.now().toString()
+    setAntiCheatReady(
+      true
     );
 
-    setTimeout(async () => {
-
-      try {
-
-        if (
-          examContainerRef.current
-            ?.requestFullscreen
-        ) {
-
-          await examContainerRef
-            .current
-            .requestFullscreen();
-        }
-
-      } catch (err) {
-
-        console.log(
-          "Fullscreen failed",
-          err
-        );
-      }
-
-      if (
-        "wakeLock" in
-        navigator
-      ) {
-
-        try {
-
-          const lock =
-            await (
-              navigator as any
-            )
-              .wakeLock
-              .request(
-                "screen"
-              );
-
-          setWakeLock(
-            lock
-          );
-
-        } catch (err) {
-
-          console.log(
-            err
-          );
-        }
-      }
-
-      setTimeout(() => {
-
-        setAntiCheatEnabled(
-          true
-        );
-
-      }, 5000);
-
-    }, 300);
-  }
+  }, 2000);
+}
 
   // TIMER FORMAT
 
@@ -1404,7 +1275,7 @@ if (
 
       {cameraAllowed && (
 
-        <div className="fixed bottom-24 right-4 w-24 h-32 md:w-48 md:h-60 bg-black rounded-2xl overflow-hidden shadow-2xl z-50 border-4 border-white">
+        <div className="fixed bottom-24 right-4 w-24 h-32 md:w-48 md:h-60 bg-black rounded-2xl overflow-hidden shadow-2xl z-30 border-4 border-white">
 
           <video
             ref={videoRef}
@@ -1475,7 +1346,7 @@ if (
 
 {/* LIVE EVENT FEED */}
 
-<div className="fixed left-4 top-1/2 -translate-y-1/2 w-72 z-40 hidden xl:block">
+<div className="fixed left-4 top-1/2 -translate-y-1/2 w-72 z-40 hidden 2xl:block">
 
   <LiveEventFeed />
 
