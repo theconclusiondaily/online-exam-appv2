@@ -5,7 +5,8 @@ import {
   useState,
 } from "react";
 import AdminGuard from "@/components/AdminGuard";
-import { supabase } from "@/lib/supabase";
+import { supabase }
+from "@/lib/supabase/client";
 import Papa from "papaparse";
 export default function QuestionsPage() {
 

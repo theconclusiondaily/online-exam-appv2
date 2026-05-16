@@ -11,7 +11,8 @@ import {
 
 import Link from "next/link";
 
-import { supabase } from "@/lib/supabase";
+import { supabase }
+from "@/lib/supabase/client";
 
 export default function DashboardPage() {
 
@@ -109,8 +110,7 @@ const user =
         )
         .single();
 
-      console.log(profile);
-
+      
       // FETCH ATTEMPTS
 
       const {
@@ -127,17 +127,8 @@ const user =
           ascending: false,
         });
 
-      console.log(
-        "ATTEMPTS:",
-        attemptsData
-      );
-
-      console.log(
-        "ATTEMPTS ERROR:",
-        attemptsError
-      );
-
-      if (attemptsData) {
+     
+        if (attemptsData) {
 
         setAttempts(
           attemptsData

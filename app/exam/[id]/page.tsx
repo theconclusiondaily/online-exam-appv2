@@ -11,7 +11,8 @@ import {
   useRouter,
 } from "next/navigation";
 
-import { supabase } from "@/lib/supabase";
+import { supabase }
+from "@/lib/supabase/client";
 import useExamAutosave from "@/hooks/useExamAutosave";
 import useLiveRank from "@/hooks/useLiveRank";
 import useLiveStudents from "@/hooks/useLiveStudents";
@@ -31,7 +32,6 @@ from "@/hooks/useAntiCheat";
 import {
   fetchExam,
   fetchQuestions,
-  fetchAttempt,
 } from "@/services/exam.service";
 import dynamic from "next/dynamic";
 export default function ExamPage() {
@@ -249,53 +249,38 @@ useAntiCheat({
       setUserId(user.id);
 await supabase
   .from("exam_attempts")
-  .upsert({
-    user_id: user.id,
-    exam_id: examId,
-    status: "in_progress",
-  });
-      // CHECK ATTEMPT
+  .upsert(
+    {
 
-      const {
-  data: existingAttempt,
-} = await fetchAttempt({
-  userId: user.id,
-  examId,
-});
+      user_id:
+        user.id,
 
-     if (existingAttempt) {
+      exam_id:
+        examId,
 
-  if (
-    existingAttempt.status ===
-    "submitted"
-  ) {
+      answers: {},
 
-    setAlreadyAttempted(
-      true
-    );
+      score: 0,
 
-    setScore(
-      existingAttempt.score
-    );
-setLoading(false);
-    return;
-  }
+      percentage: 0,
 
-  // RESTORE ATTEMPT
+      status:
+        "in_progress",
 
-  setAnswers(
-    existingAttempt.answers || {}
+      remaining_time:
+        1800,
+
+      last_saved_at:
+        new Date(),
+
+    },
+
+    {
+
+      onConflict:
+        "user_id,exam_id",
+    }
   );
-
-  setTimeLeft(
-    existingAttempt.remaining_time ||
-    1800
-  );
-
-  setExamStarted(true);
-setLoading(false);
-  return;
-}
 
       // FETCH EXAM
 
@@ -361,47 +346,93 @@ setLoading(false);
 
   useEffect(() => {
 
-    if (!examId) return;
+  if (!examId) {
 
-    const existingTab =
-      localStorage.getItem(
-        `exam-active-${examId}`
-      );
+    return;
+  }
 
-    if (
-      existingTab &&
-      !alreadyAttempted
-    ) {
+  const tabId =
+    sessionStorage.getItem(
+      "exam-tab-id"
+    ) ||
 
-      alert(
-        "Exam already active in another tab"
-      );
+    crypto.randomUUID();
 
-      router.push(
-        "/dashboard"
-      );
+  sessionStorage.setItem(
+    "exam-tab-id",
+    tabId
+  );
 
-      return;
-    }
-
-    localStorage.setItem(
-      `exam-active-${examId}`,
-      "true"
+  const existingTab =
+    localStorage.getItem(
+      `exam-active-${examId}`
     );
 
-    return () => {
+  if (
 
-      localStorage.removeItem(
-        `exam-active-${examId}`
-      );
-    };
+    existingTab &&
 
-  }, [
-    examId,
-    alreadyAttempted,
-    router,
-  ]);
+    existingTab !==
+      tabId &&
 
+    !alreadyAttempted
+
+  ) {
+
+    alert(
+      "Exam already active in another tab"
+    );
+
+    router.push(
+      "/dashboard"
+    );
+
+    return;
+  }
+
+  localStorage.setItem(
+    `exam-active-${examId}`,
+    tabId
+  );
+
+ const cleanup = () => {
+
+  const currentActive =
+    localStorage.getItem(
+      `exam-active-${examId}`
+    );
+
+  if (
+    currentActive ===
+    tabId
+  ) {
+
+    localStorage.removeItem(
+      `exam-active-${examId}`
+    );
+  }
+};
+
+window.addEventListener(
+  "beforeunload",
+  cleanup
+);
+
+return () => {
+
+  window.removeEventListener(
+    "beforeunload",
+    cleanup
+  );
+
+  cleanup();
+};
+
+}, [
+  examId,
+  alreadyAttempted,
+  router,
+]);
   // ANTI CHEAT EVENTS
 
   useEffect(() => {

@@ -11,7 +11,8 @@ import {
 
 import Link from "next/link";
 
-import { supabase } from "@/lib/supabase";
+import { supabase }
+from "@/lib/supabase/client";
 
 export default function AdminPage() {
 
@@ -71,10 +72,8 @@ export default function AdminPage() {
   .eq("email", user.email)
   .single();
 
-console.log("AUTH USER:", user);
-console.log("PROFILE:", profile);
-console.log("PROFILE ERROR:", error);
 
+  
 // PROFILE NOT FOUND
 
 if (!profile) {

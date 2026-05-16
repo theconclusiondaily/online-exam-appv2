@@ -7,7 +7,8 @@ import {
 
 import AdminGuard from "@/components/AdminGuard";
 
-import { supabase } from "@/lib/supabase";
+import { supabase }
+from "@/lib/supabase/client";
 
 export default function AnalyticsPage() {
 

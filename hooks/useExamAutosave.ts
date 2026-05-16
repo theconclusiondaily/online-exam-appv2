@@ -2,7 +2,8 @@
 
 import { useEffect } from "react";
 
-import { supabase } from "@/lib/supabase/client";
+import { supabase }
+from "@/lib/supabase/client";
 
 export default function useExamAutosave({
 
@@ -36,7 +37,8 @@ export default function useExamAutosave({
 
       if (
         !examStarted ||
-        !userId
+        !userId ||
+        !examId
       ) {
 
         return;
@@ -46,26 +48,50 @@ export default function useExamAutosave({
 
       await supabase
         .from("exam_attempts")
-        .update({
+        .upsert(
+          {
 
-          answers,
+            user_id:
+              userId,
 
-          remaining_time:
-            timeLeft,
+            exam_id:
+              examId,
 
-          last_saved_at:
-            new Date(),
+            answers,
 
-          score: liveScore,
+            remaining_time:
+              timeLeft,
 
-        })
-        .eq(
-          "user_id",
-          userId
-        )
-        .eq(
-          "exam_id",
-          examId
+            last_saved_at:
+              new Date(),
+
+            score:
+              liveScore,
+
+            percentage:
+              questionsLength > 0
+
+                ? Number(
+                    (
+                      (
+                        liveScore /
+                        questionsLength
+                      ) * 100
+                    ).toFixed(2)
+                  )
+
+                : 0,
+
+            status:
+              "in_progress",
+
+          },
+
+          {
+
+            onConflict:
+              "user_id,exam_id",
+          }
         );
 
       // UPDATE LEADERBOARD
@@ -74,28 +100,33 @@ export default function useExamAutosave({
         .from("leaderboard")
         .upsert({
 
-          user_id: userId,
+          user_id:
+            userId,
 
-          exam_id: examId,
+          exam_id:
+            examId,
 
-          score: liveScore,
+          score:
+            liveScore,
 
           correct_answers:
             liveScore,
 
-          percentile: Number(
-            (
-              (liveScore /
-                questionsLength) *
-              100
-            ).toFixed(2)
-          ),
+          percentile:
+            questionsLength > 0
+
+              ? Number(
+                  (
+                    (
+                      liveScore /
+                      questionsLength
+                    ) * 100
+                  ).toFixed(2)
+                )
+
+              : 0,
 
         });
-
-      console.log(
-        "Autosaved"
-      );
     }
 
     const interval =

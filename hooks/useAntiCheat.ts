@@ -46,10 +46,7 @@ useAntiCheat({
       reason: string
     ) {
 
-      console.log(
-        "Violation:",
-        reason
-      );
+      
 
       setViolations(
         (prev) => {

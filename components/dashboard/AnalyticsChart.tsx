@@ -15,7 +15,8 @@ import {
   CartesianGrid,
 } from "recharts";
 
-import { supabase } from "@/lib/supabase/client";
+import { supabase }
+from "@/lib/supabase/client";
 
 export default function AnalyticsChart() {
 

@@ -7,7 +7,8 @@ import {
 
 import { Trophy } from "lucide-react";
 
-import { supabase } from "@/lib/supabase/client";
+import { supabase }
+from "@/lib/supabase/client";
 import { motion } from "framer-motion";
 
 export default function LeaderboardTable() {
