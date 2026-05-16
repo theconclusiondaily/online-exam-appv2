@@ -240,122 +240,129 @@ useAntiCheat({
     );
   }
 
-  // INITIALIZE
-
   useEffect(() => {
 
-    async function initializeExam() {
+  async function initializeExam() {
 
-      const {
-        data: { user },
-      } = await supabase
-        .auth
-        .getUser();
+    const {
+      data: { user },
+    } = await supabase
+      .auth
+      .getUser();
 
-      if (!user) {
+    if (!user) {
 
-        router.push(
-          "/login"
+      router.push(
+        "/login"
+      );
+
+      return;
+    }
+
+    setUserId(user.id);
+
+    await supabase
+      .from("exam_attempts")
+      .upsert(
+        {
+
+          user_id:
+            user.id,
+
+          exam_id:
+            examId,
+
+          answers: {},
+
+          score: 0,
+
+          percentage: 0,
+
+          status:
+            "in_progress",
+
+          remaining_time:
+            1800,
+
+          last_saved_at:
+            new Date(),
+
+        },
+
+        {
+
+          onConflict:
+            "user_id,exam_id",
+        }
+      );
+
+    // FETCH EXAM
+
+    const {
+      data: examData,
+    } = await fetchExam(
+      examId
+    );
+
+    if (examData) {
+
+      setExamInfo(
+        examData
+      );
+
+      if (
+        examData?.duration
+      ) {
+
+        setTimeLeft(
+          examData.duration * 60
+        );
+      }
+    }
+
+    // FETCH QUESTIONS
+
+    const {
+      data,
+    } = await fetchQuestions(
+      examId
+    );
+
+    if (data) {
+
+      setQuestions(data);
+
+      const savedAnswers =
+        localStorage.getItem(
+          `exam-answers-${examId}`
         );
 
-        return;
-      }
+      if (savedAnswers) {
 
-      setUserId(user.id);
-await supabase
-  .from("exam_attempts")
-  .upsert(
-    {
-
-      user_id:
-        user.id,
-
-      exam_id:
-        examId,
-
-      answers: {},
-
-      score: 0,
-
-      percentage: 0,
-
-      status:
-        "in_progress",
-
-      remaining_time:
-        1800,
-
-      last_saved_at:
-        new Date(),
-
-    },
-
-    {
-
-      onConflict:
-        "user_id,exam_id",
-    }
-  );
-
-      // FETCH EXAM
-
-      const {
-  data: examData,
-} = await fetchExam(
-  examId
-);
-
-      if (examData) {
-
-        setExamInfo(
-          examData
+        setAnswers(
+          JSON.parse(
+            savedAnswers
+          )
         );
       }
-        if (examData?.duration) {
 
-  setTimeLeft(
-    examData.duration * 60
-  );
-}
-      // FETCH QUESTIONS
+    } else {
 
-      const {
-  data,
-  error,
-} = await fetchQuestions(
-  examId
-);
-
-      if (data) {
-
-        setQuestions(data);
-
-        const savedAnswers =
-  localStorage.getItem(
-    `exam-answers-${examId}`
-  );
-
-if (savedAnswers) {
-
-  setAnswers(
-    JSON.parse(
-      savedAnswers
-    )
-  );
-}
-setLoading(false);
-      }
+      setQuestions([]);
     }
 
-    if (examId) {
+    setLoading(false);
+  }
 
-      initializeExam();
-    }
+  if (examId) {
 
-  }, [
-    examId,
-    router,
-  ]);
+    initializeExam();
+  }
+
+}, [
+  examId,
+  router,
+]);
 
     // MULTIPLE TAB PROTECTION
 
