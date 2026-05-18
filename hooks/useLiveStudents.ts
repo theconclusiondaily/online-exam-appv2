@@ -28,21 +28,47 @@ export default function useLiveStudents(
         data,
         error,
       } = await supabase
-        .from("exam_attempts")
+
+        .from(
+          "exam_live_status"
+        )
+
         .select("*")
+
         .eq(
           "exam_id",
           examId
         )
-        
-        .eq(
-          "status",
-          "in_progress"
-        )
-        
-        .eq("submitted", false);
 
-      if (error || !data) {
+        .eq(
+          "submitted",
+          false
+        )
+
+        .gte(
+
+          "updated_at",
+
+          new Date(
+            Date.now() - 15000
+          ).toISOString()
+        );
+
+      console.log(
+        "LIVE STUDENTS:",
+        data
+      );
+
+      console.log(
+        "LIVE ERROR:",
+        error
+      );
+
+      if (
+        error ||
+        !data
+      ) {
+
         return;
       }
 
@@ -55,12 +81,16 @@ export default function useLiveStudents(
 
     const interval =
       setInterval(
+
         fetchLiveStudents,
-        10000
+
+        5000
       );
 
     return () =>
-      clearInterval(interval);
+      clearInterval(
+        interval
+      );
 
   }, [examId]);
 

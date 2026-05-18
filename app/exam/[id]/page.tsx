@@ -805,6 +805,29 @@ localStorage.setItem(
       total_questions:
         questions.length,
     });
+    await supabase
+
+  .from(
+    "exam_live_status"
+  )
+
+  .update({
+
+    submitted: true,
+
+    fullscreen: false,
+
+  })
+
+  .eq(
+    "exam_id",
+    examId
+  )
+
+  .eq(
+    "user_id",
+    userId
+  );
 console.log(
   "RESULT SAVED"
 );
@@ -996,7 +1019,23 @@ if (
         </div>
 
       </div>
-<div className="fixed bottom-4 left-4 w-64 z-50">
+<div
+  className="
+    fixed
+
+    bottom-2
+    right-2
+
+    w-24
+    sm:w-32
+    md:w-48
+    lg:w-64
+
+    z-50
+
+    opacity-90
+  "
+>
 
   <StudentCameraStream
     stream={cameraStream}
