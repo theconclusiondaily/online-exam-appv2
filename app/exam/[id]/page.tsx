@@ -1021,20 +1021,25 @@ if (
       </div>
 <div
   className="
-    fixed
+fixed
 
-    bottom-2
-    right-2
+top-2
+right-2
 
-    w-24
-    sm:w-32
-    md:w-48
-    lg:w-64
+w-20
+sm:w-24
+md:w-40
+lg:w-56
 
-    z-50
+z-40
 
-    opacity-90
-  "
+rounded-2xl
+overflow-hidden
+shadow-2xl
+
+opacity-90
+border-2 border-white
+"
 >
 
   <StudentCameraStream
