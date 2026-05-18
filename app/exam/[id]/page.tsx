@@ -1141,7 +1141,7 @@ border-2 border-white
             currentQuestion === 0
           }
 
-          className="px-6 py-3 rounded-2xl bg-gray-200 font-bold disabled:opacity-50"
+          className="px-6 py-3 rounded-2xl bg-black-200 font-bold disabled:opacity-50"
         >
           Previous
         </button>
@@ -1180,11 +1180,23 @@ border-2 border-white
 
       </div>
 
-      <div className="fixed bottom-24 right-4 w-80 z-20 hidden 2xl:block">
+      <div
+  className="
+    hidden lg:block
 
-        <LiveEventFeed />
+    fixed
+    bottom-4
+    right-4
 
-      </div>
+    z-30
+
+    w-[320px]
+  "
+>
+
+  <LiveEventFeed />
+
+</div>
 
     </div>
   );
