@@ -613,8 +613,12 @@ useEffect(() => {
 
         if (updated >= 2) {
 
-          submitExam();
-        }
+  setTimeout(() => {
+
+    submitExam();
+
+  }, 100);
+}
 
         return updated;
       }
