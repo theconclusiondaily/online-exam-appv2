@@ -693,20 +693,24 @@ function resumeExam() {
   .requestFullscreen();
       }
 
-      document.addEventListener(
-        "fullscreenchange",
-        () => {
+     useEffect(() => {
 
-          if (
-            !document.fullscreenElement
-          ) {
+  return () => {
 
-            handleViolation(
-              "Fullscreen exited"
-            );
-          }
-        }
-      );
+    if (
+      streamRef.current
+    ) {
+
+      streamRef.current
+        .getTracks()
+        .forEach(
+          (track) =>
+            track.stop()
+        );
+    }
+  };
+
+}, []);
 
     } catch (error) {
 
@@ -801,7 +805,9 @@ localStorage.setItem(
       total_questions:
         questions.length,
     });
-
+console.log(
+  "RESULT SAVED"
+);
     localStorage.setItem(
       `exam-submitted-${examId}-${userId}`,
       "true"
@@ -837,6 +843,12 @@ if (
       (track) =>
         track.stop()
     );
+}
+if (
+  document.fullscreenElement
+) {
+
+  await document.exitFullscreen();
 }
     router.push(
       "/dashboard"

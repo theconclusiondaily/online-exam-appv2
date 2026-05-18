@@ -34,10 +34,13 @@ export default function useLiveStudents(
           "exam_id",
           examId
         )
+        
         .eq(
           "status",
           "in_progress"
-        );
+        )
+        
+        .eq("submitted", false);
 
       if (error || !data) {
         return;
