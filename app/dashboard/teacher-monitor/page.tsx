@@ -445,32 +445,36 @@ const [videoStreams,
             </div>
           )
         )}
-<div className="mt-12">
+        
 
-  <h2 className="text-3xl font-bold mb-6">
-    Live Webcam Feeds
-  </h2>
-<div className="pointer-events-none">
-  
-</div>
-  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      </div>
 
-    {Object.entries(
-      videoStreams
-    ).map(
-      ([id, data]: any) => (
+      {/* LIVE WEBCAM FEEDS */}
 
-        <StudentVideoTile
-          key={id}
-          stream={data.stream}
-          studentName={data.name}
-        />
-      )
-    )}
+      <div className="mt-12">
 
-  </div>
+        <h2 className="text-3xl font-bold mb-6">
 
-</div>
+          Live Webcam Feeds
+
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+
+          {Object.entries(
+            videoStreams
+          ).map(
+            ([id, data]: any) => (
+
+              <StudentVideoTile
+                key={id}
+                stream={data.stream}
+                studentName={data.name}
+              />
+            )
+          )}
+
+        </div>
 
       </div>
 
