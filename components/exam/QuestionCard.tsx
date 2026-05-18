@@ -71,30 +71,33 @@ function QuestionCard({
             question.option_b,
             question.option_c,
             question.option_d,
-          ].map((option) => (
+          ].map((
+  option,
+  index
+) => (
 
             <button
-              key={option}
+  key={`${option}-${index}`}
 
-              onClick={() =>
-                selectAnswer(
-                  question.id,
-                  option
-                )
-              }
+  onClick={() =>
+    selectAnswer(
+      question.id,
+      option
+    )
+  }
 
-              className={`block w-full text-left border p-5 rounded-2xl transition-all text-lg
+  className={`block w-full text-left border p-5 rounded-2xl transition-colors text-lg
 
-                ${
-                  selectedAnswer ===
-                  option
+    ${
+      selectedAnswer ===
+      option
 
-                    ? "bg-blue-500 text-white border-blue-500"
+        ? "bg-blue-500 text-white border-blue-500"
 
-                    : "bg-white hover:border-blue-400"
-                }
-              `}
-            >
+        : "bg-white hover:border-blue-400"
+    }
+  `}
+>
 
               {option}
 

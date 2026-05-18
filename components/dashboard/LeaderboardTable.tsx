@@ -29,24 +29,47 @@ const [lastUpdated, setLastUpdated] =
 
       // FIND LIVE EXAM
 
-      const {
-        data: currentLiveExam,
-      } = await supabase
-        .from("exams")
-        .select("*")
-        .eq("status", "live")
-        .single();
+const now =
+  new Date()
+    .toISOString();
 
-      if (!currentLiveExam) {
+const {
+  data: currentLiveExam,
+  error: liveExamError,
+} = await supabase
 
-        setLeaders([]);
-        setLiveExam(null);
-        setLoading(false);
+  .from("exams")
 
-        return;
-      }
+  .select("*")
 
-      setLiveExam(currentLiveExam);
+  .lte(
+    "start_time",
+    now
+  )
+
+  .gte(
+    "end_time",
+    now
+  )
+
+  .order(
+    "start_time",
+    {
+      ascending: true,
+    }
+  )
+
+  .limit(1)
+
+  .maybeSingle();
+
+console.log(
+  currentLiveExam
+);
+
+console.log(
+  liveExamError
+);
 
       // FETCH ONLY LIVE EXAM LEADERBOARD
 

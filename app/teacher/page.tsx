@@ -20,7 +20,9 @@ import {
 
 import { supabase }
 from "@/lib/supabase/client";
-
+import {
+  updateExamStatuses,
+} from "@/lib/examStatus";
 export default function TeacherDashboard() {
 
   const router =
@@ -49,11 +51,14 @@ export default function TeacherDashboard() {
   const [recentExams,
     setRecentExams] =
     useState<any[]>([]);
+    const [liveExams,
+  setLiveExams] =
+  useState<any[]>([]);
 
   useEffect(() => {
 
     async function loadTeacherDashboard() {
-
+await updateExamStatuses();
       const {
         data: { user },
       } = await supabase
@@ -133,27 +138,84 @@ export default function TeacherDashboard() {
 
       // EXAMS
 
-      const {
-        data: exams,
-      } = await supabase
-        .from("exams")
-        .select("*")
-        .eq(
-          "institute_id",
-          instituteId
-        )
-        .order("created_at", {
-          ascending: false,
-        });
+     const {
+  data: exams,
+  error: examsError,
+} = await supabase
 
-      setExamsCount(
-        exams?.length || 0
-      );
+  .from("exams")
 
-      setRecentExams(
-        exams || []
-      );
+  .select("*")
 
+  .eq(
+    "institute_id",
+    instituteId
+  )
+
+  .order(
+    "start_time",
+    {
+      ascending: true,
+    }
+  );
+
+console.log(exams);
+
+console.log(examsError);
+
+setExamsCount(
+  exams?.length || 0
+);
+
+setRecentExams(
+  exams || []
+);
+const now =
+  new Date()
+    .toISOString();
+
+const {
+  data: liveExamsData,
+  error: liveExamsError,
+} = await supabase
+
+  .from("exams")
+
+  .select("*")
+
+  .eq(
+    "institute_id",
+    instituteId
+  )
+
+  .lte(
+    "start_time",
+    now
+  )
+
+  .gte(
+    "end_time",
+    now
+  )
+
+  .order(
+    "start_time",
+    {
+      ascending: true,
+    }
+  );
+
+console.log(
+  liveExamsData
+);
+
+console.log(
+  liveExamsError
+);
+
+setLiveExams(
+  liveExamsData || []
+);
       // ATTEMPTS
 
       const examIds =
@@ -308,7 +370,33 @@ export default function TeacherDashboard() {
             </p>
 
           </Link>
+<Link
+  href="/dashboard/teacher-monitor"
+>
 
+  <div className="bg-white border rounded-3xl p-8 shadow-sm hover:shadow-lg transition-all cursor-pointer">
+
+    <h2 className="text-2xl font-bold mb-3">
+
+      Live Monitoring Dashboard
+
+    </h2>
+
+    <p className="text-gray-600 mb-4">
+
+      Monitor students live during exams
+
+    </p>
+
+    <div className="text-blue-600 font-bold">
+
+      Open Dashboard →
+
+    </div>
+
+  </div>
+
+</Link>
           <Link
             href="/teacher/questions"
             className="bg-white border rounded-3xl p-6 shadow-sm hover:shadow-md transition"
@@ -367,78 +455,243 @@ export default function TeacherDashboard() {
           </Link>
 
         </div>
+{/* LIVE EXAMS */}
 
-        {/* RECENT EXAMS */}
+<div className="bg-white/80 backdrop-blur-xl border border-white/30 rounded-3xl p-6 shadow-xl mb-10">
 
-        <div className="bg-white/80 backdrop-blur-xl border border-white/30 rounded-3xl p-6 shadow-xl">
+  <div className="flex items-center justify-between mb-6">
 
-          <h2 className="text-3xl font-bold mb-6">
+    <h2 className="text-3xl font-bold">
 
-            Recent Exams
+      Live Exams
 
-          </h2>
+    </h2>
 
-          <div className="space-y-5">
+    <div className="bg-green-100 text-green-700 border border-green-300 px-4 py-2 rounded-2xl font-bold">
 
-            {recentExams.map(
-              (exam) => (
+      {liveExams.length} Live
 
-                <div
-                  key={exam.id}
-                  className="border rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
-                >
+    </div>
 
-                  <div>
+  </div>
 
-                    <h3 className="text-2xl font-bold mb-2">
+  <div className="space-y-5">
 
-                      {exam.title}
+    {liveExams.map(
+      (exam) => (
 
-                    </h3>
+        <div
+          key={exam.id}
+          className="border rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+        >
 
-                    <p className="text-gray-600">
+          <div>
 
-                      Reward:
-                      {" "}
-                      ₹
-                      {exam.reward_pool || 0}
+           <h3 className="text-2xl font-bold mb-2">
 
-                    </p>
+  {exam.title}
 
-                  </div>
+</h3>
 
-                  <div className="text-gray-600">
+<div
+  className={`
+    inline-block px-4 py-2 rounded-xl font-bold text-sm mb-3
 
-                    {new Date(
-                      exam.start_time
-                    ).toLocaleString(
-                      "en-IN",
-                      {
-                        timeZone:
-                          "Asia/Kolkata",
-                      }
-                    )}
+    ${
+      exam.status === "live"
+        ? "bg-green-100 text-green-700"
 
-                  </div>
+        : exam.status === "scheduled"
 
-                </div>
+        ? "bg-blue-100 text-blue-700"
 
-              )
-            )}
+        : exam.status === "completed"
 
-            {recentExams.length === 0 && (
+        ? "bg-gray-200 text-gray-700"
 
-              <div className="text-center text-gray-500 py-10">
+        : "bg-yellow-100 text-yellow-700"
+    }
+  `}
+>
 
-                No exams created yet
+  {exam.status?.toUpperCase()}
 
-              </div>
+</div>
+
+<p className="text-gray-600">
+
+  Reward:
+
+              Reward:
+              {" "}
+              ₹
+              {exam.reward_pool || 0}
+
+            </p>
+
+          </div>
+
+          <div className="text-green-600 font-bold">
+
+            LIVE NOW
+
+          </div>
+
+        </div>
+
+      )
+    )}
+
+    {liveExams.length === 0 && (
+
+      <div className="text-center text-gray-500 py-10">
+
+        No live exams right now
+
+      </div>
+
+    )}
+    
+
+  </div>
+
+</div>
+{/* RECENT EXAMS */}
+
+<div className="bg-white/80 backdrop-blur-xl border border-white/30 rounded-3xl p-6 shadow-xl">
+
+  <h2 className="text-3xl font-bold mb-6">
+
+    Recent Exams
+
+  </h2>
+
+  <div className="space-y-5">
+
+    {recentExams.map(
+      (exam) => (
+
+        <div
+          key={exam.id}
+          className="border rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+        >
+
+          <div>
+
+            <h3 className="text-2xl font-bold mb-2">
+
+              {exam.title}
+
+            </h3>
+
+            <div
+              className={`
+                inline-block px-4 py-2 rounded-xl font-bold text-sm mb-3
+
+                ${
+                  exam.status === "live"
+                    ? "bg-green-100 text-green-700"
+
+                    : exam.status === "scheduled"
+
+                    ? "bg-blue-100 text-blue-700"
+
+                    : exam.status === "completed"
+
+                    ? "bg-gray-200 text-gray-700"
+
+                    : "bg-yellow-100 text-yellow-700"
+                }
+              `}
+            >
+
+              {exam.status?.toUpperCase()}
+
+            </div>
+
+            <p className="text-gray-600">
+
+              Reward:
+              {" "}
+              ₹
+              {exam.reward_pool || 0}
+
+            </p>
+
+          </div>
+
+          <div className="flex flex-col items-end gap-3">
+
+            <div className="text-gray-600">
+
+              {new Date(
+                exam.start_time
+              ).toLocaleString(
+                "en-IN",
+                {
+                  timeZone:
+                    "Asia/Kolkata",
+                }
+              )}
+
+            </div>
+
+            {!exam.published && (
+
+              <button
+
+                onClick={async () => {
+
+                  await supabase
+
+                    .from("exams")
+
+                    .update({
+
+                      published: true,
+
+                      status:
+                        "scheduled",
+
+                    })
+
+                    .eq(
+                      "id",
+                      exam.id
+                    );
+
+                  window.location.reload();
+                }}
+
+                className="bg-blue-600 text-white px-5 py-2 rounded-xl font-bold"
+              >
+
+                Publish
+
+              </button>
 
             )}
 
           </div>
 
         </div>
+
+      )
+    )}
+
+    {recentExams.length === 0 && (
+
+      <div className="text-center text-gray-500 py-10">
+
+        No exams created yet
+
+      </div>
+
+    )}
+
+  </div>
+
+</div>
 
       </div>
 

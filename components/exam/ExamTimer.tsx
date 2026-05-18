@@ -1,41 +1,101 @@
 "use client";
 
-import { Clock3 }
-from "lucide-react";
+import React, {
+  useEffect,
+  useState,
+} from "react";
 
-import { memo }
-from "react";
+type Props = {
 
-type ExamTimerProps = {
+  initialTime: number;
 
-  timeLeft: number;
-
-  formatTime: (
-    seconds: number
-  ) => string;
+  onTimeUp: () => void;
 };
 
 function ExamTimer({
-  timeLeft,
-  formatTime,
-}: ExamTimerProps) {
+
+  initialTime,
+
+  onTimeUp,
+
+}: Props) {
+
+  const [timeLeft,
+    setTimeLeft] =
+    useState(initialTime);
+
+  useEffect(() => {
+
+    const interval =
+      setInterval(() => {
+
+        setTimeLeft(
+          (prev) => {
+
+            if (prev <= 1) {
+
+              clearInterval(
+                interval
+              );
+
+              onTimeUp();
+
+              return 0;
+            }
+
+            return prev - 1;
+          }
+        );
+
+      }, 1000);
+
+    return () =>
+      clearInterval(
+        interval
+      );
+
+  }, [onTimeUp]);
+
+  function formatTime(
+    seconds: number
+  ) {
+
+    const mins =
+      Math.floor(
+        seconds / 60
+      );
+
+    const secs =
+      seconds % 60;
+
+    return `${mins}:${secs
+      .toString()
+      .padStart(
+        2,
+        "0"
+      )}`;
+  }
 
   return (
 
-    <div className="bg-red-500/20 border border-red-500/30 px-5 py-3 rounded-2xl flex items-center gap-3">
+    <div className="bg-red-500/20 border border-red-500/30 px-5 py-3 rounded-2xl">
 
-      <Clock3 className="text-red-400" />
+      <p className="text-sm text-red-700">
 
-      <span className="text-2xl font-bold text-red-300">
+        Time Left
+
+      </p>
+
+      <h2 className="text-2xl font-bold text-red-900">
 
         {formatTime(timeLeft)}
 
-      </span>
+      </h2>
 
     </div>
   );
 }
 
-export default memo(
+export default React.memo(
   ExamTimer
 );

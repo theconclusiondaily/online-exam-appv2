@@ -33,7 +33,9 @@ export default function LeaderboardPage() {
   const [currentUserId,
     setCurrentUserId] =
     useState("");
-
+const [liveUpdate,
+  setLiveUpdate] =
+  useState(false);
   // FETCH LEADERBOARD
 
   async function fetchLeaderboard() {
@@ -120,21 +122,59 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
 
-    fetchLeaderboard();
+  fetchLeaderboard();
 
-    const interval =
-      setInterval(() => {
+  // REALTIME SUBSCRIPTION
 
-        fetchLeaderboard();
+  const channel =
+    supabase
 
-      }, 5000);
+      .channel(
+        `leaderboard-${examId}`
+      )
 
-    return () =>
-      clearInterval(
-        interval
-      );
+      .on(
+        "postgres_changes",
 
-  }, [examId]);
+        {
+
+          event: "*",
+
+          schema: "public",
+
+          table:
+            "exam_attempts",
+
+          filter:
+            `exam_id=eq.${examId}`,
+        },
+
+        () => {
+
+          setLiveUpdate(true);
+
+          fetchLeaderboard();
+
+          setTimeout(() => {
+
+            setLiveUpdate(
+              false
+            );
+
+          }, 1500);
+        }
+      )
+
+      .subscribe();
+
+  return () => {
+
+    supabase.removeChannel(
+      channel
+    );
+  };
+
+}, [examId]);
 
   return (
 
@@ -155,7 +195,27 @@ export default function LeaderboardPage() {
             </h1>
 
             <p className="text-gray-600">
+<div className="flex items-center gap-3 mt-3">
 
+  <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
+
+  <p className="text-green-600 font-bold">
+
+    LIVE LEADERBOARD
+
+  </p>
+
+  {liveUpdate && (
+
+    <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-xl text-sm font-bold animate-pulse">
+
+      Updating...
+
+    </div>
+
+  )}
+
+</div>
               Total Participants:
               {" "}
               {attempts.length}
@@ -213,11 +273,17 @@ export default function LeaderboardPage() {
 
                   <div>
 
-                    <h2 className="text-3xl font-bold">
+                    <h2 className="text-3xl font-bold flex items-center gap-3">
 
-                      #{index + 1}
+  {index === 0 && "🥇"}
 
-                    </h2>
+  {index === 1 && "🥈"}
+
+  {index === 2 && "🥉"}
+
+  #{index + 1}
+
+</h2>
 
                     <p className="text-gray-600 mt-2">
 
@@ -253,7 +319,27 @@ export default function LeaderboardPage() {
                     </p>
 
                     <p className="text-sm text-gray-500 mt-1">
+<div className="flex flex-wrap justify-end gap-2 mt-4">
 
+  <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-xl text-sm font-bold">
+
+    Accuracy:
+    {" "}
+
+    {attempt.accuracy || 0}%
+
+  </div>
+
+  <div className="bg-green-100 text-green-700 px-3 py-1 rounded-xl text-sm font-bold">
+
+    Percentage:
+    {" "}
+
+    {attempt.percentage || 0}%
+
+  </div>
+
+</div>
                       Score
 
                     </p>

@@ -50,42 +50,81 @@ const [duration,
   const [endTime,
     setEndTime] =
     useState("");
+  const [questions,
+  setQuestions] =
+  useState<any[]>([]);
 
-  // FETCH INSTITUTES
+const [selectedQuestions,
+  setSelectedQuestions] =
+  useState<string[]>([]);
 
-  useEffect(() => {
+const [subjectFilter,
+  setSubjectFilter] =
+  useState("");
+useEffect(() => {
 
-    async function fetchInstitutes() {
+  async function fetchData() {
 
-      const {
-        data,
-        error,
-      } = await supabase
-        .from("institutes")
-        .select("*")
-        .order("name", {
+    // FETCH INSTITUTES
+
+    const {
+      data,
+      error,
+    } = await supabase
+
+      .from("institutes")
+
+      .select("*")
+
+      .order(
+        "name",
+        {
           ascending: true,
-        });
+        }
+      );
 
-      console.log(data);
-      console.log(error);
+    console.log(data);
 
-      if (data) {
+    console.log(error);
 
-        setInstitutes(
-          data
-        );
-      }
+    if (data) {
+
+      setInstitutes(
+        data
+      );
     }
 
-    fetchInstitutes();
+    // FETCH QUESTIONS
 
-  }, []);
+    const {
+      data: questionData,
+    } = await supabase
 
+      .from("questions")
+
+      .select("*")
+
+      .order(
+        "created_at",
+        {
+          ascending: false,
+        }
+      );
+
+    setQuestions(
+      questionData || []
+    );
+  }
+
+  fetchData();
+
+}, []);
   // CREATE EXAM
 
   async function createExam() {
-
+const {
+  data: { user },
+} = await supabase.auth.getUser();
     if (
   !title ||
   !startTime ||
@@ -101,34 +140,57 @@ const [duration,
       return;
     }
 
-    const { error } =
-      await supabase
-        .from("exams")
-        .insert([
-          {
-            title,
+   const {
+  data: createdExam,
+  error,
+} = await supabase
 
-            description,
+  .from("exams")
 
-            reward_pool:
-              rewardPool,
+  .insert([
+    {
 
-              duration:
-  Number(duration),
-            institute_id:
-              selectedInstitute,
+      title,
 
-            start_time:
-              new Date(
-                startTime
-              ).toISOString(),
+      description,
 
-            end_time:
-              new Date(
-                endTime
-              ).toISOString(),
-          },
-        ]);
+      reward_pool:
+        rewardPool,
+
+      duration:
+        Number(duration),
+
+      institute_id:
+        selectedInstitute,
+
+      created_by:
+        user?.id,
+
+      start_time:
+        new Date(
+          startTime
+        ).toISOString(),
+
+      end_time:
+        new Date(
+          endTime
+        ).toISOString(),
+
+      status:
+        "draft",
+
+      published:
+        false,
+
+      cancelled:
+        false,
+
+    },
+  ])
+
+  .select()
+
+  .single();
 
     if (error) {
 
@@ -148,6 +210,31 @@ const [duration,
     router.push(
       "/admin"
     );
+    if (
+  selectedQuestions.length > 0
+) {
+
+  const mappings =
+    selectedQuestions.map(
+      (questionId) => ({
+
+        exam_id:
+          createdExam.id,
+
+        question_id:
+          questionId,
+
+      })
+    );
+
+  await supabase
+
+    .from(
+      "exam_questions"
+    )
+
+    .insert(mappings);
+}
   }
 
   return (
@@ -332,7 +419,151 @@ const [duration,
               />
 
             </div>
+{/* QUESTION BANK */}
 
+<div className="border rounded-3xl p-5 bg-gray-50">
+
+  <div className="flex items-center justify-between mb-5">
+
+    <h2 className="text-2xl font-bold">
+
+      Question Bank
+
+    </h2>
+
+    <div className="bg-black text-white px-4 py-2 rounded-xl font-bold">
+
+      {
+        selectedQuestions.length
+      }
+      {" "}
+      Selected
+
+    </div>
+
+  </div>
+
+  <input
+    type="text"
+    placeholder="Filter by Subject"
+    value={subjectFilter}
+    onChange={(e) =>
+      setSubjectFilter(
+        e.target.value
+      )
+    }
+    className="w-full border rounded-2xl p-4 mb-5"
+  />
+
+  <div className="max-h-[400px] overflow-y-auto space-y-4">
+
+    {questions
+
+      .filter((q) =>
+
+        !subjectFilter ||
+
+        q.subject
+          ?.toLowerCase()
+          .includes(
+            subjectFilter.toLowerCase()
+          )
+      )
+
+      .map((q) => (
+
+        <div
+          key={q.id}
+          className="border rounded-2xl p-4 bg-white"
+        >
+
+          <div className="flex justify-between gap-4">
+
+            <div>
+
+              <p className="font-bold mb-2">
+
+                {q.question}
+
+              </p>
+
+              <div className="flex flex-wrap gap-2 text-sm">
+
+                <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-xl">
+
+                  {q.subject}
+
+                </div>
+
+                <div
+                  className={`
+                    px-3 py-1 rounded-xl
+
+                    ${
+                      q.difficulty === "easy"
+                        ? "bg-green-100 text-green-700"
+
+                        : q.difficulty === "hard"
+
+                        ? "bg-red-100 text-red-700"
+
+                        : "bg-yellow-100 text-yellow-700"
+                    }
+                  `}
+                >
+
+                  {q.difficulty}
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <input
+              type="checkbox"
+
+              checked={
+                selectedQuestions.includes(
+                  q.id
+                )
+              }
+
+              onChange={(e) => {
+
+                if (
+                  e.target.checked
+                ) {
+
+                  setSelectedQuestions([
+                    ...selectedQuestions,
+                    q.id,
+                  ]);
+
+                } else {
+
+                  setSelectedQuestions(
+
+                    selectedQuestions.filter(
+                      (id) =>
+                        id !== q.id
+                    )
+                  );
+                }
+              }}
+
+              className="w-6 h-6"
+            />
+
+          </div>
+
+        </div>
+
+      ))}
+
+  </div>
+
+</div>
             {/* BUTTON */}
 
             <button

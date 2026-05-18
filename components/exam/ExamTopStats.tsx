@@ -1,50 +1,26 @@
 "use client";
 
-import { memo } from "react";
+import React from "react";
 
 import ExamTimer
 from "./ExamTimer";
 
 type Props = {
 
-  timeLeft: number;
-
-  formatTime: (
-    seconds: number
-  ) => string;
-
-  liveScore: number;
-
-  liveRank:
-    number | null;
-
-  previousRank:
-    number | null;
-
-  topScore: number;
-
   liveStudents: number;
 
   violations: number;
+
+  onTimeUp: () => void;
 };
 
 function ExamTopStats({
 
-  timeLeft,
-
-  formatTime,
-
-  liveScore,
-
-  liveRank,
-
-  previousRank,
-
-  topScore,
-
   liveStudents,
 
   violations,
+
+  onTimeUp,
 
 }: Props) {
 
@@ -55,109 +31,11 @@ function ExamTopStats({
       {/* TIMER */}
 
       <ExamTimer
-        timeLeft={timeLeft}
-        formatTime={formatTime}
+        initialTime={1800}
+        onTimeUp={
+          onTimeUp
+        }
       />
-
-      {/* LIVE SCORE */}
-
-      <div className="bg-blue-500/20 border border-blue-500/30 px-5 py-3 rounded-2xl">
-
-        <p className="text-sm text-blue-700">
-
-          Live Score
-
-        </p>
-
-        <h2 className="text-2xl font-bold text-blue-900">
-
-          {liveScore}
-
-        </h2>
-
-      </div>
-
-      {/* LIVE RANK */}
-
-      <div className="bg-yellow-500/20 border border-yellow-500/30 px-5 py-3 rounded-2xl">
-
-        <p className="text-sm text-yellow-700">
-
-          Current Rank
-
-        </p>
-
-        <h2 className="text-2xl font-bold text-yellow-900">
-
-          #{liveRank || "--"}
-
-        </h2>
-
-        {previousRank &&
-          liveRank && (
-
-          <p
-            className={`text-sm font-bold mt-1
-
-              ${
-                liveRank <
-                previousRank
-
-                  ? "text-green-600"
-
-                  : liveRank >
-                    previousRank
-
-                  ? "text-red-600"
-
-                  : "text-gray-500"
-              }
-            `}
-          >
-
-            {
-              liveRank <
-              previousRank
-
-                ? `↑ ${
-                    previousRank -
-                    liveRank
-                  }`
-
-                : liveRank >
-                  previousRank
-
-                ? `↓ ${
-                    liveRank -
-                    previousRank
-                  }`
-
-                : "No Change"
-            }
-
-          </p>
-
-        )}
-
-      </div>
-
-      {/* TOP SCORE */}
-
-      <div className="bg-purple-500/20 border border-purple-500/30 px-5 py-3 rounded-2xl">
-
-        <p className="text-sm text-purple-700">
-
-          Top Score
-
-        </p>
-
-        <h2 className="text-2xl font-bold text-purple-900">
-
-          {topScore}
-
-        </h2>
-
-      </div>
 
       {/* LIVE STUDENTS */}
 
@@ -191,6 +69,6 @@ function ExamTopStats({
   );
 }
 
-export default memo(
+export default React.memo(
   ExamTopStats
 );

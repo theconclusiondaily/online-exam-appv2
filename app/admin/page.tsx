@@ -174,26 +174,47 @@ if (
         liveExamData?.length || 0
       );
 
-      // RECENT EXAMS
+ // RECENT EXAMS
 
-      const {
-        data: recentExamData,
-      } = await supabase
-        .from("exams")
-        .select("*")
-        .order("created_at", {
-          ascending: false,
-        })
-        .limit(5);
+const {
+  data: recentExamData,
+  error: recentExamError,
+} = await supabase
 
-      if (
-        recentExamData
-      ) {
+  .from("exams")
 
-        setRecentExams(
-          recentExamData
-        );
-      }
+  .select(`
+    *,
+    institutes (
+      name
+    )
+  `)
+
+  .order(
+    "start_time",
+    {
+      ascending: true,
+    }
+  )
+
+  .limit(10);
+
+console.log(
+  recentExamData
+);
+
+console.log(
+  recentExamError
+);
+
+if (
+  recentExamData
+) {
+
+  setRecentExams(
+    recentExamData
+  );
+}
 
       setLoading(false);
     }
@@ -329,6 +350,24 @@ if (
             </p>
 
           </Link>
+          <Link
+  href="/admin/teachers"
+  className="border rounded-3xl p-6 bg-white shadow-sm hover:shadow-md transition"
+>
+
+  <h2 className="text-2xl font-bold mb-2">
+
+    Teachers
+
+  </h2>
+
+  <p className="text-gray-600">
+
+    Manage institute teachers
+
+  </p>
+
+</Link>
             <Link
   href="/admin/create-exam"
   className="border rounded-3xl p-6 bg-white shadow-sm hover:shadow-md transition"
@@ -453,7 +492,198 @@ if (
           </div>
 
         </div>
+{/* RECENT EXAMS */}
 
+<div className="bg-white rounded-3xl shadow-sm border p-6">
+
+  <div className="flex items-center justify-between mb-8">
+
+    <h2 className="text-3xl font-bold">
+
+      Exam Management
+
+    </h2>
+
+    <div className="bg-gray-100 px-4 py-2 rounded-xl font-bold">
+
+      {recentExams.length} Exams
+
+    </div>
+
+  </div>
+
+  <div className="space-y-5">
+
+    {recentExams.map(
+      (exam) => (
+
+        <div
+          key={exam.id}
+          className="border rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5"
+        >
+
+          <div>
+
+            <h3 className="text-2xl font-bold mb-2">
+
+              {exam.title}
+
+            </h3>
+
+            <div
+              className={`
+                inline-block px-4 py-2 rounded-xl font-bold text-sm mb-3
+
+                ${
+                  exam.status === "live"
+                    ? "bg-green-100 text-green-700"
+
+                    : exam.status === "scheduled"
+
+                    ? "bg-blue-100 text-blue-700"
+
+                    : exam.status === "completed"
+
+                    ? "bg-gray-200 text-gray-700"
+
+                    : exam.status === "cancelled"
+
+                    ? "bg-red-100 text-red-700"
+
+                    : "bg-yellow-100 text-yellow-700"
+                }
+              `}
+            >
+
+              {exam.status?.toUpperCase()}
+
+            </div>
+
+            <p className="text-gray-600">
+
+              Reward:
+              {" "}
+              ₹
+              {exam.reward_pool || 0}
+
+            </p>
+
+            <p className="text-sm text-gray-500 mt-2">
+
+              Institute:
+              {" "}
+              {exam.institutes?.name || "Unknown"}
+
+            </p>
+
+          </div>
+
+          <div className="flex flex-col items-end gap-4">
+
+            <div className="text-gray-600">
+
+              {new Date(
+                exam.start_time
+              ).toLocaleString(
+                "en-IN",
+                {
+                  timeZone:
+                    "Asia/Kolkata",
+                }
+              )}
+
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+
+              {!exam.published && (
+
+                <button
+
+                  onClick={async () => {
+
+                    await supabase
+
+                      .from("exams")
+
+                      .update({
+
+                        published: true,
+
+                        status:
+                          "scheduled",
+
+                      })
+
+                      .eq(
+                        "id",
+                        exam.id
+                      );
+
+                    window.location.reload();
+                  }}
+
+                  className="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold"
+                >
+
+                  Publish
+
+                </button>
+
+              )}
+
+              <button
+
+                onClick={async () => {
+
+                  await supabase
+
+                    .from("exams")
+
+                    .update({
+
+                      status:
+                        "cancelled",
+
+                    })
+
+                    .eq(
+                      "id",
+                      exam.id
+                    );
+
+                  window.location.reload();
+                }}
+
+                className="bg-red-500 text-white px-4 py-2 rounded-xl font-bold"
+              >
+
+                Cancel
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )
+    )}
+
+    {recentExams.length === 0 && (
+
+      <div className="text-center text-gray-500 py-10">
+
+        No exams found
+
+      </div>
+
+    )}
+
+  </div>
+
+</div>
       </div>
 
     </main>

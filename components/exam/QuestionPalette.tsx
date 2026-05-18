@@ -1,12 +1,15 @@
 "use client";
 
-import { memo } from "react";
+import React from "react";
 
 type Props = {
 
   questions: any[];
 
-  answers: any;
+  answers: Record<
+    string,
+    string
+  >;
 
   currentQuestion: number;
 
@@ -29,22 +32,25 @@ function QuestionPalette({
 
   return (
 
-    <div className="
-      hidden md:block
-      fixed right-4 top-1/2
-      -translate-y-1/2
-      bg-white rounded-3xl
-      shadow-2xl p-4
-      w-24 z-40
-    ">
+    <div className="flex gap-3 min-w-max">
 
-      <div className="grid grid-cols-2 gap-3">
+      {questions.map(
+        (
+          question,
+          index
+        ) => {
 
-        {questions.map(
-          (_, index) => (
+          const answered =
+            answers[
+              question.id
+            ];
+
+          return (
 
             <button
-              key={index}
+              key={
+                question.id
+              }
 
               onClick={() =>
                 setCurrentQuestion(
@@ -52,25 +58,19 @@ function QuestionPalette({
                 )
               }
 
-              className={`
-                h-10 rounded-xl
-                font-bold transition-all
+              className={`w-12 h-12 rounded-2xl font-bold transition-colors shrink-0
 
                 ${
                   currentQuestion ===
                   index
 
-                    ? "bg-blue-600 text-white"
+                    ? "bg-blue-600 text-white shadow-lg"
 
-                    : answers[
-                        questions[
-                          index
-                        ]?.id
-                      ]
+                    : answered
 
                     ? "bg-green-500 text-white"
 
-                    : "bg-gray-200"
+                    : "bg-gray-200 text-black hover:bg-gray-300"
                 }
               `}
             >
@@ -78,16 +78,14 @@ function QuestionPalette({
               {index + 1}
 
             </button>
-
-          )
-        )}
-
-      </div>
+          );
+        }
+      )}
 
     </div>
   );
 }
 
-export default memo(
+export default React.memo(
   QuestionPalette
 );

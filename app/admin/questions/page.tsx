@@ -46,6 +46,26 @@ export default function QuestionsPage() {
     setCorrectAnswer] =
     useState("");
 
+  const [subject,
+  setSubject] =
+  useState("");
+
+const [chapter,
+  setChapter] =
+  useState("");
+
+const [topic,
+  setTopic] =
+  useState("");
+
+const [difficulty,
+  setDifficulty] =
+  useState("medium");
+
+const [tags,
+  setTags] =
+  useState("");
+
   async function fetchExams() {
 
     const { data } =
@@ -150,6 +170,21 @@ export default function QuestionsPage() {
 
             correct_answer:
               correctAnswer,
+
+            subject,
+
+chapter,
+
+topic,
+
+difficulty,
+
+tags:
+  tags
+    .split(",")
+    .map((t) =>
+      t.trim()
+    ),
           },
         ]);
 
@@ -174,6 +209,13 @@ export default function QuestionsPage() {
     setOptionC("");
     setOptionD("");
     setCorrectAnswer("");
+    setSubject("");
+    setChapter("");
+    setTopic("");
+    setDifficulty(
+  "medium"
+);
+     setTags("");
 
     await fetchQuestions();
 
@@ -397,7 +439,83 @@ await fetchExams();
               ))}
 
             </select>
+<input
+  type="text"
+  placeholder="Subject"
+  value={subject}
+  onChange={(e) =>
+    setSubject(
+      e.target.value
+    )
+  }
+  className="w-full border rounded-2xl p-4"
+/>
 
+<input
+  type="text"
+  placeholder="Chapter"
+  value={chapter}
+  onChange={(e) =>
+    setChapter(
+      e.target.value
+    )
+  }
+  className="w-full border rounded-2xl p-4"
+/>
+
+<input
+  type="text"
+  placeholder="Topic"
+  value={topic}
+  onChange={(e) =>
+    setTopic(
+      e.target.value
+    )
+  }
+  className="w-full border rounded-2xl p-4"
+/>
+
+<select
+  value={difficulty}
+  onChange={(e) =>
+    setDifficulty(
+      e.target.value
+    )
+  }
+  className="w-full border rounded-2xl p-4"
+>
+
+  <option value="easy">
+
+    Easy
+
+  </option>
+
+  <option value="medium">
+
+    Medium
+
+  </option>
+
+  <option value="hard">
+
+    Hard
+
+  </option>
+
+</select>
+
+<input
+  type="text"
+  placeholder="Tags (comma separated)"
+  value={tags}
+  onChange={(e) =>
+    setTags(
+      e.target.value
+    )
+  }
+  className="w-full border rounded-2xl p-4"
+/>
             <textarea
               placeholder="Question"
               value={question}
@@ -564,7 +682,48 @@ await fetchExams();
                   </div>
 
                 </div>
+<div className="flex flex-wrap gap-3 mt-4 mb-4">
 
+  <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-xl text-sm font-bold">
+
+    {q.subject || "General"}
+
+  </div>
+
+  <div className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm font-bold">
+
+    {q.chapter || "Chapter"}
+
+  </div>
+
+  <div className="bg-orange-100 text-orange-700 px-3 py-1 rounded-xl text-sm font-bold">
+
+    {q.topic || "Topic"}
+
+  </div>
+
+  <div
+    className={`
+      px-3 py-1 rounded-xl text-sm font-bold
+
+      ${
+        q.difficulty === "easy"
+          ? "bg-green-100 text-green-700"
+
+          : q.difficulty === "hard"
+
+          ? "bg-red-100 text-red-700"
+
+          : "bg-yellow-100 text-yellow-700"
+      }
+    `}
+  >
+
+    {q.difficulty?.toUpperCase()}
+
+  </div>
+
+</div>
                 <div className="mt-4 bg-green-100 text-green-700 border border-green-300 rounded-xl p-3 font-bold">
                   Correct Answer: {q.correct_answer}
                 </div>

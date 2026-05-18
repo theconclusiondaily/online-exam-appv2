@@ -41,7 +41,13 @@ export default function TeacherCreateExamPage() {
   const [rewardPool,
     setRewardPool] =
     useState("");
+const [startTime,
+  setStartTime] =
+  useState("");
 
+const [endTime,
+  setEndTime] =
+  useState("");
   const [userId,
     setUserId] =
     useState("");
@@ -105,19 +111,42 @@ export default function TeacherCreateExamPage() {
     } = await supabase
       .from("exams")
       .insert([
-        {
-          title,
-          description,
-          duration:
-            Number(duration),
-          reward_pool:
-            Number(rewardPool),
-          created_by:
-            userId,
-          institute_id:
-            instituteId,
-        },
-      ]);
+  {
+
+  title,
+
+  description,
+
+  duration:
+    Number(duration),
+
+  reward_pool:
+    Number(rewardPool),
+
+  created_by:
+    userId,
+
+  institute_id:
+    instituteId,
+
+  status: "draft",
+
+published: false,
+
+cancelled: false,
+
+
+  start_time:
+    new Date(
+      startTime
+    ).toISOString(),
+
+  end_time:
+    new Date(
+      endTime
+    ).toISOString(),
+}
+]);
 
     if (error) {
 
@@ -214,7 +243,47 @@ export default function TeacherCreateExamPage() {
             }
             className="border p-4 rounded-xl w-full"
           />
+<div>
 
+  <p className="font-semibold mb-2">
+
+    Start Time
+
+  </p>
+
+  <input
+    type="datetime-local"
+    value={startTime}
+    onChange={(e) =>
+      setStartTime(
+        e.target.value
+      )
+    }
+    className="border p-4 rounded-xl w-full"
+  />
+
+</div>
+
+<div>
+
+  <p className="font-semibold mb-2">
+
+    End Time
+
+  </p>
+
+  <input
+    type="datetime-local"
+    value={endTime}
+    onChange={(e) =>
+      setEndTime(
+        e.target.value
+      )
+    }
+    className="border p-4 rounded-xl w-full"
+  />
+
+</div>
           <button
             onClick={createExam}
             className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold"

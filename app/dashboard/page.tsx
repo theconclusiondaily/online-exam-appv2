@@ -13,6 +13,9 @@ import Link from "next/link";
 
 import { supabase }
 from "@/lib/supabase/client";
+import {
+  updateExamStatuses,
+} from "@/lib/examStatus";
 
 export default function DashboardPage() {
 
@@ -44,12 +47,24 @@ export default function DashboardPage() {
     useState<any>({});
 
   const [stats,
-    setStats] =
-    useState({
-      totalAttempts: 0,
-      averageScore: 0,
-      highestScore: 0,
-    });
+  setStats] =
+  useState({
+
+    totalAttempts: 0,
+
+    averageScore: 0,
+
+    highestScore: 0,
+
+    averageAccuracy: 0,
+
+    averagePercentage: 0,
+
+    totalCorrect: 0,
+
+    totalWrong: 0,
+
+  });
 
   // LOGOUT
 
@@ -68,7 +83,8 @@ export default function DashboardPage() {
 
  
 
-    async function loadDashboard() {
+    async function loadDashboard() 
+    { await updateExamStatuses();
 
 
 
@@ -158,20 +174,120 @@ const user =
             ),
             0
           );
+const totalCorrect =
+  attemptsData.reduce(
+    (
+      acc,
+      item
+    ) =>
 
+      acc +
+
+      (
+        item.correct_count ||
+        0
+      ),
+
+    0
+  );
+
+const totalWrong =
+  attemptsData.reduce(
+    (
+      acc,
+      item
+    ) =>
+
+      acc +
+
+      (
+        item.wrong_count ||
+        0
+      ),
+
+    0
+  );
+
+const averageAccuracy =
+  totalAttempts > 0
+
+    ? Math.round(
+
+        attemptsData.reduce(
+          (
+            acc,
+            item
+          ) =>
+
+            acc +
+
+            (
+              item.accuracy ||
+              0
+            ),
+
+          0
+        )
+
+        /
+
+        totalAttempts
+      )
+
+    : 0;
+
+const averagePercentage =
+  totalAttempts > 0
+
+    ? Math.round(
+
+        attemptsData.reduce(
+          (
+            acc,
+            item
+          ) =>
+
+            acc +
+
+            (
+              item.percentage ||
+              0
+            ),
+
+          0
+        )
+
+        /
+
+        totalAttempts
+      )
+
+    : 0;
         setStats({
-          totalAttempts,
 
-          averageScore:
-            totalAttempts > 0
-              ? Math.round(
-                  totalScore /
-                    totalAttempts
-                )
-              : 0,
+  totalAttempts,
 
-          highestScore,
-        });
+  averageScore:
+    totalAttempts > 0
+
+      ? Math.round(
+          totalScore /
+          totalAttempts
+        )
+
+      : 0,
+
+  highestScore,
+
+  averageAccuracy,
+
+  averagePercentage,
+
+  totalCorrect,
+
+  totalWrong,
+
+});
 
         // LIVE RANK CALCULATION
 
@@ -329,25 +445,35 @@ setRanks(rankMap);
       // LIVE EXAMS
 
       const {
-        data: liveData,
-      } = await supabase
-        .from("exams")
-        .select("*")
-        .eq(
-          "institute_id",
-          profile?.institute_id
-        )
-        .lte(
-          "start_time",
-          now
-        )
-        .gte(
-          "end_time",
-          now
-        )
-        .order("start_time", {
-          ascending: true,
-        });
+  data: liveData,
+} = await supabase
+
+  .from("exams")
+
+  .select("*")
+
+  .eq(
+    "institute_id",
+    profile?.institute_id
+  )
+
+  .eq(
+    "status",
+    "live"
+  )
+
+  .eq(
+    "published",
+    true
+  )
+
+  .order(
+    "start_time",
+    {
+      ascending: true,
+    }
+  );
+
 
       if (liveData) {
 
@@ -457,60 +583,107 @@ return () =>
 
         </div>
 
-        {/* STATS */}
+        {/* ANALYTICS */}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
 
-          <div className="bg-white border rounded-3xl p-6 shadow-sm">
+  <div className="bg-white border rounded-3xl p-6 shadow-sm">
 
-            <p className="text-gray-500 mb-2">
+    <p className="text-gray-500 mb-2">
 
-              Total Attempts
+      Total Attempts
 
-            </p>
+    </p>
 
-            <h2 className="text-5xl font-bold">
+    <h2 className="text-5xl font-bold">
 
-              {stats.totalAttempts}
+      {stats.totalAttempts}
 
-            </h2>
+    </h2>
 
-          </div>
+  </div>
 
-          <div className="bg-white border rounded-3xl p-6 shadow-sm">
+  <div className="bg-white border rounded-3xl p-6 shadow-sm">
 
-            <p className="text-gray-500 mb-2">
+    <p className="text-gray-500 mb-2">
 
-              Average Score
+      Average Accuracy
 
-            </p>
+    </p>
 
-            <h2 className="text-5xl font-bold text-blue-600">
+    <h2 className="text-5xl font-bold text-blue-600">
 
-              {stats.averageScore}
+      {stats.averageAccuracy}%
 
-            </h2>
+    </h2>
 
-          </div>
+  </div>
 
-          <div className="bg-white border rounded-3xl p-6 shadow-sm">
+  <div className="bg-white border rounded-3xl p-6 shadow-sm">
 
-            <p className="text-gray-500 mb-2">
+    <p className="text-gray-500 mb-2">
 
-              Highest Score
+      Average Percentage
 
-            </p>
+    </p>
 
-            <h2 className="text-5xl font-bold text-green-600">
+    <h2 className="text-5xl font-bold text-green-600">
 
-              {stats.highestScore}
+      {stats.averagePercentage}%
 
-            </h2>
+    </h2>
 
-          </div>
+  </div>
 
-        </div>
+  <div className="bg-white border rounded-3xl p-6 shadow-sm">
 
+    <p className="text-gray-500 mb-2">
+
+      Highest Score
+
+    </p>
+
+    <h2 className="text-5xl font-bold text-purple-600">
+
+      {stats.highestScore}
+
+    </h2>
+
+  </div>
+
+  <div className="bg-white border rounded-3xl p-6 shadow-sm">
+
+    <p className="text-gray-500 mb-2">
+
+      Correct Answers
+
+    </p>
+
+    <h2 className="text-5xl font-bold text-green-600">
+
+      {stats.totalCorrect}
+
+    </h2>
+
+  </div>
+
+  <div className="bg-white border rounded-3xl p-6 shadow-sm">
+
+    <p className="text-gray-500 mb-2">
+
+      Wrong Answers
+
+    </p>
+
+    <h2 className="text-5xl font-bold text-red-600">
+
+      {stats.totalWrong}
+
+    </h2>
+
+  </div>
+
+</div>
         {/* LIVE EXAMS */}
 
         <div className="bg-white border rounded-3xl p-6 shadow-sm mb-10">
@@ -604,102 +777,125 @@ return () =>
 
         </div>
 
-        {/* ATTEMPT HISTORY */}
+ {/* ATTEMPT HISTORY */}
 
-        <div className="bg-white border rounded-3xl p-6 shadow-sm">
+<div className="bg-white border rounded-3xl p-6 shadow-sm">
 
-          <h2 className="text-3xl font-bold mb-6">
+  <h2 className="text-3xl font-bold mb-6">
 
-            My Exam History
+    My Exam History
 
-          </h2>
+  </h2>
 
-          <div className="space-y-5">
+  <div className="space-y-5">
 
-            {attempts.map((attempt) => (
+    {attempts.map((attempt) => (
 
-              <div
-                key={attempt.id}
-                className="border rounded-2xl p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
-              >
+      <div
+        key={attempt.id}
+        className="border rounded-2xl p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+      >
 
-                <div>
+        <div>
 
-                  <h3 className="text-2xl font-bold mb-2">
+          <h3 className="text-2xl font-bold mb-2">
 
-                    Exam Attempt
+            Exam Attempt
 
-                  </h3>
+          </h3>
 
-                  <p className="text-gray-600">
+          <p className="text-gray-600">
 
-                    Attempted on:
-                    {" "}
+            Attempted on:
+            {" "}
 
-                    {new Date(
-                      attempt.created_at
-                    ).toLocaleString(
-                      "en-IN",
-                      
-                    )}
-
-                  </p>
-
-                  <p className="text-sm text-gray-500 mt-2">
-
-                    Rank:
-                    {" "}
-                    #
-
-                    {
-                      ranks[
-  attempt.exam_id
-] || "-"
-                    }
-
-                  </p>
-
-                </div>
-
-                <div className="flex items-center gap-4">
-
-                  <div className="text-4xl font-bold text-blue-600">
-
-                    {attempt.score}
-
-                  </div>
-
-                  <Link
-                    href={`/leaderboard/${attempt.exam_id}`}
-                    className="bg-gray-100 border px-5 py-3 rounded-2xl font-bold"
-                  >
-
-                    View Rank
-
-                  </Link>
-
-                </div>
-
-              </div>
-
-            ))}
-
-            {attempts.length === 0 && (
-
-              <div className="text-center text-gray-500 py-8">
-
-                No attempts yet
-
-              </div>
-
+            {new Date(
+              attempt.created_at
+            ).toLocaleString(
+              "en-IN",
             )}
 
+          </p>
+
+          <p className="text-sm text-gray-500 mt-2">
+
+            Rank:
+            {" "}
+            #
+
+            {
+              ranks[
+                attempt.exam_id
+              ] || "-"
+            }
+
+          </p>
+
+        </div>
+
+        <div className="flex items-center gap-4 flex-wrap">
+
+          {/* ANALYTICS */}
+
+          <div className="flex flex-col gap-2">
+
+            <div className="bg-blue-100 text-blue-700 px-4 py-2 rounded-xl font-bold text-center">
+
+              Accuracy:
+              {" "}
+              {attempt.accuracy || 0}%
+
+            </div>
+
+            <div className="bg-green-100 text-green-700 px-4 py-2 rounded-xl font-bold text-center">
+
+              Percentage:
+              {" "}
+              {attempt.percentage || 0}%
+
+            </div>
+
           </div>
+
+          {/* SCORE */}
+
+          <div className="text-4xl font-bold text-blue-600">
+
+            {attempt.score}
+
+          </div>
+
+          {/* VIEW RANK */}
+
+          <Link
+            href={`/leaderboard/${attempt.exam_id}`}
+            className="bg-gray-100 border px-5 py-3 rounded-2xl font-bold"
+          >
+
+            View Rank
+
+          </Link>
 
         </div>
 
       </div>
 
+    ))}
+
+    {attempts.length === 0 && (
+
+      <div className="text-center text-gray-500 py-8">
+
+        No attempts yet
+
+      </div>
+
+    )}
+ </div>
+  </div>
+
+</div>
+
     </main>
   );
-}
+  }

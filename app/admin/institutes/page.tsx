@@ -30,13 +30,29 @@ export default function InstitutesPage() {
       data,
       error,
     } = await supabase
+
       .from("institutes")
-      .select("*")
-      .order("created_at", {
-        ascending: false,
-      });
+
+      .select(`
+        *,
+        users (
+          id,
+          role
+        ),
+        exams (
+          id
+        )
+      `)
+
+      .order(
+        "created_at",
+        {
+          ascending: false,
+        }
+      );
 
     console.log(data);
+
     console.log(error);
 
     if (data) {
@@ -53,61 +69,70 @@ export default function InstitutesPage() {
 
   }, []);
 
- async function createInstitute() {
+  async function createInstitute() {
 
-  if (
-    !name ||
-    !city
-  ) {
+    if (
+      !name ||
+      !city
+    ) {
 
-    alert(
-      "Fill all fields"
+      alert(
+        "Fill all fields"
+      );
+
+      return;
+    }
+
+    const {
+      data,
+      error,
+    } = await supabase
+
+      .from("institutes")
+
+      .insert([
+        {
+          name:
+            name.trim(),
+
+          city:
+            city.trim(),
+
+          active: true,
+        },
+      ])
+
+      .select();
+
+    console.log(
+      "INSERT DATA:",
+      data
     );
 
-    return;
-  }
-
-  const {
-    data,
-    error,
-  } = await supabase
-    .from("institutes")
-    .insert([
-      {
-        name: name.trim(),
-        city: city.trim(),
-      },
-    ])
-    .select();
-
-  console.log(
-    "INSERT DATA:",
-    data
-  );
-
-  console.log(
-    "INSERT ERROR:",
-    error
-  );
-
-  if (error) {
-
-    alert(
-      error.message
+    console.log(
+      "INSERT ERROR:",
+      error
     );
 
-    return;
+    if (error) {
+
+      alert(
+        error.message
+      );
+
+      return;
+    }
+
+    alert(
+      "Institute created successfully"
+    );
+
+    setName("");
+
+    setCity("");
+
+    await fetchInstitutes();
   }
-
-  alert(
-    "Institute created successfully"
-  );
-
-  setName("");
-  setCity("");
-
-  await fetchInstitutes();
-}
 
   return (
 
@@ -119,22 +144,22 @@ export default function InstitutesPage() {
 
           <div className="flex justify-between items-center mb-8">
 
-  <h1 className="text-4xl font-bold">
+            <h1 className="text-4xl font-bold">
 
-    Institutes
+              Institutes
 
-  </h1>
+            </h1>
 
-  <a
-    href="/admin"
-    className="bg-black text-white px-5 py-2 rounded-xl"
-  >
+            <a
+              href="/admin"
+              className="bg-black text-white px-5 py-2 rounded-xl"
+            >
 
-    Dashboard
+              Dashboard
 
-  </a>
+            </a>
 
-</div>
+          </div>
 
           {/* CREATE */}
 
@@ -178,7 +203,9 @@ export default function InstitutesPage() {
                 }
                 className="bg-black text-white px-6 py-4 rounded-2xl font-bold w-full"
               >
+
                 Create Institute
+
               </button>
 
             </div>
@@ -189,11 +216,21 @@ export default function InstitutesPage() {
 
           <div className="bg-white border rounded-3xl p-6 shadow-sm">
 
-            <h2 className="text-2xl font-bold mb-6">
+            <div className="flex items-center justify-between mb-8">
 
-              Institutes
+              <h2 className="text-3xl font-bold">
 
-            </h2>
+                Institutes
+
+              </h2>
+
+              <div className="bg-gray-100 px-4 py-2 rounded-xl font-bold">
+
+                {institutes.length} Institutes
+
+              </div>
+
+            </div>
 
             <div className="space-y-5">
 
@@ -202,7 +239,7 @@ export default function InstitutesPage() {
 
                   <div
                     key={institute.id}
-                    className="border rounded-2xl p-5 flex justify-between items-center"
+                    className="border rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5"
                   >
 
                     <div>
@@ -213,11 +250,120 @@ export default function InstitutesPage() {
 
                       </h3>
 
-                      <p className="text-gray-600">
+                      <div
+                        className={`
+                          inline-block px-4 py-2 rounded-xl font-bold text-sm mb-3
+
+                          ${
+                            institute.active
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
+                          }
+                        `}
+                      >
+
+                        {
+                          institute.active
+                            ? "ACTIVE"
+                            : "DISABLED"
+                        }
+
+                      </div>
+
+                      <p className="text-gray-600 mb-2">
 
                         {institute.city}
 
                       </p>
+
+                      <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+
+                        <div>
+
+                          Students:
+                          {" "}
+
+                          {
+                            institute.users?.filter(
+                              (u: any) =>
+                                u.role === "student"
+                            ).length || 0
+                          }
+
+                        </div>
+
+                        <div>
+
+                          Teachers:
+                          {" "}
+
+                          {
+                            institute.users?.filter(
+                              (u: any) =>
+                                u.role === "teacher"
+                            ).length || 0
+                          }
+
+                        </div>
+
+                        <div>
+
+                          Exams:
+                          {" "}
+
+                          {
+                            institute.exams?.length || 0
+                          }
+
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                    <div>
+
+                      <button
+
+                        onClick={async () => {
+
+                          await supabase
+
+                            .from("institutes")
+
+                            .update({
+
+                              active:
+                                !institute.active,
+
+                            })
+
+                            .eq(
+                              "id",
+                              institute.id
+                            );
+
+                          fetchInstitutes();
+                        }}
+
+                        className={`
+                          px-5 py-3 rounded-xl text-white font-bold
+
+                          ${
+                            institute.active
+                              ? "bg-red-500"
+                              : "bg-green-600"
+                          }
+                        `}
+                      >
+
+                        {
+                          institute.active
+                            ? "Disable"
+                            : "Enable"
+                        }
+
+                      </button>
 
                     </div>
 
