@@ -86,7 +86,7 @@ function LiveEventFeed() {
 
   return (
 
-    <div className="bg-white/95 backdrop-blur-xl border border-gray-200 rounded-3xl shadow-2xl p-5 w-full overflow-hidden">
+    <div className="bg-white/95 backdrop-blur-xl border border-gray-200 rounded-2xl shadow-xl p-3 w-full overflow-hidden scale-90 origin-bottom-right">
 
       {/* HEADER */}
 
@@ -94,7 +94,7 @@ function LiveEventFeed() {
 
         <div>
 
-          <h2 className="text-lg font-bold text-gray-900">
+          <h2 className="text-sm font-bold text-gray-900">
 
             Live Exam Feed
 
@@ -114,7 +114,7 @@ function LiveEventFeed() {
 
       {/* LIVE CARD */}
 
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-700 p-5 text-white shadow-lg transition-all duration-500">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-700 p-3 text-white shadow-lg transition-all duration-500">
 
         <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
 
@@ -134,7 +134,7 @@ function LiveEventFeed() {
 
             </h3>
 
-            <p className="text-sm text-blue-100 leading-relaxed">
+            <p className="text-xs text-blue-100 leading-relaxed">
 
               {current.message}
 

@@ -16,6 +16,8 @@ type Props = {
   setCurrentQuestion: (
     index: number
   ) => void;
+
+  visitedQuestions: number[];
 };
 
 function QuestionPalette({
@@ -27,6 +29,8 @@ function QuestionPalette({
   currentQuestion,
 
   setCurrentQuestion,
+
+  visitedQuestions,
 
 }: Props) {
 
@@ -48,6 +52,7 @@ function QuestionPalette({
           return (
 
             <button
+            id={`question-${index}`}
               key={
                 question.id
               }
@@ -58,21 +63,41 @@ function QuestionPalette({
                 )
               }
 
-              className={`w-12 h-12 rounded-2xl font-bold transition-colors shrink-0
+              className={`
 
-                ${
-                  currentQuestion ===
-                  index
+  w-14
+  h-14
 
-                    ? "bg-blue-600 text-white shadow-lg"
+  rounded-2xl
 
-                    : answered
+  font-bold
 
-                    ? "bg-green-500 text-white"
+  transition
 
-                    : "bg-gray-200 text-black hover:bg-gray-300"
-                }
-              `}
+  flex
+  items-center
+  justify-center
+
+  ${
+    currentQuestion === index
+
+      ? "bg-blue-600 text-white"
+
+      : answers[
+          questions[index]?.id
+        ]
+
+      ? "bg-green-500 text-white"
+
+      : visitedQuestions.includes(
+          index
+        )
+
+      ? "bg-purple-500 text-white"
+
+      : "bg-gray-200 text-black"
+  }
+`}
             >
 
               {index + 1}

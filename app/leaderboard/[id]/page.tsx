@@ -194,35 +194,40 @@ const [liveUpdate,
 
             </h1>
 
-            <p className="text-gray-600">
-<div className="flex items-center gap-3 mt-3">
+          <div className="mt-3">
 
-  <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
+  <div className="flex items-center gap-3 flex-wrap">
 
-  <p className="text-green-600 font-bold">
+    <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
 
-    LIVE LEADERBOARD
+    <p className="text-green-600 font-bold">
+
+      LIVE LEADERBOARD
+
+    </p>
+
+    {liveUpdate && (
+
+      <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-xl text-sm font-bold animate-pulse">
+
+        Updating...
+
+      </div>
+
+    )}
+
+  </div>
+
+  <p className="text-gray-600 mt-2">
+
+    Total Participants:
+    {" "}
+    {attempts.length}
 
   </p>
 
-  {liveUpdate && (
-
-    <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-xl text-sm font-bold animate-pulse">
-
-      Updating...
-
-    </div>
-
-  )}
-
 </div>
-              Total Participants:
-              {" "}
-              {attempts.length}
-
-            </p>
-
-          </div>
+</div>
 
           <Link
             href="/dashboard"
@@ -318,31 +323,37 @@ const [liveUpdate,
 
                     </p>
 
-                    <p className="text-sm text-gray-500 mt-1">
-<div className="flex flex-wrap justify-end gap-2 mt-4">
+                    <div className="mt-4">
 
-  <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-xl text-sm font-bold">
+  <p className="text-sm text-gray-500">
 
-    Accuracy:
-    {" "}
+    Score
 
-    {attempt.accuracy || 0}%
+  </p>
 
-  </div>
+  <div className="flex flex-wrap justify-end gap-2 mt-3">
 
-  <div className="bg-green-100 text-green-700 px-3 py-1 rounded-xl text-sm font-bold">
+    <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-xl text-sm font-bold">
 
-    Percentage:
-    {" "}
+      Accuracy:
+      {" "}
 
-    {attempt.percentage || 0}%
+      {attempt.accuracy || 0}%
+
+    </div>
+
+    <div className="bg-green-100 text-green-700 px-3 py-1 rounded-xl text-sm font-bold">
+
+      Percentage:
+      {" "}
+
+      {attempt.percentage || 0}%
+
+    </div>
 
   </div>
 
 </div>
-                      Score
-
-                    </p>
 
                   </div>
 

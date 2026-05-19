@@ -23,70 +23,92 @@ saveExamResult({
     const correct_count =
       score;
 
-    const wrong_count =
-      total_questions -
-      score;
+   const attemptedQuestions =
+
+  Object.keys(
+    answers || {}
+  ).length;
+
+const wrong_count =
+
+  attemptedQuestions -
+  score;
+
+const unattempted_count =
+
+  total_questions -
+  attemptedQuestions;
 
     const accuracy =
-      total_questions > 0
 
-        ? Math.round(
+  attemptedQuestions > 0
 
-            (
-              correct_count /
+    ? Math.round(
 
-              total_questions
-            ) * 100
-          )
+        (
+          correct_count /
 
-        : 0;
+          attemptedQuestions
+        ) * 100
+      )
+
+    : 0;
 
     const percentage =
       accuracy;
 
     // SAVE RESULT
 
-    const {
-      data,
+   const {
 
-      error,
+  data,
 
-    } = await supabase
+  error,
 
-      .from(
-        "exam_attempts"
-      )
+} = await supabase
 
-      .upsert({
+  .from(
+    "exam_attempts"
+  )
 
-        exam_id,
+  .upsert(
 
-        user_id,
+    {
 
-        score,
+      exam_id,
 
-        answers,
+      user_id,
 
-        total_questions,
+      score,
 
-        correct_count,
+      answers,
 
-        wrong_count,
+      total_questions,
 
-        accuracy,
+      correct_count,
 
-        percentage,
+      wrong_count,
 
-        status:
-          "submitted",
+      accuracy,
 
-        submitted_at:
-          new Date()
-            .toISOString(),
+      percentage,
 
-      })
+      status:
+        "submitted",
 
-      .select();
+      submitted_at:
+        new Date()
+          .toISOString(),
+    },
+
+    {
+
+      onConflict:
+        "exam_id,user_id",
+    }
+  )
+
+  .select();
 
     if (error) {
 

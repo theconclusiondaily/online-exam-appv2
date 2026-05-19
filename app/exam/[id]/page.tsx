@@ -98,8 +98,48 @@ const [cameraStream,
   const [currentQuestion,
     setCurrentQuestion] =
     useState(0);
+useEffect(() => {
 
-  const [loading,
+  const activeButton =
+    document.getElementById(
+      `question-${currentQuestion}`
+    );
+
+  if (activeButton) {
+
+    activeButton.scrollIntoView({
+
+      behavior: "smooth",
+
+      inline: "center",
+
+      block: "nearest",
+    });
+  }
+
+}, [currentQuestion]);
+const [visitedQuestions,
+  setVisitedQuestions] =
+  useState<number[]>([0]); 
+  useEffect(() => {
+
+  setVisitedQuestions(
+    (prev) =>
+
+      prev.includes(
+        currentQuestion
+      )
+
+        ? prev
+
+        : [
+            ...prev,
+            currentQuestion,
+          ]
+  );
+
+}, [currentQuestion]); 
+const [loading,
     setLoading] =
     useState(true);
 
@@ -669,6 +709,49 @@ function resumeExam() {
     "Recovered previous exam session"
   );
 }
+useEffect(() => {
+
+  const fullscreenHandler =
+    () => {
+
+      if (
+
+        examStarted &&
+
+        !submitted &&
+
+        !document.fullscreenElement
+      ) {
+
+        handleViolation(
+          "Fullscreen exited"
+        );
+      }
+    };
+
+  document.addEventListener(
+
+    "fullscreenchange",
+
+    fullscreenHandler
+  );
+
+  return () => {
+
+    document.removeEventListener(
+
+      "fullscreenchange",
+
+      fullscreenHandler
+    );
+  };
+
+}, [
+
+  examStarted,
+
+  submitted,
+]);
   async function startExam() {
 
     if (
@@ -693,24 +776,7 @@ function resumeExam() {
   .requestFullscreen();
       }
 
-     useEffect(() => {
-
-  return () => {
-
-    if (
-      streamRef.current
-    ) {
-
-      streamRef.current
-        .getTracks()
-        .forEach(
-          (track) =>
-            track.stop()
-        );
-    }
-  };
-
-}, []);
+     
 
     } catch (error) {
 
@@ -1002,7 +1068,7 @@ if (
       className="min-h-screen bg-gray-50 p-8"
     >
 
-      <div className="sticky top-0 z-40 bg-gray-50 pb-4 mb-8">
+      <div className="sticky top-0 z-30 bg-gray-50 pb-2 mb-4">
 
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
 
@@ -1021,25 +1087,24 @@ if (
       </div>
 <div
   className="
-fixed
+    fixed
 
-top-4
-right-2
+    top-[220px]
+    right-4
 
-w-20
-sm:w-24
-md:w-40
-lg:w-56
+    w-32
+    lg:w-40
 
-z-40
+    overflow-hidden
 
-rounded-2xl
-overflow-hidden
-shadow-2xl
+    rounded-2xl
+    border border-white
+    shadow-xl
 
-opacity-90
-border-2 border-white
-"
+    z-10
+
+    opacity-90
+  "
 >
 
   <StudentCameraStream
@@ -1048,20 +1113,23 @@ border-2 border-white
 
 </div>
 
-      <div className="mt-6 mb-8 overflow-x-auto scrollbar-hide">
+      <div className="mt-2 mb-4 overflow-x-auto scrollbar-hide">
 
         <QuestionPalette
           questions={questions}
           answers={answers}
           currentQuestion={currentQuestion}
           setCurrentQuestion={setCurrentQuestion}
+          visitedQuestions={
+  visitedQuestions
+}
         />
 
       </div>
 
       <div className="max-w-5xl mx-auto">
 
-        <div className="bg-white p-10 rounded-3xl border shadow-sm">
+        <div className="bg-white p-6 rounded-2xl border shadow-sm">
 
           <h2 className="text-2xl font-bold mb-8">
             Question {currentQuestion + 1}
@@ -1096,7 +1164,7 @@ border-2 border-white
                       )
                     }
 
-                    className={`w-full text-left p-5 rounded-2xl border text-lg font-medium transition-colors
+                    className={`w-full text-left p-3 rounded-xl border text-lg font-medium transition-colors
 
                       ${
                         answers[
@@ -1141,56 +1209,114 @@ border-2 border-white
             currentQuestion === 0
           }
 
-          className="px-6 py-3 rounded-2xl bg-black-200 font-bold disabled:opacity-50"
+          className="
+  px-8
+  py-3
+
+  rounded-2xl
+
+  border
+  border-gray-300
+
+  bg-white
+
+  hover:bg-gray-100
+
+  font-bold
+
+  shadow-sm
+
+  transition
+
+  disabled:opacity-50
+"
         >
           Previous
         </button>
 
         <div className="flex gap-4">
 
-          {currentQuestion <
-            questions.length - 1 && (
+  {currentQuestion < 29 && (
 
-            <button
-              onClick={() =>
-                setCurrentQuestion(
-                  (prev) =>
-                    prev + 1
-                )
-              }
+    <button
+      onClick={() =>
+        setCurrentQuestion(
+          (prev) =>
+            prev + 1
+        )
+      }
 
-              className="px-6 py-3 rounded-2xl bg-blue-600 text-white font-bold"
-            >
-              Next
-            </button>
-          )}
+      className="
+        px-8
+        py-3
 
-          {currentQuestion ===
-            questions.length - 1 && (
+        rounded-2xl
 
-            <button
-              onClick={submitExam}
-              className="px-8 py-3 rounded-2xl bg-green-600 text-white font-bold"
-            >
-              Submit Exam
-            </button>
-          )}
+        bg-blue-600
+        hover:bg-blue-700
 
-        </div>
+        text-white
+        font-bold
+
+        transition
+      "
+    >
+
+      Next
+
+    </button>
+  )}
+
+  {currentQuestion === 29 && (
+
+    <button
+      onClick={submitExam}
+
+      className="
+        px-8
+        py-3
+
+        rounded-2xl
+
+        bg-green-600
+        hover:bg-green-700
+
+        text-white
+        font-bold
+
+        transition
+      "
+    >
+
+      Submit Exam
+
+    </button>
+  )}
+
+</div>
 
       </div>
 
-      <div
+  <div
   className="
-    hidden lg:block
+    hidden
+
+    2xl:flex
 
     fixed
-    bottom-4
-    right-4
 
-    z-30
+    top-1/2
+    right-2
 
-    w-[320px]
+    -translate-y-1/2
+
+    w-[170px]
+
+    z-10
+
+    scale-75
+
+    origin-right
   "
 >
 
