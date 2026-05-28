@@ -37,60 +37,121 @@ export default function ActiveOpportunitiesPage() {
 
   async function loadExams() {
 
-    try {
+  try {
 
-      const now =
-        new Date()
-          .toISOString();
+    const now =
+      new Date()
+        .toISOString();
 
-      const {
-        data,
-        error,
-      } = await supabase
+    // GET LOGGED IN USER
 
-        .from("exams")
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-        .select(`
-          *
-        `)
+    if (!user) {
 
-        .gte(
-          "end_time",
-          now
-        )
+      setLiveExams([]);
+      return;
+    }
 
-        .order(
-          "start_time",
-          {
-            ascending: true,
-          }
-        );
+    // GET USER PROFILE
 
-      if (error) {
+    const {
+      data: profile,
+      error: profileError,
+    } = await supabase
 
-        console.error(
-          error
-        );
+      .from("users")
 
-        return;
-      }
+      .select("institute_id")
 
-      setLiveExams(
-        data || []
+      .eq("id", user.id)
+
+      .single();
+
+    console.log(
+      "PROFILE ERROR:",
+      profileError
+    );
+
+    console.log(
+      "PROFILE:",
+      profile
+    );
+
+    // BLOCK USERS WITHOUT INSTITUTE
+
+    if (!profile?.institute_id) {
+
+      console.log(
+        "NO INSTITUTE ASSIGNED"
       );
 
-    } catch (error) {
+      setLiveExams([]);
+      return;
+    }
+
+    // FETCH ONLY SAME INSTITUTE EXAMS
+
+    const {
+      data,
+      error,
+    } = await supabase
+
+      .from("exams")
+
+      .select(`
+        *
+      `)
+
+      .eq(
+        "published",
+        true
+      )
+
+      .eq(
+        "institute_id",
+        profile.institute_id
+      )
+
+      .gte(
+        "end_time",
+        now
+      )
+
+      .order(
+        "start_time",
+        {
+          ascending: true,
+        }
+      );
+
+    if (error) {
 
       console.error(
         error
       );
 
-    } finally {
-
-      setLoading(false);
-
+      return;
     }
+
+    setLiveExams(
+      data || []
+    );
+
+  } catch (error) {
+
+    console.error(
+      error
+    );
+
+  } finally {
+
+    setLoading(false);
+
   }
+}
 
   if (loading) {
 

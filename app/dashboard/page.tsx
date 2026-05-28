@@ -1094,6 +1094,17 @@ setRanks(rankMap);
 
 
       }
+
+
+      if (!profileData?.institute_id) {
+
+  setLiveExams([]);
+  setUpcomingExams([]);
+
+  setLoading(false);
+
+  return;
+}
       // CURRENT TIME
 
     
