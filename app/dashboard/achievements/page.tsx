@@ -85,8 +85,8 @@ export default function AchievementsPage() {
     } = await supabase
 
       .from(
-        "achievements"
-      )
+  "tcd_achievements"
+)
 
       .select("*")
 
