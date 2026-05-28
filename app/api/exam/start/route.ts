@@ -12,6 +12,48 @@ export async function POST(req: NextRequest) {
       error: authError,
     } = await supabase.auth.getUser();
 
+if (!user) {
+      return NextResponse.json(
+        {
+          error: "Unauthorized",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
+    // LOAD USER PROFILE
+
+const {
+  data: profileData,
+} = await supabase
+
+  .from("users")
+
+  .select(`
+    institute_id
+  `)
+
+  .eq(
+    "id",
+    user.id
+  )
+
+  .single();
+
+if (!profileData?.institute_id) {
+
+  return NextResponse.json(
+    {
+      error:
+        "No institute assigned",
+    },
+    {
+      status: 403,
+    }
+  );
+}
     console.log("AUTH ERROR:", authError);
     console.log("USER:", user);
 
@@ -76,12 +118,13 @@ if (submittedSession) {
     } = await supabase
       .from("exams")
       .select(`
-        id,
-        duration,
-        published,
-        start_time,
-        end_time
-      `)
+  id,
+  duration,
+  published,
+  start_time,
+  end_time,
+  institute_id
+`)
       .eq("id", examId)
       .maybeSingle();
 
@@ -94,7 +137,21 @@ if (submittedSession) {
         { status: 404 }
       );
     }
+if (
+  exam.institute_id !==
+  profileData.institute_id
+) {
 
+  return NextResponse.json(
+    {
+      error:
+        "Unauthorized institute access",
+    },
+    {
+      status: 403,
+    }
+  );
+}
     const now = new Date();
 
     if (!exam.published) {

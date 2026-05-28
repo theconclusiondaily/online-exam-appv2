@@ -28,13 +28,75 @@ export async function POST(
         }
       );
     }
+// LOAD USER PROFILE
 
+const {
+  data: profileData,
+} = await supabase
+
+  .from("users")
+
+  .select(`
+    institute_id
+  `)
+
+  .eq(
+    "id",
+    user.id
+  )
+
+  .single();
+
+if (!profileData?.institute_id) {
+
+  return NextResponse.json(
+    {
+      error:
+        "No institute assigned",
+    },
+    {
+      status: 403,
+    }
+  );
+}
     const {
       examId,
       questionIndex,
       sessionToken,
     } = await req.json();
+const {
+  data: exam,
+} = await supabase
 
+  .from("exams")
+
+  .select(`
+    id,
+    institute_id
+  `)
+
+  .eq(
+    "id",
+    examId
+  )
+
+  .single();
+
+  if (
+  exam?.institute_id !==
+  profileData.institute_id
+) {
+
+  return NextResponse.json(
+    {
+      error:
+        "Unauthorized institute access",
+    },
+    {
+      status: 403,
+    }
+  );
+}
     const {
       data: session,
     } = await supabase

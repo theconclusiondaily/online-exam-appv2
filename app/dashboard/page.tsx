@@ -1101,10 +1101,7 @@ setRanks(rankMap);
   setLiveExams([]);
   setUpcomingExams([]);
 
-  setLoading(false);
-
-  return;
-}
+} else {
       // CURRENT TIME
 
     
@@ -1183,7 +1180,7 @@ const {
           upcomingData
         );
       }
-
+    }
       setLoading(false);
     }
  useEffect(() => {
@@ -1282,7 +1279,7 @@ const handleClaimReward =
   180,
   365,
 ];
-
+    
 
   // LOADING
 

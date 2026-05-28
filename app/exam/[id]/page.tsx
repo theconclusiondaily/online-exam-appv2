@@ -267,6 +267,35 @@ useEffect(() => {
       }
 
       setUserId(user.id);
+      const {
+  data: profileData,
+} = await supabase
+
+  .from("users")
+
+  .select(`
+    institute_id,
+    role
+  `)
+
+  .eq(
+    "id",
+    user.id
+  )
+
+  .single();
+  if (!profileData?.institute_id) {
+
+  toast.error(
+    "No institute assigned"
+  );
+
+  router.push(
+    "/dashboard"
+  );
+
+  return;
+}
 const {
   data: savedAnswersData,
 } = await supabase
@@ -362,7 +391,21 @@ if (existingAttempt) {
       } = await fetchExam(
         examId
       );
+if (
+  examData?.institute_id !==
+  profileData.institute_id
+) {
 
+  toast.error(
+    "Unauthorized exam access"
+  );
+
+  router.push(
+    "/dashboard"
+  );
+
+  return;
+}
       setExamInfo(
         examData
       );
