@@ -7,7 +7,9 @@ import {
 
 import { supabase }
 from "@/lib/supabase/client";
-
+import {
+  useSearchParams
+} from "next/navigation";
 import {
   useRouter,
 } from "next/navigation";
@@ -15,7 +17,11 @@ import {
 import AdminGuard from "@/components/AdminGuard";
 
 export default function CreateExamPage() {
+const searchParams =
+  useSearchParams();
 
+const editId =
+  searchParams.get("id");
   const router =
     useRouter();
 
@@ -65,60 +71,185 @@ useEffect(() => {
 
   async function fetchData() {
 
-    // FETCH INSTITUTES
-
     const {
-      data,
-      error,
+      data: instituteData,
+      error: instituteError,
     } = await supabase
-
       .from("institutes")
-
       .select("*")
-
-      .order(
-        "name",
-        {
-          ascending: true,
-        }
-      );
-
-    console.log(data);
-
-    console.log(error);
-
-    if (data) {
-
+      .order("name");
+console.log(
+  "INSTITUTE ERROR:",
+  instituteError
+);
+    if (!instituteError && instituteData) {
       setInstitutes(
-        data
+        instituteData
       );
     }
 
-    // FETCH QUESTIONS
-
     const {
       data: questionData,
+      error: questionError,
     } = await supabase
-
       .from("questions")
-
       .select("*")
-
       .order(
         "created_at",
         {
           ascending: false,
         }
       );
-
-    setQuestions(
-      questionData || []
-    );
+console.log(
+  "QUESTION ERROR:",
+  questionError
+);
+    if (!questionError && questionData) {
+      setQuestions(
+        questionData
+      );
+    }
   }
 
   fetchData();
 
 }, []);
+
+useEffect(() => {
+
+  if (!editId) return;
+
+  async function loadExam() {
+
+    const {
+  data,
+  error,
+  status
+} = await supabase
+  .from("exams")
+  .select("*")
+  .eq("id", editId)
+  .maybeSingle();
+
+console.log("EDIT ID:", editId);
+console.log("STATUS:", status);
+console.log("DATA:", data);
+console.log("ERROR:", error);
+
+console.log(
+  "EDIT ID:",
+  editId
+);
+
+console.log(
+  "EXAM DATA:",
+  data
+);
+
+console.log(
+  "EXAM ERROR:",
+  error
+);
+
+    if (!data) {
+
+  console.error(
+    "Exam not found:",
+    editId
+  );
+
+  return;
+}
+
+    setTitle(data.title || "");
+
+setDescription(
+  data.description || ""
+);
+
+setRewardPool(
+  String(
+    data.reward_pool || 0
+  )
+);
+
+setSelectedInstitute(
+  data.institute_id || ""
+);
+
+setDuration(
+  String(
+    data.duration || 30
+  )
+);
+
+if (data.start_time) {
+
+  const start =
+    new Date(
+      data.start_time
+    );
+
+  start.setMinutes(
+    start.getMinutes() -
+    start.getTimezoneOffset()
+  );
+
+  setStartTime(
+    start
+      .toISOString()
+      .slice(0, 16)
+  );
+}
+
+if (data.end_time) {
+
+  const end =
+    new Date(
+      data.end_time
+    );
+
+  end.setMinutes(
+    end.getMinutes() -
+    end.getTimezoneOffset()
+  );
+
+  setEndTime(
+    end
+      .toISOString()
+      .slice(0, 16)
+  );
+}
+const {
+  data: mappings,
+  error: mappingsError,
+} = await supabase
+  .from("exam_questions")
+  .select("question_id")
+  .eq("exam_id", editId);
+
+console.log(
+  "MAPPINGS:",
+  mappings
+);
+
+console.log(
+  "MAPPINGS ERROR:",
+  mappingsError
+);
+
+if (mappings) {
+
+  setSelectedQuestions(
+    mappings.map(
+      (m: any) => m.question_id
+    )
+  );
+}
+  }
+  loadExam();
+
+}, [editId]);
   // CREATE EXAM
 
   async function createExam() {
@@ -140,122 +271,210 @@ const {
       return;
     }
 
-   const {
-  data: createdExam,
-  error,
-} = await supabase
+ let createdExam;
+let error;
 
-  .from("exams")
+if (editId) {
+const { data: exam } =
+  await supabase
+    .from("exams")
+    .select("published")
+    .eq("id", editId)
+    .maybeSingle();
 
-  .insert([
-    {
+if (exam?.published) {
 
-      title,
+  alert(
+  "Published exams cannot be edited"
+);
 
-      description,
+  return;
+}
+  const result = await supabase
+    .from("exams")
+    .update({
+  title,
+  description,
 
-      reward_pool:
-        rewardPool,
+  reward_pool:
+    Number(rewardPool),
 
-      duration:
-        Number(duration),
+  institute_id:
+    selectedInstitute,
 
-      institute_id:
-        selectedInstitute,
+  duration:
+    Number(duration),
+start_time:
+  new Date(
+    startTime
+  ).toISOString(),
 
-      created_by:
-        user?.id,
+end_time:
+  new Date(
+    endTime
+  ).toISOString(),
+})
+    .eq("id", editId)
+    .select()
+    .maybeSingle();
 
-      start_time:
-        new Date(
-          startTime
-        ).toISOString(),
+  createdExam = result.data;
+  error = result.error;
 
-      end_time:
-        new Date(
-          endTime
-        ).toISOString(),
+} else {
 
-      status:
-        "draft",
+  const result = await supabase
+    .from("exams")
+    .insert({
+  title,
+  description,
 
-      published:
-        false,
+  reward_pool:
+    Number(rewardPool),
 
-      cancelled:
-        false,
+  institute_id:
+    selectedInstitute,
 
-    },
-  ])
+  duration:
+    Number(duration),
 
-  .select()
+ start_time:
+  new Date(
+    startTime
+  ).toISOString(),
 
-  .single();
+end_time:
+  new Date(
+    endTime
+  ).toISOString(),
 
-    if (error) {
+  published: false,
 
-      console.log(error);
+  created_by:
+    user?.id,
+})
+    .select()
+    .maybeSingle();
 
-      alert(
-        "Failed to create exam"
-      );
+  createdExam = result.data;
+  error = result.error;
+}
 
-      return;
-    }
+if (error) {
 
-    alert(
-      "Exam created successfully"
-    );
+  console.log(error);
 
-    router.push(
-      "/admin"
-    );
-    if (
+  alert(
+    editId
+      ? "Failed to update exam"
+      : "Failed to create exam"
+  );
+
+  return;
+}
+
+alert(
+  editId
+    ? "Exam updated successfully"
+    : "Exam created successfully"
+);
+
+
+   if (
   selectedQuestions.length > 0
 ) {
 
-  const mappings =
-    selectedQuestions.map(
-      (questionId) => ({
+  // If editing, remove old mappings first
+  if (editId) {
 
-        exam_id:
-          createdExam.id,
+    await supabase
+      .from("exam_questions")
+      .delete()
+      .eq(
+        "exam_id",
+        editId
+      );
+  }
 
-        question_id:
-          questionId,
+  const examIdToUse =
+  editId ||
+  createdExam?.id;
 
-      })
-    );
+if (!examIdToUse) {
 
-  await supabase
+  alert(
+    "Failed to determine exam id"
+  );
 
-    .from(
-      "exam_questions"
-    )
-
-    .insert(mappings);
+  return;
 }
+
+const mappings =
+  selectedQuestions.map(
+    (questionId) => ({
+      exam_id: examIdToUse,
+      question_id: questionId,
+    })
+  );
+
+console.log(
+  "MAPPINGS TO INSERT:",
+  mappings
+);
+
+const {
+  data: insertedMappings,
+  error: mappingInsertError,
+} = await supabase
+  .from("exam_questions")
+  .insert(mappings)
+  .select();
+
+console.log(
+  "INSERTED MAPPINGS:",
+  insertedMappings
+);
+
+console.log(
+  "MAPPING INSERT ERROR:",
+  mappingInsertError
+);
+
+if (mappingInsertError) {
+
+  alert(
+    mappingInsertError.message
+  );
+
+  return;
+}
+}
+router.push("/admin");
   }
 
   return (
 
     <AdminGuard>
 
-      <main className="min-h-screen p-8 bg-gray-50">
+      <main className="min-h-screen p-5 bg-gray-50">
 
-        <div className="max-w-2xl mx-auto bg-white border rounded-3xl p-8 shadow-sm">
+        <div className="max-w-2xl mx-auto bg-white border rounded-3xl p-5 shadow-sm">
 
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex justify-between items-center mb-4">
 
   <h1 className="text-4xl font-bold">
 
-    Create Exam
+    {
+  editId
+    ? "Update Exam"
+    : "Create Exam"
+}
 
   </h1>
 
   <a
     href="/admin"
-    className="bg-black text-white px-5 py-2 rounded-xl"
+    className="bg-black text-white px-4 py-2 rounded-xl"
   >
 
     Dashboard
@@ -423,7 +642,7 @@ const {
 
 <div className="border rounded-3xl p-5 bg-gray-50">
 
-  <div className="flex items-center justify-between mb-5">
+  <div className="flex items-center justify-between mb-2">
 
     <h2 className="text-2xl font-bold">
 
@@ -452,7 +671,7 @@ const {
         e.target.value
       )
     }
-    className="w-full border rounded-2xl p-4 mb-5"
+    className="w-full border rounded-2xl p-4 mb-2"
   />
 
   <div className="max-h-[400px] overflow-y-auto space-y-4">
@@ -477,7 +696,7 @@ const {
           className="border rounded-2xl p-4 bg-white"
         >
 
-          <div className="flex justify-between gap-4">
+          <div className="flex justify-between gap-2">
 
             <div>
 
@@ -489,7 +708,7 @@ const {
 
               <div className="flex flex-wrap gap-2 text-sm">
 
-                <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-xl">
+                <div className="bg-tcd-gold/20 text-tcd-blue px-3 py-1 rounded-xl">
 
                   {q.subject}
 
@@ -570,10 +789,14 @@ const {
               onClick={
                 createExam
               }
-              className="bg-black text-white w-full py-4 rounded-2xl font-bold"
+              className="bg-black text-white w-full py-3 rounded-2xl font-bold"
             >
 
-              Create Exam
+              {
+  editId
+    ? "Update Exam"
+    : "Create Exam"
+}
 
             </button>
 

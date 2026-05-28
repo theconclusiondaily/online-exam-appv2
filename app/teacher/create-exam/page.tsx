@@ -168,7 +168,7 @@ cancelled: false,
   if (loading) {
 
     return (
-      <main className="p-10">
+      <main className="p-6">
         Loading...
       </main>
     );
@@ -194,7 +194,7 @@ cancelled: false,
 
           <Link
             href="/teacher"
-            className="bg-black text-white px-5 py-2 rounded-xl"
+            className="bg-black text-white px-4 py-2 rounded-xl"
           >
 
             Dashboard
@@ -203,7 +203,7 @@ cancelled: false,
 
         </div>
 
-        <div className="bg-white border rounded-3xl p-8 shadow-sm space-y-6">
+        <div className="bg-white border rounded-3xl p-5 shadow-sm space-y-6">
 
           <input
             type="text"
@@ -286,7 +286,8 @@ cancelled: false,
 </div>
           <button
             onClick={createExam}
-            className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold"
+            className="bg-tcd-blue
+hover:bg-tcd-blue-light text-white px-6 py-3 rounded-xl font-bold"
           >
 
             Create Exam

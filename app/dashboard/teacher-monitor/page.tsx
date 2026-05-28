@@ -15,84 +15,170 @@ import {
 } from "@/services/liveStatus.service";
 import StudentVideoTile
 from "@/components/dashboard/StudentVideoTile";
+import { useRouter } from "next/navigation";
 export default function
 TeacherMonitorPage() {
 
   const [students,
     setStudents] =
     useState<any[]>([]);
+    const [selectedExam,
+  setSelectedExam] =
+  useState("all");
 
+const [exams,
+  setExams] =
+  useState<any[]>([]);
+const [submittedStudents,
+  setSubmittedStudents] =
+  useState<any[]>([]);
   const [loading,
     setLoading] =
     useState(true);
 const [videoStreams,
   setVideoStreams] =
   useState<any>({});
-
+const router = useRouter();
   useEffect(() => {
 
-    async function loadData() {
+  async function loadData() {
 
-      const {
-        data,
-      } = await supabase
+    const {
+      data,
+    } = await supabase
 
-        .from(
-          "exam_live_status"
-        )
+      .from(
+        "exam_live_status"
+      )
 
-        .select("*")
+      .select("*")
 
-        .order(
-          "updated_at",
-          {
-            ascending: false,
-          }
-        );
+      .order(
+        "updated_at",
+        {
+          ascending: false,
+        }
+      );
 
-      if (data) {
+if (data) {
+const {
+  data: examsData,
+} = await supabase
 
-        setStudents(data);
-      }
+  .from("exams")
 
-      setLoading(false);
+  .select(`
+    id,
+    title
+  `)
+
+  .order(
+    "title"
+  );
+
+if (examsData) {
+
+  setExams(
+    examsData
+  );
+}
+  let filteredData =
+  data;
+
+if (
+  selectedExam !==
+  "all"
+) {
+
+  filteredData =
+    data.filter(
+      (student) =>
+        student.exam_id ===
+        selectedExam
+    );
+}
+
+const activeStudents =
+  filteredData.filter(
+    (student) => {
+
+      const diff =
+        Date.now() -
+        new Date(
+          student.updated_at
+        ).getTime();
+
+      return (
+        diff < 30000 &&
+        !student.submitted
+      );
     }
+  );
 
-    loadData();
+const completedStudents =
+  filteredData.filter(
+    (student) =>
+      student.submitted
+  );
 
-    const channel =
-      supabase
+  setStudents(
+    activeStudents
+  );
 
-        .channel(
-          "exam-monitor"
-        )
+  setSubmittedStudents(
+    completedStudents
+  );
+}
 
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table:
-              "exam_live_status",
-          },
+    setLoading(false);
+  }
 
-          () => {
+  loadData();
 
-            loadData();
-          }
-        )
+  // AUTO REFRESH EVERY 5 SECONDS
+  const interval =
+    setInterval(
+      loadData,
+      5000
+    );
 
-        .subscribe();
+  const channel =
+    supabase
 
-    return () => {
+      .channel(
+        "exam-monitor"
+      )
 
-      supabase
-        .removeChannel(
-          channel
-        );
-    };
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table:
+            "exam_live_status",
+        },
 
-  }, []);
+        () => {
+
+          loadData();
+        }
+      )
+
+      .subscribe();
+
+  return () => {
+
+    clearInterval(
+      interval
+    );
+
+    supabase
+      .removeChannel(
+        channel
+      );
+  };
+
+}, [selectedExam]);
 
   if (loading) {
 
@@ -112,39 +198,86 @@ const [videoStreams,
 
   return (
 
-    <main className="min-h-screen bg-gray-50 p-8">
+    <main className="min-h-screen bg-gray-50 p-5">
 
       <div className="flex items-center justify-between mb-10">
 
-        <div>
 
-          <h1 className="text-4xl font-bold">
+     <div>
 
-            Teacher Monitoring Dashboard
+ <button
+  onClick={() =>
+    router.push(
+      "/teacher"
+    )
+  }
+  className="mb-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl font-semibold"
+>
+  ← Back to Dashboard
+</button>
 
-          </h1>
+  <h1 className="text-4xl font-bold">
 
-          <p className="text-gray-600 mt-2">
+    Teacher Monitoring Dashboard
 
-            Live realtime monitoring of students
+  </h1>
 
-          </p>
+  <p className="text-gray-600 mt-2">
 
-        </div>
+    Live realtime monitoring of students
 
-        <div className="bg-black text-white px-6 py-4 rounded-2xl font-bold text-xl">
+  </p>
 
-          Live Students:
-          {" "}
-          {students.length}
+</div>
 
-        </div>
+        <div className="flex gap-2">
+<select
+  value={selectedExam}
+  onChange={(e) =>
+    setSelectedExam(
+      e.target.value
+    )
+  }
+  className="border rounded-xl px-4 py-3 font-semibold"
+>
+  <option value="all">
+    All Exams
+  </option>
+
+  {exams.map(
+    (exam) => (
+      <option
+        key={exam.id}
+        value={exam.id}
+      >
+        {exam.title}
+      </option>
+    )
+  )}
+</select>
+  <div className="bg-black text-white px-6 py-3 rounded-2xl font-bold text-xl">
+
+    Live Students:
+    {" "}
+    {students.length}
+
+  </div>
+
+  <div className="bg-green-600 text-white px-6 py-3 rounded-2xl font-bold text-xl">
+
+    Submitted:
+    {" "}
+    {submittedStudents.length}
+
+  </div>
+
+</div>
 
       </div>
 
       {students.length === 0 && (
 
-        <div className="bg-white rounded-3xl p-10 border text-center">
+        <div className="bg-white rounded-3xl p-6 border text-center">
 
           <h2 className="text-3xl font-bold mb-4">
 
@@ -161,10 +294,41 @@ const [videoStreams,
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
 
-        {students.map(
-          (student) => (
+       {students.map(
+  (student) => {
+
+    const secondsAgo =
+      Math.floor(
+        (
+          Date.now() -
+          new Date(
+            student.updated_at
+          ).getTime()
+        ) / 1000
+      );
+
+    let status =
+      "🔴 DISCONNECTED";
+
+    if (
+      secondsAgo <= 15
+    ) {
+
+      status =
+        "🟢 ACTIVE";
+
+    } else if (
+      secondsAgo <= 60
+    ) {
+
+      status =
+        "🟡 IDLE";
+    }
+
+    return (
 
             <div
               key={student.id}
@@ -185,7 +349,7 @@ const [videoStreams,
               `}
             >
 
-              <div className="flex items-start justify-between mb-6">
+              <div className="flex items-start justify-between mb-3">
 
                 <div>
 
@@ -210,32 +374,49 @@ const [videoStreams,
                 </div>
 
                 <div
-                  className={`px-4 py-2 rounded-xl text-sm font-bold
+                 className={`px-4 py-2 rounded-xl text-sm font-bold
 
-                    ${
-                      student.submitted
+  ${
+    status.includes("ACTIVE")
 
-                        ? "bg-green-100 text-green-700"
+      ? "bg-green-100 text-green-700"
 
-                        : "bg-blue-100 text-blue-700"
-                    }
-                  `}
+      : status.includes("IDLE")
+
+      ? "bg-yellow-100 text-yellow-700"
+
+      : "bg-red-100 text-red-700"
+  }
+`}
                 >
 
-                  {
-                    student.submitted
-
-                      ? "SUBMITTED"
-
-                      : "LIVE"
-                  }
+                 {status}
 
                 </div>
 
               </div>
 
               <div className="space-y-4 text-lg">
+<div className="flex justify-between">
 
+  <span>
+    Last Seen
+  </span>
+
+  <span className="font-bold">
+
+    {Math.floor(
+      (
+        Date.now() -
+        new Date(
+          student.updated_at
+        ).getTime()
+      ) / 1000
+    )} sec ago
+
+  </span>
+
+</div>
                 <div className="flex justify-between">
 
                   <span>
@@ -444,22 +625,64 @@ const [videoStreams,
 
             </div>
           )
+        }
         )}
         
 
       </div>
+{submittedStudents.length > 0 && (
+
+  <div className="mt-12">
+
+    <h2 className="text-3xl font-bold mb-3">
+
+      Submitted Students
+
+    </h2>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+
+      {submittedStudents.map(
+        (student) => (
+
+          <div
+            key={student.id}
+            className="bg-green-50 border border-green-300 rounded-3xl p-6"
+          >
+
+            <h3 className="text-xl font-bold">
+
+              {student.student_name}
+
+            </h3>
+
+            <p className="text-green-700 font-semibold mt-2">
+
+              Exam Submitted
+
+            </p>
+
+          </div>
+        )
+      )}
+
+    </div>
+
+  </div>
+    )
+  }
 
       {/* LIVE WEBCAM FEEDS */}
 
       <div className="mt-12">
 
-        <h2 className="text-3xl font-bold mb-6">
+        <h2 className="text-3xl font-bold mb-3">
 
           Live Webcam Feeds
 
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
 
           {Object.entries(
             videoStreams

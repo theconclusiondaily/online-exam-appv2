@@ -3,6 +3,7 @@
 import {
   useEffect,
   useState,
+  useRef
 } from "react";
 
 import {
@@ -10,13 +11,42 @@ import {
 } from "next/navigation";
 
 import Link from "next/link";
-
+import { TCDIcons }
+from "@/components/ui/tcd-icons";
 import { supabase }
 from "@/lib/supabase/client";
 import {
   updateExamStatuses,
 } from "@/lib/examStatus";
-
+import DashboardHero
+from "@/components/dashboard/DashboardHero";
+import WalletCard from "@/components/dashboard/WalletCard";
+import DailyRewardCard from "@/components/dashboard/DailyRewardCard";
+import AchievementCard from "@/components/dashboard/AchievementCard";
+import StudyStreakCard from "@/components/dashboard/StudyStreakCard";
+import LoginStreakCard from "@/components/dashboard/LoginStreakCard";
+import StatsGrid
+from "@/components/dashboard/StatsGrid";
+import LiveExamsSection
+from "@/components/dashboard/LiveExamsSection";
+import ExamHistoryTable
+from "@/components/dashboard/ExamHistoryTable";
+import ActivityFeed
+from "@/components/dashboard/ActivityFeed";
+import {
+  getLeague
+} from "@/lib/getLeague";
+import {
+  getLeagueProgress
+} from "@/lib/getLeagueProgress";
+import {
+  getLevelTitle
+} from "@/lib/getLevelTitle";
+import AchievementPopup
+from "@/components/dashboard/AchievementPopup";
+import {
+  getExamStatus
+} from "@/lib/getExamStatus";
 export default function DashboardPage() {
 
   const router =
@@ -29,7 +59,10 @@ export default function DashboardPage() {
   const [user,
     setUser] =
     useState<any>(null);
-
+const [
+  profile,
+  setProfile
+] = useState<any>(null);
   const [attempts,
     setAttempts] =
     useState<any[]>([]);
@@ -45,7 +78,78 @@ export default function DashboardPage() {
   const [ranks,
     setRanks] =
     useState<any>({});
+    const [percentiles,
+  setPercentiles] =
+  useState<any>({});
+  const [reviewStatus,
+  setReviewStatus] =
+  useState<any>({});
+const [examTitles,
+  setExamTitles] =
+  useState<Record<string, any>>(
+    {}
+  );
+  
+const [
+  topLeader,
+  setTopLeader
+] = useState<any>(null);
+  const [lastEarned,
+  setLastEarned] =
+  useState<any>(null);
+  const [streak, setStreak] =
+  useState<any>(null);
 
+const streakMilestones = [
+  3,
+  7,
+  15,
+  30,
+  60,
+  90,
+  120,
+  150,
+  180,
+  210,
+  240,
+  270,
+  300,
+  330,
+  365,
+];
+
+
+const [
+  loginStreak,
+  setLoginStreak
+] = useState<any>(null);
+const [
+  activities,
+  setActivities
+] = useState<any[]>([]);
+const [
+  achievements,
+  setAchievements
+] = useState<any[]>([]);
+
+const nextMilestone =
+  streakMilestones.find(
+    m =>
+      m >
+      (streak?.current_streak || 0)
+  ) || null;
+  const progressPercent =
+  nextMilestone
+    ? Math.min(
+        (
+          (streak?.current_streak || 0) /
+          nextMilestone
+        ) * 100,
+        100
+      )
+    : 100;
+
+    
   const [stats,
   setStats] =
   useState({
@@ -65,6 +169,57 @@ export default function DashboardPage() {
     totalWrong: 0,
 
   });
+  const [wallet,
+  setWallet] =
+  useState({
+
+    current_balance: 0,
+    last_exam_credits: 0,
+    lifetime_earned: 0,
+
+  });
+const [
+  dailyReward,
+  setDailyReward
+] = useState(0);
+
+const [
+  rewardClaimed,
+  setRewardClaimed
+] = useState(false);
+const [
+  unlockedPopup,
+  setUnlockedPopup
+] = useState<any>(null);
+const [
+  showRewardPopup,
+  setShowRewardPopup
+] = useState(false);
+const [
+  userXP,
+  setUserXP
+] = useState(0);
+const [
+  userLevel,
+  setUserLevel
+] = useState(0);
+const [
+  rewardAmount,
+  setRewardAmount
+] = useState(0);
+const league =
+  getLeague(
+    userXP
+  );
+
+  const leagueProgress =
+  getLeagueProgress(
+    userXP
+  );
+const levelTitle =
+  getLevelTitle(
+    userLevel
+  );
 
   // LOGOUT
 
@@ -88,14 +243,9 @@ export default function DashboardPage() {
 
 
 
-      const {
-  data: sessionData,
-} = await supabase
-  .auth
-  .getSession();
-
-const user =
-  sessionData?.session?.user;
+    const {
+  data: { user },
+} = await supabase.auth.getUser();
 
       // NOT LOGGED IN
 
@@ -108,43 +258,466 @@ const user =
         return;
       }
 
+await supabase.rpc(
+  "award_exam_achievements",
+  {
+    p_user_id: user.id,
+  }
+);
+const {
+  data: unlockedAchievements,
+} = await supabase
+
+  .from(
+    "user_achievements"
+  )
+
+  .select(`
+    *,
+    achievements (
+      title,
+      rarity,
+      reward_tcd
+    )
+  `)
+
+  .eq(
+    "user_id",
+    user.id
+  )
+
+  .eq(
+    "seen",
+    false
+  );
       setUser(user);
 
+
+if (
+  unlockedAchievements?.length
+) {
+
+  const firstAchievement =
+
+    unlockedAchievements[0]
+      ?.achievements;
+
+  setUnlockedPopup(
+    firstAchievement
+  );
+
+  const achievementIds =
+
+    unlockedAchievements.map(
+      (
+        a: any
+      ) => a.id
+    );
+
+  await supabase
+
+    .from(
+      "user_achievements"
+    )
+
+    .update({
+      seen: true,
+    })
+
+    .in(
+      "id",
+      achievementIds
+    );
+
+}
+let {
+  data: walletData,
+} = await supabase
+
+  .from(
+    "tcd_wallets"
+  )
+
+  .select("*")
+
+  .eq(
+    "user_id",
+    user.id
+  )
+
+  .maybeSingle();
+
+if (!walletData) {
+
+  await supabase
+
+    .from(
+      "tcd_wallets"
+    )
+
+    .insert({
+
+      user_id:
+        user.id,
+
+      current_balance:
+        0,
+
+      lifetime_earned:
+        0,
+
+    });
+    const {
+  data: activityData
+} = await supabase
+
+  .from("activity_feed")
+
+  .select("*")
+
+  .order(
+    "created_at",
+    {
+      ascending: false,
+    }
+  )
+
+  .limit(10);
+
+setActivities(
+  activityData || []
+);
+const {
+  data: leaderboardData
+} = await supabase
+
+  .from(
+    "leaderboard_view"
+  )
+
+  .select("*")
+
+  .order(
+    "xp",
+    {
+      ascending: false,
+    }
+  )
+
+  .limit(1);
+
+if (
+  leaderboardData?.length
+) {
+
+  setTopLeader(
+    leaderboardData[0]
+  );
+}const {
+  data: levelData
+} = await supabase
+
+  .from("user_levels")
+
+  .select("xp, level")
+
+  .eq(
+    "user_id",
+    user.id
+  )
+
+  .single();
+
+setUserXP(
+  levelData?.xp || 0
+);
+
+setUserLevel(
+  levelData?.level || 0
+);
+
+  const {
+    data: newWallet,
+  } = await supabase
+
+    .from(
+      "tcd_wallets"
+    )
+
+    .select("*")
+
+    .eq(
+      "user_id",
+      user.id
+    )
+
+    .single();
+
+  walletData =
+    newWallet;
+}
+
+if (walletData) {
+
+  setWallet(
+    walletData
+  );
+}
+const {
+  data: lastTxn,
+} = await supabase
+
+  .from(
+    "tcd_transactions"
+  )
+
+  .select(`
+    credits,
+    description
+  `)
+
+  .eq(
+    "user_id",
+    user.id
+  )
+
+  .order(
+    "created_at",
+    {
+      ascending: false,
+    }
+  )
+
+  .limit(1)
+
+  .maybeSingle();
+
+  setLastEarned(
+  lastTxn
+);
+const {
+  data: achievementsData,
+} = await supabase
+
+  .from(
+    "user_achievements"
+  )
+
+  .select("*")
+
+  .eq(
+    "user_id",
+    user.id
+  );
+
+setAchievements(
+  achievementsData || []
+);
+const {
+  data: streakData,
+  error: streakError,
+} = await supabase
+
+  .from(
+    "study_streaks"
+  )
+
+  .select("*")
+
+  .eq(
+    "user_id",
+    user.id
+  )
+
+  .maybeSingle();
+
+
+setStreak(
+  streakData
+);
+
+
+const {
+  data: loginStreakData,
+  error: loginQueryError,
+} = await supabase
+
+  .from(
+    "login_streaks"
+  )
+
+  .select("*")
+
+  .eq(
+    "user_id",
+    user.id
+  )
+
+  .maybeSingle();
+
+
+
+setLoginStreak(
+  loginStreakData
+);
+
+const {
+  data: rewardData,
+} = await supabase
+
+  .from(
+    "daily_login_rewards"
+  )
+
+  .select(
+    "last_claim_date"
+  )
+
+  .eq(
+    "user_id",
+    user.id
+  )
+
+  .maybeSingle();
+
+if (
+  rewardData?.last_claim_date ===
+  new Date()
+    .toISOString()
+    .split("T")[0]
+) {
+
+  setRewardClaimed(
+    true
+  );
+}
       // FETCH PROFILE
 
-      const {
-        data: profile,
-      } = await supabase
+    const {
+  data: profileData,
+} = await supabase
         .from("users")
         .select(`
-          institute_id,
-          role
-        `)
+  institute_id,
+  role,
+  name
+`)
+
         .eq(
           "email",
           user.email
         )
+        
         .single();
 
-      
+      setProfile(
+  profileData
+);
       // FETCH ATTEMPTS
 
       const {
-        data: attemptsData,
-        error: attemptsError,
-      } = await supabase
-        .from("exam_attempts")
-        .select("*")
-        .eq(
-          "user_id",
-          user.id
-        )
-        .order("created_at", {
-          ascending: false,
-        });
+  data: attemptsData,
+  error: attemptsError,
+} = await supabase
+  .from("exam_attempts")
+  .select(`
+    *,
+    exams (
+      id,
+      title
+    )
+  `)
+  .eq(
+    "user_id",
+    user.id
+  )
+  .order("created_at", {
+    ascending: false,
+  });
 
      
         if (attemptsData) {
+const examIds = [
+  ...new Set(
+    attemptsData.map(
+      (attempt) =>
+        attempt.exam_id
+    )
+  ),
+];
+
+const {
+  data: examsData,
+  error: examsError,
+} = await supabase
+  .from("exams")
+  .select(`
+  id,
+  title,
+  duration,
+  reward_pool,
+  end_time,
+  review_delay_minutes
+`)
+  .in("id", examIds);
+
+if (
+  !examsError &&
+  examsData
+) {
+
+ const examMap =
+  Object.fromEntries(
+    examsData.map(
+      (exam) => [
+        exam.id,
+        exam
+      ]
+    )
+  );
+
+setExamTitles(
+  examMap
+);
+const reviewMap: any = {};
+
+for (const attempt of attemptsData) {
+
+  const exam =
+    examMap[
+      attempt.exam_id
+    ];
+
+  if (
+    !exam?.end_time
+  ) {
+    continue;
+  }
+
+  const unlockTime =
+    new Date(
+      exam.end_time
+    );
+
+  unlockTime.setMinutes(
+    unlockTime.getMinutes() +
+    (
+      exam.review_delay_minutes ||
+      30
+    )
+  );
+
+  reviewMap[
+    attempt.id
+  ] =
+    new Date() >=
+    unlockTime;
+}
+
+setReviewStatus(
+  reviewMap
+);
+}
 
         setAttempts(
           attemptsData
@@ -235,6 +808,7 @@ const averageAccuracy =
       )
 
     : 0;
+    
 
 const averagePercentage =
   totalAttempts > 0
@@ -369,6 +943,7 @@ setAttempts(
 // LIVE RANKS
 
 const rankMap: any = {};
+const percentileMap: any = {};
 
 for (const attempt of latestAttempts) {
 
@@ -386,51 +961,134 @@ for (const attempt of latestAttempts) {
     continue;
   }
 
-  const sorted =
-    leaderboardData.sort(
-      (a, b) => {
+const sorted =
+  [...leaderboardData].sort(
+    (a, b) => {
 
-        // HIGHER SCORE FIRST
+      // 1. Higher Score First
 
-        if (
-          b.score !==
-          a.score
-        ) {
-
-          return (
-            b.score -
-            a.score
-          );
-        }
-
-        // EARLIER SUBMISSION WINS
+      if (
+        Number(b.score || 0) !==
+        Number(a.score || 0)
+      ) {
 
         return (
-
-          new Date(
-            a.created_at
-          ).getTime()
-
+          Number(b.score || 0)
           -
-
-          new Date(
-            b.created_at
-          ).getTime()
+          Number(a.score || 0)
         );
       }
-    );
+
+      // 2. Higher Accuracy First
+
+      if (
+        Number(
+          b.accuracy || 0
+        ) !==
+        Number(
+          a.accuracy || 0
+        )
+      ) {
+
+        return (
+          Number(
+            b.accuracy || 0
+          )
+          -
+          Number(
+            a.accuracy || 0
+          )
+        );
+      }
+
+      // 3. Less Time Taken Wins
+
+      if (
+        Number(
+          a.time_taken || 0
+        ) !==
+        Number(
+          b.time_taken || 0
+        )
+      ) {
+
+        return (
+          Number(
+            a.time_taken || 0
+          )
+          -
+          Number(
+            b.time_taken || 0
+          )
+        );
+      }
+
+      // 4. Earlier Submission Wins
+
+      return (
+        new Date(
+          a.submitted_at ||
+          a.created_at
+        ).getTime()
+
+        -
+
+        new Date(
+          b.submitted_at ||
+          b.created_at
+        ).getTime()
+      );
+    }
+  );
 
   const rank =
-    sorted.findIndex(
+  sorted.findIndex(
+    (item) =>
+      item.user_id ===
+      user.id
+  ) + 1;
+
+rankMap[
+  attempt.exam_id
+] = rank;
+
+  const currentUser =
+    sorted.find(
       (item) =>
         item.user_id ===
         user.id
-    ) + 1;
+    );
 
-  rankMap[
-    attempt.exam_id
-  ] = rank;
+  if (currentUser) {
+
+    const studentsBelowOrEqual =
+      sorted.filter(
+        (item) =>
+          Number(
+            item.score || 0
+          ) <=
+          Number(
+            currentUser.score || 0
+          )
+      ).length;
+
+    percentileMap[
+      attempt.exam_id
+    ] = Number(
+      (
+        (
+          studentsBelowOrEqual /
+          sorted.length
+        ) * 100
+      ).toFixed(2)
+    );
+  }
 }
+
+setRanks(rankMap);
+setPercentiles(
+  percentileMap
+);
 
 setRanks(rankMap);
 
@@ -438,13 +1096,15 @@ setRanks(rankMap);
       }
       // CURRENT TIME
 
-      const now =
-        new Date()
-          .toISOString();
+    
 
       // LIVE EXAMS
 
-      const {
+      const now =
+  new Date()
+    .toISOString();
+
+const {
   data: liveData,
 } = await supabase
 
@@ -454,17 +1114,22 @@ setRanks(rankMap);
 
   .eq(
     "institute_id",
-    profile?.institute_id
-  )
-
-  .eq(
-    "status",
-    "live"
+    profileData?.institute_id
   )
 
   .eq(
     "published",
     true
+  )
+
+  .lte(
+    "start_time",
+    now
+  )
+
+  .gte(
+    "end_time",
+    now
   )
 
   .order(
@@ -491,7 +1156,7 @@ setRanks(rankMap);
         .select("*")
         .eq(
           "institute_id",
-          profile?.institute_id
+          profileData?.institute_id
         )
         .gt(
           "start_time",
@@ -511,19 +1176,102 @@ setRanks(rankMap);
       setLoading(false);
     }
  useEffect(() => {
-    loadDashboard();
-const interval =
-  setInterval(() => {
 
-    loadDashboard();
+  async function init() {
 
-  }, 5000);
+    const {
+      data: {
+        session,
+      },
+    } =
+      await supabase.auth.getSession();
 
-return () =>
-  clearInterval(
-    interval
-  );
-  }, [router]);
+    if (
+      session?.user
+    ) {
+
+      await supabase.rpc(
+        "update_login_streak",
+        {
+          p_user_id:
+            session.user.id,
+        }
+      );
+    }
+
+    await loadDashboard();
+  }
+
+  init();
+
+  const interval =
+    setInterval(() => {
+
+      loadDashboard();
+
+    }, 30000);
+
+  return () =>
+    clearInterval(
+      interval
+    );
+
+}, [router]);
+const handleClaimReward =
+  async () => {
+
+    const {
+      data,
+      error,
+    } =
+      await supabase.rpc(
+        "claim_daily_login_reward",
+        {
+          p_user_id:
+            user.id,
+        }
+      );
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    if (data > 0) {
+
+      setDailyReward(
+        data
+      );
+
+      setRewardClaimed(
+        true
+      );
+
+      setRewardAmount(
+        data
+      );
+
+      setShowRewardPopup(
+        true
+      );
+
+      loadDashboard();
+    }
+  };
+
+  const milestones = [
+  3,
+  7,
+  15,
+  30,
+  45,
+  60,
+  90,
+  120,
+  180,
+  365,
+];
+
 
   // LOADING
 
@@ -544,358 +1292,676 @@ return () =>
   }
 
   return (
+  <main className="min-h-screen bg-gray-50 p-3 md:p-4">
 
-    <main className="min-h-screen bg-gray-50 p-6 md:p-8">
+    {/* REWARD POPUP */}
 
-      <div className="max-w-7xl mx-auto">
+    {showRewardPopup && (
+      <div
+        className="
+          fixed inset-0
+          bg-black/50
+          flex items-center justify-center
+          z-50
+        "
+      >
+        <div
+          className="
+            bg-white
+            rounded-3xl
+            p-5
+            shadow-xl
+            max-w-md
+            w-full
+            text-center
+          "
+        >
+          <div className="text-4xl mb-4">
+            🎁
+          </div>
 
-        {/* HEADER */}
+          <h2 className="text-3xl font-bold mb-4">
+            Daily Reward Claimed
+          </h2>
 
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10">
-
-          <div>
-
-            <h1 className="text-4xl font-bold mb-2">
-
-              Student Dashboard
-
-            </h1>
-
-            <p className="text-gray-600">
-
-              Welcome back {" "}
-              {user?.email}
-
-            </p>
-
+          <div className="text-3xl font-bold text-green-600 mb-3">
+            +{rewardAmount} TCD
           </div>
 
           <button
-            onClick={
-              handleLogout
+            onClick={() =>
+              setShowRewardPopup(false)
             }
-            className="bg-red-500 text-white px-6 py-3 rounded-2xl font-bold hover:bg-red-600 transition"
+            className="
+              bg-tcd-blue
+              text-white
+              px-8
+              py-3
+              rounded-xl
+              font-bold
+            "
           >
-
-            Logout
-
+            Awesome!
           </button>
+        </div>
+      </div>
+    )}
+{
+  unlockedPopup && (
+
+    <AchievementPopup
+
+      achievement={
+        unlockedPopup
+      }
+
+      onClose={() =>
+        setUnlockedPopup(
+          null
+        )
+      }
+
+    />
+  )
+}
+    <div className="max-w-7xl mx-auto">
+
+      {/* HERO */}
+
+     <DashboardHero
+  name={
+  profile?.name ||
+  "Student"
+}
+  balance={
+    wallet?.current_balance || 0
+  }
+  studyStreak={
+    streak?.current_streak || 0
+  }
+  loginStreak={
+    loginStreak?.current_streak || 0
+  }
+  level={userLevel}
+  levelTitle={levelTitle}
+
+  xp={userXP}
+/>
+
+{/* TOP CARDS */}
+
+<div
+  className="
+    grid
+    xl:grid-cols-12
+
+    gap-3
+
+    mb-4
+  "
+>
+
+  {/* LEADERBOARD HUB */}
+
+  <div className="xl:col-span-5">
+
+    <Link
+      href="/dashboard/leaderboard"
+      className="
+        relative
+        overflow-hidden
+
+        bg-gradient-to-br
+        from-tcd-blue
+        via-[#35548C]
+        to-[#203B63]
+
+        rounded-[28px]
+
+        p-4
+
+        shadow-lg
+
+        text-white
+
+        hover:shadow-2xl
+        hover:-translate-y-1
+
+        transition-all
+        duration-300
+
+        flex
+        flex-col
+
+        gap-4
+      "
+    >
+
+      {/* WATERMARK */}
+
+      <img
+        src="/logo.png"
+        alt="TCD"
+        className="
+          absolute
+
+          right-[-60px]
+          bottom-[-60px]
+
+          w-48
+          h-48
+
+          opacity-[0.04]
+        "
+      />
+
+      {/* TOP */}
+
+      <div className="relative z-10">
+
+        <div
+          className="
+            inline-flex
+            items-center
+            gap-2
+
+            px-3
+            py-1.5
+
+            rounded-full
+
+            bg-white/10
+
+            border
+            border-white/10
+
+            text-tcd-gold
+
+            text-sm
+
+            mb-3
+          "
+        >
+
+          {TCDIcons.leaderboard}
+
+          Competitive Hub
 
         </div>
+<div
+  className={`
+    inline-flex
+    items-center
 
-        {/* ANALYTICS */}
+    gap-2
 
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+    px-4
+    py-1
 
-  <div className="bg-white border rounded-3xl p-6 shadow-sm">
+    rounded-full
 
-    <p className="text-gray-500 mb-2">
+    border
 
-      Total Attempts
+    text-sm
+    font-bold
 
-    </p>
+    mb-3
 
-    <h2 className="text-5xl font-bold">
+    ${league.bg}
 
-      {stats.totalAttempts}
+    ${league.color}
 
-    </h2>
+    ${league.border}
+  `}
+>
 
-  </div>
+  {TCDIcons.rank}
 
-  <div className="bg-white border rounded-3xl p-6 shadow-sm">
-
-    <p className="text-gray-500 mb-2">
-
-      Average Accuracy
-
-    </p>
-
-    <h2 className="text-5xl font-bold text-blue-600">
-
-      {stats.averageAccuracy}%
-
-    </h2>
-
-  </div>
-
-  <div className="bg-white border rounded-3xl p-6 shadow-sm">
-
-    <p className="text-gray-500 mb-2">
-
-      Average Percentage
-
-    </p>
-
-    <h2 className="text-5xl font-bold text-green-600">
-
-      {stats.averagePercentage}%
-
-    </h2>
-
-  </div>
-
-  <div className="bg-white border rounded-3xl p-6 shadow-sm">
-
-    <p className="text-gray-500 mb-2">
-
-      Highest Score
-
-    </p>
-
-    <h2 className="text-5xl font-bold text-purple-600">
-
-      {stats.highestScore}
-
-    </h2>
-
-  </div>
-
-  <div className="bg-white border rounded-3xl p-6 shadow-sm">
-
-    <p className="text-gray-500 mb-2">
-
-      Correct Answers
-
-    </p>
-
-    <h2 className="text-5xl font-bold text-green-600">
-
-      {stats.totalCorrect}
-
-    </h2>
-
-  </div>
-
-  <div className="bg-white border rounded-3xl p-6 shadow-sm">
-
-    <p className="text-gray-500 mb-2">
-
-      Wrong Answers
-
-    </p>
-
-    <h2 className="text-5xl font-bold text-red-600">
-
-      {stats.totalWrong}
-
-    </h2>
-
-  </div>
+  {league.name} League
 
 </div>
-        {/* LIVE EXAMS */}
+<div
+  className="
+    mt-3
 
-        <div className="bg-white border rounded-3xl p-6 shadow-sm mb-10">
+    w-full
+    max-w-sm
+  "
+>
 
-          <div className="flex items-center justify-between mb-6">
+  <div
+    className="
+      flex
+      items-center
+      justify-between
 
-            <h2 className="text-3xl font-bold">
+      text-xs
 
-              Live Exams
+      text-white/70
 
-            </h2>
+      mb-2
+    "
+  >
 
-            <div className="bg-green-100 text-green-700 border border-green-300 px-4 py-2 rounded-2xl font-bold">
+    <span>
 
-              {liveExams.length}
-              {" "}
-              Live
+      {league.name}
 
-            </div>
+    </span>
 
-          </div>
+    <span>
 
-          <div className="space-y-5">
+      {
+        leagueProgress.nextLeague
+      }
 
-            {liveExams.map((exam) => (
+    </span>
 
-              <div
-                key={exam.id}
-                className="border rounded-2xl p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
-              >
+  </div>
 
-                <div>
+  <div
+    className="
+      h-3
 
-                  <h3 className="text-2xl font-bold mb-2">
+      rounded-full
 
-                    {exam.title}
+      bg-white/10
 
-                  </h3>
+      overflow-hidden
+    "
+  >
 
-                  <p className="text-gray-600">
+    <div
+      className="
+        h-full
 
-                    Ends:
-                    {" "}
+        bg-tcd-gold
 
-                    {new Date(
-                      exam.end_time
-                    ).toLocaleString(
-                      "en-IN",
-                      
-                    )}
+        rounded-full
 
-                  </p>
+        transition-all
+        duration-700
+      "
 
-                </div>
+      style={{
 
-                <div className="flex items-center gap-4">
+        width:
+          `${leagueProgress.progress}%`
 
-                  <div className="text-green-600 font-bold text-xl">
+      }}
+    />
 
-                    ₹
-                    {exam.reward_pool || 0}
+  </div>
 
-                  </div>
+  <p
+    className="
+      text-xs
 
-                  <Link
-                    href={`/exam/${exam.id}`}
-                    className="bg-black text-white px-6 py-3 rounded-2xl font-bold"
-                  >
+      text-white/60
 
-                    Start Exam
+      mt-2
+    "
+  >
 
-                  </Link>
+    {
+      leagueProgress.remaining
+    } XP to {" "}
+    {
+      leagueProgress.nextLeague
+    }
 
-                </div>
+  </p>
 
-              </div>
+</div>
+        <h2
+          className="
+            text-2xl
+            font-black
 
-            ))}
+            leading-tight
 
-            {liveExams.length === 0 && (
+            mb-1
+          "
+        >
 
-              <div className="text-center text-gray-500 py-8">
+          Global Leaderboard
 
-                No live exams right now
+        </h2>
 
-              </div>
+        <p
+          className="
+            text-white/70
 
-            )}
+            text-sm
+          "
+        >
 
-          </div>
+          Compete with top
+          performers globally.
 
-        </div>
+        </p>
 
- {/* ATTEMPT HISTORY */}
+      </div>
 
-<div className="bg-white border rounded-3xl p-6 shadow-sm">
-
-  <h2 className="text-3xl font-bold mb-6">
-
-    My Exam History
-
-  </h2>
-
-  <div className="space-y-5">
-
-    {attempts.map((attempt) => (
+      {/* PREVIEW */}
 
       <div
-        key={attempt.id}
-        className="border rounded-2xl p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+        className="
+          relative
+          z-10
+
+          bg-white/10
+
+          rounded-2xl
+
+          px-4
+          py-3
+        "
       >
 
-        <div>
+        <div
+          className="
+            flex
+            items-center
+            justify-between
+          "
+        >
 
-          <h3 className="text-2xl font-bold mb-2">
+          <div
+            className="
+              flex
+              items-center
 
-            Exam Attempt
-
-          </h3>
-
-          <p className="text-gray-600">
-
-            Attempted on:
-            {" "}
-
-            {new Date(
-              attempt.created_at
-            ).toLocaleString(
-              "en-IN",
-            )}
-
-          </p>
-
-          <p className="text-sm text-gray-500 mt-2">
-
-            Rank:
-            {" "}
-            #
-
-            {
-              ranks[
-                attempt.exam_id
-              ] || "-"
-            }
-
-          </p>
-
-        </div>
-
-        <div className="flex items-center gap-4 flex-wrap">
-
-          {/* ANALYTICS */}
-
-          <div className="flex flex-col gap-2">
-
-            <div className="bg-blue-100 text-blue-700 px-4 py-2 rounded-xl font-bold text-center">
-
-              Accuracy:
-              {" "}
-              {attempt.accuracy || 0}%
-
-            </div>
-
-            <div className="bg-green-100 text-green-700 px-4 py-2 rounded-xl font-bold text-center">
-
-              Percentage:
-              {" "}
-              {attempt.percentage || 0}%
-
-            </div>
-
-          </div>
-
-          {/* SCORE */}
-
-          <div className="text-4xl font-bold text-blue-600">
-
-            {attempt.score}
-
-          </div>
-
-          {/* VIEW RANK */}
-
-          <Link
-            href={`/leaderboard/${attempt.exam_id}`}
-            className="bg-gray-100 border px-5 py-3 rounded-2xl font-bold"
+              gap-3
+            "
           >
 
-            View Rank
+            <div
+              className="
+                w-11
+                h-11
 
-          </Link>
+                rounded-xl
+
+                bg-tcd-gold/20
+
+                flex
+                items-center
+                justify-center
+
+                text-lg
+                font-black
+              "
+            >
+
+              #1
+
+            </div>
+
+            <div>
+
+              <p
+                className="
+                  font-bold
+
+                  leading-none
+
+                  mb-1
+                "
+              >
+
+                {
+                  topLeader?.email
+                    ?.split("@")[0] ||
+
+                  "Top Performer"
+                }
+
+              </p>
+
+              <p
+                className="
+                  text-xs
+                  text-white/60
+                "
+              >
+
+                {
+                  topLeader?.xp || 0
+                } XP
+
+              </p>
+
+            </div>
+
+          </div>
+
+          <div
+            className="
+              scale-90
+            "
+          >
+
+            {TCDIcons.rank}
+
+          </div>
 
         </div>
 
       </div>
 
-    ))}
+      {/* CTA */}
 
-    {attempts.length === 0 && (
+      <div
+        className="
+          relative
+          z-10
+        "
+      >
 
-      <div className="text-center text-gray-500 py-8">
+        <div
+          className="
+            inline-flex
+            items-center
+            gap-2
 
-        No attempts yet
+            bg-tcd-gold
+
+            text-tcd-blue
+
+            px-4
+            py-2
+
+            rounded-2xl
+
+            text-sm
+            font-black
+
+            shadow-md
+          "
+        >
+
+          Open Leaderboard
+
+          {TCDIcons.target}
+
+        </div>
 
       </div>
 
-    )}
- </div>
+    </Link>
+<div
+  className="
+    relative
+
+    flex
+    items-center
+    justify-center
+
+    flex-1
+
+    min-h-[320px]
+
+    overflow-hidden
+  "
+>
+
+  {/* AMBIENT GLOW */}
+
+  <div
+    className="
+      absolute
+
+      w-[420px]
+      h-[420px]
+
+      rounded-full
+
+      bg-tcd-blue/[0.03]
+
+      blur-3xl
+    "
+  />
+
+  {/* WATERMARK LOGO */}
+
+  <img
+    src="/logo.png"
+    alt="TCD"
+
+    className="
+      relative
+      z-10
+
+      w-[480px]
+      h-[480px]
+
+      object-contain
+
+      opacity-[0.50]
+
+      select-none
+      pointer-events-none
+    "
+  />
+
+</div>
+  </div>
+
+  {/* RIGHT STACK */}
+
+  <div
+    className="
+      xl:col-span-7
+
+      flex
+      flex-col
+
+      gap-3
+    "
+  >
+
+    <WalletCard
+      balance={
+        wallet?.current_balance || 0
+      }
+      lifetime={
+        wallet?.lifetime_earned || 0
+      }
+      lastEarned={
+        lastEarned?.credits || 0
+      }
+    />
+
+    <div
+      className="
+        grid
+        md:grid-cols-2
+
+        gap-3
+      "
+    >
+
+      <DailyRewardCard
+        rewardClaimed={
+          rewardClaimed
+        }
+        onClaim={
+          handleClaimReward
+        }
+      />
+
+      <AchievementCard
+        achievements={
+          achievements
+        }
+      />
+
+    </div>
+
   </div>
 
 </div>
 
-    </main>
-  );
+      {/* STREAK CARDS */}
+
+      <div className="grid md:grid-cols-2 gap-3 mb-4">
+
+        <StudyStreakCard
+          current={
+            streak?.current_streak || 0
+          }
+          longest={
+            streak?.longest_streak || 0
+          }
+          nextMilestone={
+            nextMilestone
+          }
+          progressPercent={
+            progressPercent
+          }
+        />
+
+        <LoginStreakCard
+          current={
+            loginStreak?.current_streak || 0
+          }
+          longest={
+            loginStreak?.longest_streak || 0
+          }
+        />
+
+      </div>
+{/* LIVE ACTIVITY */}
+
+<ActivityFeed
+  activities={activities}
+  setActivities={
+    setActivities
   }
+/>
+      {/* PERFORMANCE */}
+
+      <StatsGrid
+        stats={stats}
+      />
+
+      {/* LIVE EXAMS */}
+
+      <LiveExamsSection
+        liveExams={liveExams}
+      />
+
+      {/* HISTORY */}
+
+      <ExamHistoryTable
+        attempts={attempts}
+        ranks={ranks}
+        examTitles={examTitles}
+      />
+
+    </div>
+
+  </main>
+);
+}

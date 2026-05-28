@@ -354,11 +354,11 @@ await fetchExams();
 
   <AdminGuard>
 
-    <main className="min-h-screen p-6 md:p-8 bg-gray-50">
+    <main className="min-h-screen p-6 md:p-5 bg-gray-50">
 
       <div className="max-w-7xl mx-auto">
 
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-4">
 
   <h1 className="text-4xl font-bold">
 
@@ -368,7 +368,7 @@ await fetchExams();
 
   <a
     href="/admin"
-    className="bg-black text-white px-5 py-2 rounded-xl"
+    className="bg-black text-white px-4 py-2 rounded-xl"
   >
 
     Dashboard
@@ -381,7 +381,7 @@ await fetchExams();
 
         <div className="bg-white border rounded-3xl p-6 shadow-sm mb-10">
 
-          <h2 className="text-2xl font-bold mb-6">
+          <h2 className="text-2xl font-bold mb-3">
             Add Question
           </h2>
 
@@ -589,7 +589,7 @@ await fetchExams();
 
             <button
               onClick={addQuestion}
-              className="bg-black text-white px-6 py-4 rounded-2xl font-bold w-full"
+              className="bg-black text-white px-6 py-3 rounded-2xl font-bold w-full"
             >
               Add Question
             </button>
@@ -602,7 +602,7 @@ await fetchExams();
 
         <div className="bg-white border rounded-3xl p-6 shadow-sm">
 
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-3">
 
             <h2 className="text-2xl font-bold">
               Questions
@@ -646,7 +646,7 @@ await fetchExams();
                 className="border rounded-2xl p-5"
               >
 
-                <div className="flex justify-between gap-4 mb-4">
+                <div className="flex justify-between gap-2 mb-4">
 
                   <h3 className="font-bold text-lg leading-relaxed">
                     Q{index + 1}. {q.question}
@@ -684,7 +684,7 @@ await fetchExams();
                 </div>
 <div className="flex flex-wrap gap-3 mt-4 mb-4">
 
-  <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-xl text-sm font-bold">
+  <div className="bg-tcd-gold/20 text-tcd-blue px-3 py-1 rounded-xl text-sm font-bold">
 
     {q.subject || "General"}
 

@@ -39,7 +39,7 @@ function ExamTopStats({
 
       {/* LIVE STUDENTS */}
 
-      <div className="bg-green-500/20 border border-green-500/30 px-5 py-3 rounded-2xl">
+      <div className="bg-green-500/20 border border-green-500/30 px-4 py-3 rounded-2xl">
 
         <p className="text-sm text-green-700">
 

@@ -25,7 +25,7 @@ export default function ProtectedRoute({
 
   if (loading) {
     return (
-      <div className="text-white p-10">
+      <div className="text-white p-6">
         Loading...
       </div>
     );

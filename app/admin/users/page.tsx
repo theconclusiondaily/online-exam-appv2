@@ -100,11 +100,11 @@ export default function UsersPage() {
 
     <AdminGuard>
 
-      <main className="min-h-screen bg-gray-50 p-6 md:p-8">
+      <main className="min-h-screen bg-gray-50 p-6 md:p-5">
 
         <div className="max-w-7xl mx-auto">
 
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex justify-between items-center mb-4">
 
   <h1 className="text-4xl font-bold">
 
@@ -114,7 +114,7 @@ export default function UsersPage() {
 
   <a
     href="/admin"
-    className="bg-black text-white px-5 py-2 rounded-xl"
+    className="bg-black text-white px-4 py-2 rounded-xl"
   >
 
     Dashboard
@@ -132,7 +132,7 @@ export default function UsersPage() {
                 className="bg-white border rounded-3xl p-6 shadow-sm"
               >
 
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
 
                   <div>
 
@@ -162,7 +162,7 @@ export default function UsersPage() {
 
                   </div>
 
-                  <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex flex-col md:flex-row gap-2">
 
                     {/* ROLE */}
 

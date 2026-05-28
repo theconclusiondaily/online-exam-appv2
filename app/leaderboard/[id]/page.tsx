@@ -79,45 +79,93 @@ const [liveUpdate,
       return;
     }
 
-    if (data) {
+ if (data) {
 
-      const sortedData =
-        data.sort(
-          (a, b) => {
+  const sortedData =
+    [...data].sort(
+      (a, b) => {
 
-            // HIGHER SCORE FIRST
+        // 1. HIGHER SCORE FIRST
 
-            if (
-              b.score !==
-              a.score
-            ) {
+        if (
+          Number(b.score || 0) !==
+          Number(a.score || 0)
+        ) {
 
-              return (
-                b.score -
-                a.score
-              );
-            }
+          return (
+            Number(b.score || 0)
+            -
+            Number(a.score || 0)
+          );
+        }
 
-            // EARLIER SUBMISSION WINS
+        // 2. HIGHER ACCURACY FIRST
 
-            return (
-              new Date(
-                a.created_at
-              ).getTime() -
+        if (
+          Number(
+            b.accuracy || 0
+          ) !==
+          Number(
+            a.accuracy || 0
+          )
+        ) {
 
-              new Date(
-                b.created_at
-              ).getTime()
-            );
-          }
+          return (
+            Number(
+              b.accuracy || 0
+            )
+            -
+            Number(
+              a.accuracy || 0
+            )
+          );
+        }
+
+        // 3. LESS TIME TAKEN WINS
+
+        if (
+          Number(
+            a.time_taken || 0
+          ) !==
+          Number(
+            b.time_taken || 0
+          )
+        ) {
+
+          return (
+            Number(
+              a.time_taken || 0
+            )
+            -
+            Number(
+              b.time_taken || 0
+            )
+          );
+        }
+      
+        // 4. EARLIER SUBMISSION WINS
+
+        return (
+          new Date(
+            a.submitted_at ||
+            a.created_at
+          ).getTime()
+
+          -
+
+          new Date(
+            b.submitted_at ||
+            b.created_at
+          ).getTime()
         );
+      }
+    );
 
-      setAttempts(
-        [...sortedData]
-      );
-    }
+  setAttempts(
+    sortedData
+  );
+ }
   }
-
   // POLLING
 
   useEffect(() => {
@@ -176,15 +224,91 @@ const [liveUpdate,
 
 }, [examId]);
 
+  const sortedAttempts =
+  [...attempts].sort(
+    (a, b) => {
+
+      // 1. Score DESC
+
+      if (
+        Number(b.score || 0) !==
+        Number(a.score || 0)
+      ) {
+
+        return (
+          Number(b.score || 0)
+          -
+          Number(a.score || 0)
+        );
+      }
+
+      // 2. Accuracy DESC
+
+      if (
+        Number(
+          b.accuracy || 0
+        ) !==
+        Number(
+          a.accuracy || 0
+        )
+      ) {
+
+        return (
+          Number(
+            b.accuracy || 0
+          )
+          -
+          Number(
+            a.accuracy || 0
+          )
+        );
+      }
+
+      // 3. Time Taken ASC
+
+      if (
+        Number(
+          a.time_taken || 0
+        ) !==
+        Number(
+          b.time_taken || 0
+        )
+      ) {
+
+        return (
+          Number(
+            a.time_taken || 0
+          )
+          -
+          Number(
+            b.time_taken || 0
+          )
+        );
+      }
+
+      // 4. Earlier Submission ASC
+
+      return (
+        new Date(
+          a.created_at
+        ).getTime()
+        -
+        new Date(
+          b.created_at
+        ).getTime()
+      );
+    }
+  );
+  
   return (
 
-    <main className="min-h-screen bg-gray-50 p-4 md:p-8">
+    <main className="min-h-screen bg-gray-50 p-4 md:p-5">
 
       <div className="max-w-3xl mx-auto">
 
         {/* HEADER */}
 
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4">
 
           <div>
 
@@ -208,7 +332,7 @@ const [liveUpdate,
 
     {liveUpdate && (
 
-      <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-xl text-sm font-bold animate-pulse">
+      <div className="bg-tcd-gold/20 text-tcd-blue px-3 py-1 rounded-xl text-sm font-bold animate-pulse">
 
         Updating...
 
@@ -231,7 +355,7 @@ const [liveUpdate,
 
           <Link
             href="/dashboard"
-            className="bg-black text-white px-5 py-3 rounded-2xl font-bold w-fit"
+            className="bg-black text-white px-4 py-3 rounded-2xl font-bold w-fit"
           >
 
             Back to Dashboard
@@ -244,7 +368,7 @@ const [liveUpdate,
 
         <div className="space-y-4">
 
-          {attempts.map(
+         {sortedAttempts.map(
             (
               attempt,
               index
@@ -317,7 +441,7 @@ const [liveUpdate,
 
                   <div className="text-right">
 
-                    <p className="text-5xl font-bold text-green-600">
+                    <p className="text-3xl font-bold text-green-600">
 
                       {attempt.score}
 
@@ -333,16 +457,7 @@ const [liveUpdate,
 
   <div className="flex flex-wrap justify-end gap-2 mt-3">
 
-    <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-xl text-sm font-bold">
-
-      Accuracy:
-      {" "}
-
-      {attempt.accuracy || 0}%
-
-    </div>
-
-    <div className="bg-green-100 text-green-700 px-3 py-1 rounded-xl text-sm font-bold">
+       <div className="bg-green-100 text-green-700 px-3 py-1 rounded-xl text-sm font-bold">
 
       Percentage:
       {" "}
@@ -350,7 +465,27 @@ const [liveUpdate,
       {attempt.percentage || 0}%
 
     </div>
+<div className="mt-2 text-sm text-gray-600">
 
+  🎯 Accuracy:
+  {" "}
+  {attempt.accuracy || 0}%
+
+</div>
+
+<div className="text-sm text-gray-600">
+
+  ⏱️ Time:
+  {" "}
+  {Math.floor(
+    (attempt.time_taken || 0) / 60
+  )}
+  m
+  {" "}
+  {(attempt.time_taken || 0) % 60}
+  s
+
+</div>
   </div>
 
 </div>
@@ -366,7 +501,7 @@ const [liveUpdate,
 
           {attempts.length === 0 && (
 
-            <div className="bg-white border rounded-2xl p-10 text-center text-gray-500">
+            <div className="bg-white border rounded-2xl p-6 text-center text-gray-500">
 
               No participants yet
 

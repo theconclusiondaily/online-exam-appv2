@@ -1,0 +1,548 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase/client";
+
+export default function ProfilePage() {
+
+  const [profile, setProfile] =
+    useState<any>(null);
+
+  const [stats, setStats] =
+    useState({
+      exams: 0,
+      highest: 0,
+      accuracy: 0,
+      lifetimeTcd: 0,
+      currentStreak: 0,
+      longestStreak: 0,
+      achievements: 0,
+    });
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  async function loadProfile() {
+
+    const {
+      data: authData,
+    } =
+      await supabase.auth.getUser();
+
+    const user =
+      authData.user;
+
+    if (!user) return;
+
+    // PROFILE
+
+    const {
+      data: profileData,
+    } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    setProfile(profileData);
+
+    // EXAMS
+
+    const {
+      data: attempts,
+    } = await supabase
+      .from("exam_attempts")
+      .select(`
+        percentage,
+        score
+      `)
+      .eq(
+        "user_id",
+        user.id
+      );
+
+    const exams =
+      attempts?.length || 0;
+
+    const highest =
+      Math.max(
+        ...(attempts?.map(
+          (a) =>
+            a.score || 0
+        ) || [0])
+      );
+
+    const accuracy =
+      exams > 0
+        ? Math.round(
+            attempts.reduce(
+              (
+                sum,
+                a
+              ) =>
+                sum +
+                (
+                  a.percentage ||
+                  0
+                ),
+              0
+            ) / exams
+          )
+        : 0;
+
+    // WALLET
+
+    const {
+      data: wallet,
+    } = await supabase
+      .from("tcd_wallets")
+      .select(`
+        lifetime_earned
+      `)
+      .eq(
+        "user_id",
+        user.id
+      )
+      .single();
+
+    // STREAK
+
+    const {
+      data: streak,
+    } = await supabase
+      .from("study_streaks")
+      .select("*")
+      .eq(
+        "user_id",
+        user.id
+      )
+      .single();
+
+    // ACHIEVEMENTS
+
+    const {
+      count:
+        achievementCount,
+    } = await supabase
+      .from(
+        "user_achievements"
+      )
+      .select(
+        "*",
+        {
+          count:
+            "exact",
+          head: true,
+        }
+      )
+      .eq(
+        "user_id",
+        user.id
+      );
+
+    setStats({
+      exams,
+      highest,
+      accuracy,
+      lifetimeTcd:
+        wallet
+          ?.lifetime_earned ||
+        0,
+      currentStreak:
+        streak
+          ?.current_streak ||
+        0,
+      longestStreak:
+        streak
+          ?.longest_streak ||
+        0,
+      achievements:
+        achievementCount ||
+        0,
+    });
+  }
+
+  return (
+    <main className="min-h-screen bg-[#F8F9FB] p-6 md:p-5">
+
+      <div className="max-w-7xl mx-auto">
+
+        {/* BACK BUTTON */}
+
+        <div className="mb-4">
+
+          <Link
+            href="/dashboard"
+            className="
+              inline-flex
+              items-center
+              gap-2
+
+              px-4
+              py-3
+
+              bg-white
+
+              rounded-2xl
+
+              border
+              border-gray-100
+
+              shadow-sm
+
+              hover:shadow-md
+
+              transition-all
+            "
+          >
+            ← Back To Dashboard
+          </Link>
+
+        </div>
+
+        {/* HERO */}
+
+        <div
+          className="
+            bg-tcd-blue
+            text-white
+
+            rounded-2xl
+
+            p-6
+
+            shadow-xl
+
+            border
+            border-tcd-gold/20
+
+            relative
+            overflow-hidden
+
+            mb-10
+          "
+        >
+
+          <div className="absolute right-6 top-6 opacity-10">
+
+            <img
+              src="/logo.png"
+              alt="TCD"
+              className="w-36 h-36 object-contain"
+            />
+
+          </div>
+
+          <div
+            className="
+              inline-flex
+              items-center
+              gap-2
+
+              bg-tcd-gold/20
+
+              text-tcd-gold
+
+              px-4
+              py-2
+
+              rounded-full
+
+              mb-3
+            "
+          >
+            👤 Student Profile
+          </div>
+
+          <h1 className="text-3xl font-black mb-4">
+
+            My Profile
+
+          </h1>
+
+          <p className="text-white/80 text-lg">
+
+            Track your learning journey,
+            achievements and growth.
+
+          </p>
+
+        </div>
+
+        {/* PROFILE */}
+
+        <div className="grid lg:grid-cols-3 gap-3 mb-10">
+
+          {/* LEFT */}
+
+          <div
+            className="
+              bg-white
+
+              rounded-[28px]
+
+              border
+              border-gray-100
+
+              p-5
+
+              shadow-sm
+
+              text-center
+            "
+          >
+
+            <div
+              className="
+                w-28
+                h-28
+
+                rounded-full
+
+                bg-tcd-gold
+
+                text-tcd-blue
+
+                flex
+                items-center
+                justify-center
+
+                text-3xl
+                font-black
+
+                mx-auto
+
+                mb-3
+              "
+            >
+              {
+  profile?.name
+    ?.charAt(0)
+    ?.toUpperCase() ||
+  "S"
+}
+            </div>
+
+            <h2 className="text-3xl font-black text-tcd-blue">
+
+             {
+  profile?.name ||
+  "Student"
+}
+
+            </h2>
+
+            <p className="text-gray-500 mt-2">
+
+              Conclusion Daily Learner
+
+            </p>
+
+          </div>
+
+          {/* RIGHT */}
+
+          <div className="lg:col-span-2">
+
+            <div
+              className="
+                bg-white
+
+                rounded-[28px]
+
+                border
+                border-gray-100
+
+                p-5
+
+                shadow-sm
+              "
+            >
+
+              <h2
+                className="
+                  text-2xl
+                  font-black
+
+                  text-tcd-blue
+
+                  mb-3
+                "
+              >
+                Personal Information
+              </h2>
+
+              <div className="grid md:grid-cols-2 gap-3">
+
+                <div>
+                  <p className="text-gray-500">
+                    Full Name
+                  </p>
+                  <p className="font-semibold">
+                    {
+  profile?.name ||
+  "-"
+}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-gray-500">
+                    Email
+                  </p>
+                  <p className="font-semibold">
+                    {
+  profile?.email ||
+  "-"
+}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-gray-500">
+                    Mobile
+                  </p>
+                  <p className="font-semibold">
+                   {
+  profile?.mobile ||
+  "-"
+}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-gray-500">
+                    Date of Birth
+                  </p>
+                  <p className="font-semibold">
+                    {
+  profile?.dob ||
+  "-"
+}
+                  </p>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* STATS */}
+
+        <div className="grid md:grid-cols-4 gap-3">
+
+          <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm">
+            <div className="text-4xl mb-3">📚</div>
+            <p className="text-gray-500">
+              Exams Attempted
+            </p>
+            <h3 className="text-4xl font-black text-tcd-blue mt-3">
+              {
+  stats.exams
+}
+            </h3>
+          </div>
+
+          <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm">
+            <div className="text-4xl mb-3">🎯</div>
+            <p className="text-gray-500">
+              Accuracy
+            </p>
+            <h3 className="text-4xl font-black text-tcd-gold mt-3">
+             {stats.accuracy}%
+            </h3>
+          </div>
+
+          <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm">
+            <div className="text-4xl mb-3">🏆</div>
+            <p className="text-gray-500">
+              Highest Score
+            </p>
+            <h3 className="text-4xl font-black text-green-600 mt-3">
+              {
+  stats.highest
+}
+            </h3>
+          </div>
+
+          <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm">
+            <div className="text-4xl mb-3">🪙</div>
+            <p className="text-gray-500">
+              Lifetime TCD
+            </p>
+            <h3 className="text-4xl font-black text-tcd-blue mt-3">
+            {
+  stats.lifetimeTcd
+}
+            </h3>
+          </div>
+
+        </div>
+<div className="grid md:grid-cols-3 gap-3 mt-8">
+
+  <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm">
+
+    <div className="text-4xl mb-3">
+      🔥
+    </div>
+
+    <p className="text-gray-500">
+      Current Streak
+    </p>
+
+    <h3 className="text-4xl font-black text-orange-500 mt-3">
+      {
+        stats.currentStreak
+      }
+    </h3>
+
+  </div>
+
+  <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm">
+
+    <div className="text-4xl mb-3">
+      🏔️
+    </div>
+
+    <p className="text-gray-500">
+      Longest Streak
+    </p>
+
+    <h3 className="text-4xl font-black text-tcd-blue mt-3">
+      {
+        stats.longestStreak
+      }
+    </h3>
+
+  </div>
+
+  <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm">
+
+    <div className="text-4xl mb-3">
+      🏆
+    </div>
+
+    <p className="text-gray-500">
+      Achievements
+    </p>
+
+    <h3 className="text-4xl font-black text-green-600 mt-3">
+      {
+        stats.achievements
+      }
+    </h3>
+
+  </div>
+
+</div>
+      </div>
+
+    </main>
+
+  );
+}

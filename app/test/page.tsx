@@ -18,7 +18,7 @@ export default function TestPage() {
   }, []);
 
   return (
-    <div className="p-10 text-white">
+    <div className="p-6 text-white">
       Supabase Test Working
     </div>
   );

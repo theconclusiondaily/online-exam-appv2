@@ -145,7 +145,7 @@ export default function TeacherAnalyticsPage() {
   if (loading) {
 
     return (
-      <main className="p-10">
+      <main className="p-6">
         Loading...
       </main>
     );
@@ -171,7 +171,7 @@ export default function TeacherAnalyticsPage() {
 
           <Link
             href="/teacher"
-            className="bg-black text-white px-5 py-2 rounded-xl"
+            className="bg-black text-white px-4 py-2 rounded-xl"
           >
 
             Dashboard
@@ -180,9 +180,9 @@ export default function TeacherAnalyticsPage() {
 
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
 
-          <div className="bg-white border rounded-3xl p-8">
+          <div className="bg-white border rounded-3xl p-5">
 
             <p className="text-gray-500 mb-2">
 
@@ -190,7 +190,7 @@ export default function TeacherAnalyticsPage() {
 
             </p>
 
-            <h2 className="text-5xl font-bold">
+            <h2 className="text-3xl font-bold">
 
               {students}
 
@@ -198,7 +198,7 @@ export default function TeacherAnalyticsPage() {
 
           </div>
 
-          <div className="bg-white border rounded-3xl p-8">
+          <div className="bg-white border rounded-3xl p-5">
 
             <p className="text-gray-500 mb-2">
 
@@ -206,7 +206,7 @@ export default function TeacherAnalyticsPage() {
 
             </p>
 
-            <h2 className="text-5xl font-bold text-blue-600">
+            <h2 className="text-3xl font-bold text-blue-600">
 
               {exams}
 
@@ -214,15 +214,15 @@ export default function TeacherAnalyticsPage() {
 
           </div>
 
-          <div className="bg-white border rounded-3xl p-8">
+          <div className="bg-white border rounded-3xl p-5">
 
             <p className="text-gray-500 mb-2">
 
-              Total Attempts
+              Learning Journeys
 
             </p>
 
-            <h2 className="text-5xl font-bold text-green-600">
+            <h2 className="text-3xl font-bold text-green-600">
 
               {attempts}
 

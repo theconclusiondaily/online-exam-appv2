@@ -97,7 +97,7 @@ export default function AnalyticsChart() {
 
     <div className="bg-white/80 backdrop-blur-xl border border-white/30 rounded-3xl p-6 shadow-xl">
 
-      <div className="mb-6">
+      <div className="mb-3">
 
         <h2 className="text-2xl font-bold">
           Student Registrations

@@ -248,11 +248,11 @@ if (
 
   return (
 
-    <main className="min-h-screen p-4 md:p-8 bg-gray-50">
+    <main className="min-h-screen p-4 md:p-5 bg-gray-50">
 
       <div className="max-w-7xl mx-auto">
 
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4">
 
           <h1 className="text-4xl font-bold">
 
@@ -262,7 +262,7 @@ if (
 
           <button
             onClick={logout}
-            className="bg-red-500 text-white px-5 py-2 rounded-xl"
+            className="bg-red-500 text-white px-4 py-2 rounded-xl"
           >
 
             Logout
@@ -273,7 +273,7 @@ if (
 
         {/* NAVIGATION */}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
 
           <Link
             href="/admin/questions"
@@ -409,7 +409,7 @@ if (
 
         {/* STATS */}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 mb-10">
 
           <div className="bg-white rounded-2xl shadow-sm p-6 border">
 
@@ -463,7 +463,7 @@ if (
 
             <p className="text-gray-500 text-sm mb-2">
 
-              Total Attempts
+             Learning Journeys
 
             </p>
 
@@ -496,7 +496,7 @@ if (
 
 <div className="bg-white rounded-3xl shadow-sm border p-6">
 
-  <div className="flex items-center justify-between mb-8">
+  <div className="flex items-center justify-between mb-4">
 
     <h2 className="text-3xl font-bold">
 
@@ -519,7 +519,7 @@ if (
 
         <div
           key={exam.id}
-          className="border rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5"
+          className="border rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3"
         >
 
           <div>
@@ -540,7 +540,7 @@ if (
 
                     : exam.status === "scheduled"
 
-                    ? "bg-blue-100 text-blue-700"
+                    ? "bg-tcd-gold/20 text-tcd-blue"
 
                     : exam.status === "completed"
 
@@ -578,7 +578,7 @@ if (
 
           </div>
 
-          <div className="flex flex-col items-end gap-4">
+          <div className="flex flex-col items-end gap-2">
 
             <div className="text-gray-600">
 
@@ -596,34 +596,73 @@ if (
 
             <div className="flex flex-wrap gap-3">
 
-              {!exam.published && (
+{!exam.published && (
+
+  <button
+    onClick={() =>
+      router.push(
+        `/admin/create-exam?id=${exam.id}`
+      )
+    }
+    className="
+      bg-yellow-500
+      hover:bg-yellow-600
+      text-white
+      px-4
+      py-2
+      rounded-xl
+      font-semibold
+      mr-2
+    "
+  >
+    Edit
+  </button>
+
+)}
+              {!exam.published && 
+            
+              (
 
                 <button
 
                   onClick={async () => {
 
-                    await supabase
+  const result = await supabase
+    .from("exams")
+    .update({
+      published: true,
+      status: "scheduled",
+    })
+    .eq("id", exam.id)
+    .select();
 
-                      .from("exams")
+  console.log(
+    "PUBLISH RESULT:",
+    result
+  );
 
-                      .update({
+  if (result.error) {
 
-                        published: true,
+    console.error(
+      "PUBLISH ERROR:",
+      result.error
+    );
 
-                        status:
-                          "scheduled",
+    alert(
+      result.error.message
+    );
 
-                      })
+    return;
+  }
 
-                      .eq(
-                        "id",
-                        exam.id
-                      );
+  alert(
+    "Published successfully"
+  );
 
-                    window.location.reload();
-                  }}
+  window.location.reload();
+}}
 
-                  className="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold"
+                  className="bg-tcd-blue hover:bg-tcd-blue-light text-white px-4 py-2 rounded-xl font-bold"
                 >
 
                   Publish

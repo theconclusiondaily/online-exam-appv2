@@ -23,6 +23,9 @@ from "@/lib/supabase/client";
 import {
   updateExamStatuses,
 } from "@/lib/examStatus";
+import {
+  getExamStatus
+} from "@/lib/getExamStatus";
 export default function TeacherDashboard() {
 
   const router =
@@ -281,13 +284,13 @@ setLiveExams(
 
   return (
 
-    <main className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 p-6 md:p-8">
+    <main className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 p-6 md:p-5">
 
       <div className="max-w-7xl mx-auto">
 
         {/* HEADER */}
 
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-10">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-10">
 
           <div>
 
@@ -318,13 +321,13 @@ setLiveExams(
 
         {/* STATS */}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mb-10">
 
   <StatCard
     title="Students"
     value={studentsCount}
     icon={<Users size={28} />}
-    color="bg-gradient-to-br from-blue-500 to-blue-700"
+    color="bg-gradient-to-br from-tcd-blue to-tcd-blue-light"
   />
 
   <StatCard
@@ -335,7 +338,7 @@ setLiveExams(
   />
 
   <StatCard
-    title="Attempts"
+    title="Learning Journeys"
     value={attemptsCount}
     icon={<Trophy size={28} />}
     color="bg-gradient-to-br from-emerald-500 to-green-700"
@@ -350,7 +353,7 @@ setLiveExams(
 </div>
         {/* ACTIONS */}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
 
           <Link
             href="/teacher/create-exam"
@@ -374,7 +377,7 @@ setLiveExams(
   href="/dashboard/teacher-monitor"
 >
 
-  <div className="bg-white border rounded-3xl p-8 shadow-sm hover:shadow-lg transition-all cursor-pointer">
+  <div className="bg-white border rounded-3xl p-5 shadow-sm hover:shadow-lg transition-all cursor-pointer">
 
     <h2 className="text-2xl font-bold mb-3">
 
@@ -459,7 +462,7 @@ setLiveExams(
 
 <div className="bg-white/80 backdrop-blur-xl border border-white/30 rounded-3xl p-6 shadow-xl mb-10">
 
-  <div className="flex items-center justify-between mb-6">
+  <div className="flex items-center justify-between mb-3">
 
     <h2 className="text-3xl font-bold">
 
@@ -482,7 +485,7 @@ setLiveExams(
 
         <div
           key={exam.id}
-          className="border rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+          className="border rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2"
         >
 
           <div>
@@ -495,26 +498,42 @@ setLiveExams(
 
 <div
   className={`
-    inline-block px-4 py-2 rounded-xl font-bold text-sm mb-3
+    inline-block
+
+    px-4
+    py-2
+
+    rounded-xl
+
+    font-bold
+    text-sm
 
     ${
-      exam.status === "live"
+      getExamStatus(
+        exam.start_time,
+        exam.end_time
+      ) === "live"
+
         ? "bg-green-100 text-green-700"
 
-        : exam.status === "scheduled"
+        : getExamStatus(
+            exam.start_time,
+            exam.end_time
+          ) === "scheduled"
 
-        ? "bg-blue-100 text-blue-700"
+        ? "bg-tcd-gold/20 text-tcd-blue"
 
-        : exam.status === "completed"
-
-        ? "bg-gray-200 text-gray-700"
-
-        : "bg-yellow-100 text-yellow-700"
+        : "bg-gray-200 text-gray-700"
     }
   `}
 >
 
-  {exam.status?.toUpperCase()}
+  {
+    getExamStatus(
+      exam.start_time,
+      exam.end_time
+    ).toUpperCase()
+  }
 
 </div>
 
@@ -560,7 +579,7 @@ setLiveExams(
 
 <div className="bg-white/80 backdrop-blur-xl border border-white/30 rounded-3xl p-6 shadow-xl">
 
-  <h2 className="text-3xl font-bold mb-6">
+  <h2 className="text-3xl font-bold mb-3">
 
     Recent Exams
 
@@ -573,7 +592,7 @@ setLiveExams(
 
         <div
           key={exam.id}
-          className="border rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+          className="border rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2"
         >
 
           <div>
@@ -584,30 +603,46 @@ setLiveExams(
 
             </h3>
 
-            <div
-              className={`
-                inline-block px-4 py-2 rounded-xl font-bold text-sm mb-3
+           <div
+  className={`
+    inline-block
 
-                ${
-                  exam.status === "live"
-                    ? "bg-green-100 text-green-700"
+    px-4
+    py-2
 
-                    : exam.status === "scheduled"
+    rounded-xl
 
-                    ? "bg-blue-100 text-blue-700"
+    font-bold
+    text-sm
 
-                    : exam.status === "completed"
+    ${
+      getExamStatus(
+        exam.start_time,
+        exam.end_time
+      ) === "live"
 
-                    ? "bg-gray-200 text-gray-700"
+        ? "bg-green-100 text-green-700"
 
-                    : "bg-yellow-100 text-yellow-700"
-                }
-              `}
-            >
+        : getExamStatus(
+            exam.start_time,
+            exam.end_time
+          ) === "scheduled"
 
-              {exam.status?.toUpperCase()}
+        ? "bg-tcd-gold/20 text-tcd-blue"
 
-            </div>
+        : "bg-gray-200 text-gray-700"
+    }
+  `}
+>
+
+  {
+    getExamStatus(
+      exam.start_time,
+      exam.end_time
+    ).toUpperCase()
+  }
+
+</div>
 
             <p className="text-gray-600">
 
@@ -635,7 +670,29 @@ setLiveExams(
               )}
 
             </div>
+{!exam.published && (
 
+  <button
+    onClick={() =>
+      router.push(
+        `/teacher/create-exam?id=${exam.id}`
+      )
+    }
+    className="
+      bg-yellow-500
+      hover:bg-yellow-600
+      text-white
+      px-4
+      py-2
+      rounded-xl
+      font-semibold
+      mr-2
+    "
+  >
+    Edit
+  </button>
+
+)}
             {!exam.published && (
 
               <button
@@ -663,7 +720,8 @@ setLiveExams(
                   window.location.reload();
                 }}
 
-                className="bg-blue-600 text-white px-5 py-2 rounded-xl font-bold"
+                className="bg-tcd-blue
+hover:bg-tcd-blue-light text-white px-4 py-2 rounded-xl font-bold"
               >
 
                 Publish

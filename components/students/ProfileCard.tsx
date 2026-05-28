@@ -49,9 +49,9 @@ export default function ProfileCard() {
 
     <div className="bg-white rounded-3xl shadow-xl p-6">
 
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-2 mb-3">
 
-        <div className="w-16 h-16 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl font-bold">
+        <div className="w-16 h-16 rounded-full bg-tcd-blue text-white flex items-center justify-center text-2xl font-bold">
 
           {profile.name?.charAt(0)}
 
@@ -87,7 +87,7 @@ export default function ProfileCard() {
 
       {/* XP */}
 
-      <div className="mb-5">
+      <div className="mb-2">
 
         <div className="flex justify-between mb-2">
 
@@ -104,7 +104,7 @@ export default function ProfileCard() {
         <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
 
           <div
-            className="h-full bg-blue-600"
+            className="h-full bg-tcd-gold"
             style={{
               width: `${
                 (profile.xp % 500) /

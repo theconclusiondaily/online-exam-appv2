@@ -27,12 +27,10 @@ from "@/components/exam/StudentCameraStream";
 
 import {
   fetchExam,
-  fetchQuestions,
 } from "@/services/exam.service";
 
-import {
-  saveExamResult,
-} from "@/lib/exam";
+import XPRewardPopup
+from "@/components/dashboard/XPRewardPopup";
 import {
   updateLiveStatus
 } from "@/services/liveStatus.service";
@@ -87,10 +85,14 @@ const [cameraStream,
   const lastViolationRef =
     useRef(0);
 
-  const [questions,
-    setQuestions] =
-    useState<any[]>([]);
-
+  const [
+  currentQuestionData,
+  setCurrentQuestionData
+] = useState<any>(null);
+const [
+  prefetchedQuestion,
+  setPrefetchedQuestion
+] = useState<any>(null);
   const [answers,
     setAnswers] =
     useState<any>({});
@@ -98,8 +100,11 @@ const [cameraStream,
   const [currentQuestion,
     setCurrentQuestion] =
     useState(0);
+
+    
 useEffect(() => {
 
+ 
   const activeButton =
     document.getElementById(
       `question-${currentQuestion}`
@@ -118,6 +123,11 @@ useEffect(() => {
   }
 
 }, [currentQuestion]);
+
+const [
+  answeredQuestions,
+  setAnsweredQuestions,
+] = useState<number[]>([]);
 const [visitedQuestions,
   setVisitedQuestions] =
   useState<number[]>([0]); 
@@ -146,11 +156,20 @@ const [loading,
   const [userId,
     setUserId] =
     useState("");
-
+const [
+  sessionToken,
+  setSessionToken
+] = useState("");
   const [examInfo,
     setExamInfo] =
     useState<any>(null);
-
+const [questions,
+  setQuestions] =
+  useState<any[]>([]);
+  const [
+  totalQuestions,
+  setTotalQuestions
+] = useState(1);
   const [score,
     setScore] =
     useState<number | null>(
@@ -190,7 +209,13 @@ const [resumeAvailable,
   const [submitting,
     setSubmitting] =
     useState(false);
+const [showXP,
+  setShowXP] =
+  useState(false);
 
+const [levelUp,
+  setLevelUp] =
+  useState(false);
   const liveStudents =
     useLiveStudents(
       examId
@@ -242,7 +267,51 @@ useEffect(() => {
       }
 
       setUserId(user.id);
+const {
+  data: savedAnswersData,
+} = await supabase
 
+  .from("exam_answers")
+
+  .select(`
+    question_id,
+    selected_option
+  `)
+
+  .eq(
+    "exam_id",
+    examId
+  )
+
+  .eq(
+    "user_id",
+    user.id
+  );
+
+if (savedAnswersData) {
+
+  const formattedAnswers =
+    savedAnswersData.reduce(
+      (
+        acc: any,
+        item: any
+      ) => {
+
+        acc[
+          item.question_id
+        ] =
+          item.selected_option;
+
+        return acc;
+
+      },
+      {}
+    );
+
+  setAnswers(
+    formattedAnswers
+  );
+}
       setStudentName(
 
   user.user_metadata
@@ -298,43 +367,7 @@ if (existingAttempt) {
         examData
       );
 
-      const {
-        data,
-      } = await fetchQuestions(
-        examId
-      );
-
-      if (data) {
-
-        const shuffled =
-          [...data]
-            .sort(
-              () =>
-                Math.random() -
-                0.5
-            )
-            .map(
-              (q: any) => ({
-                ...q,
-
-                shuffledOptions:
-                  [
-                    q.option_a,
-                    q.option_b,
-                    q.option_c,
-                    q.option_d,
-                  ].sort(
-                    () =>
-                      Math.random() -
-                      0.5
-                  ),
-              })
-            );
-
-        setQuestions(
-          shuffled
-        );
-      }
+     
 
            setLoading(false);
     }
@@ -344,7 +377,10 @@ if (existingAttempt) {
       initializeExam();
     }
 
-  }, [examId, router]);
+  }, [
+  examId,
+  router,
+]);
 
   useEffect(() => {
 
@@ -383,7 +419,17 @@ const savedStarted =
   localStorage.getItem(
     `exam-started-${examId}-${userId}`
   );
+const savedSession =
+  localStorage.getItem(
+    `exam-session-${examId}-${userId}`
+  );
 
+if (savedSession) {
+
+  setSessionToken(
+    savedSession
+  );
+}
 if (
   savedStarted === "true"
 ) {
@@ -450,7 +496,7 @@ useEffect(() => {
         submitted,
       });
 
-    }, 3000);
+    }, 15000);
 
     return () =>
       clearInterval(
@@ -605,7 +651,7 @@ useEffect(() => {
     examId,
 
     questionsLength:
-      questions.length,
+  examInfo?.total_questions || 30,
 
   });
 
@@ -752,6 +798,170 @@ useEffect(() => {
 
   submitted,
 ]);
+async function fetchQuestionByIndex(
+  index: number
+) {
+  if (!sessionToken) {
+
+  console.error(
+    "Missing session token"
+  );
+
+  return;
+}
+console.log(
+  "FETCH QUESTION TOKEN:",
+  sessionToken
+);
+  const response = await fetch(
+    "/api/exam/question",
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+
+      body: JSON.stringify({
+        examId,
+        questionIndex: index,
+        sessionToken,
+      }),
+    }
+  );
+console.log(
+  "QUESTION REQUEST:",
+  {
+    examId,
+    questionIndex: index,
+    sessionToken,
+  }
+);
+  const result =
+    await response.json();
+    console.log(result);
+
+  if (
+  response.ok &&
+  result.data
+) {
+console.log(
+  "TOTAL QUESTIONS:",
+  result.totalQuestions
+);
+
+setTotalQuestions(
+  result.totalQuestions || 1
+);
+console.log(
+  "FETCH TOTAL QUESTIONS:",
+  result.totalQuestions
+);
+    const question =
+      result.data;
+
+    const shuffledQuestion = {
+
+      ...question,
+
+      shuffledOptions: [
+        question.option_a,
+        question.option_b,
+        question.option_c,
+        question.option_d,
+      ].sort(
+        () =>
+          Math.random() - 0.5
+      ),
+    };
+
+    setCurrentQuestionData(
+  shuffledQuestion
+);
+
+console.log(
+  "CURRENT QUESTION:",
+  shuffledQuestion
+);
+    setCurrentQuestion(
+      index
+    );
+    if (
+  index + 1 <
+  totalQuestions
+) {
+  prefetchQuestion(
+    index + 1
+  );
+}
+  }
+}
+async function prefetchQuestion(
+  index: number
+) {
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/exam/question",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify({
+            examId,
+            questionIndex:
+              index,
+            sessionToken,
+          }),
+        }
+      );
+
+    const result =
+      await response.json();
+
+    if (
+      response.ok &&
+      result.data
+    ) {
+
+      const question =
+        result.data;
+
+      const shuffledQuestion = {
+
+        ...question,
+
+        shuffledOptions: [
+          question.option_a,
+          question.option_b,
+          question.option_c,
+          question.option_d,
+        ].sort(
+          () =>
+            Math.random() - 0.5
+        ),
+      };
+
+      setPrefetchedQuestion(
+        shuffledQuestion
+      );
+    }
+
+  } catch (error) {
+
+    console.error(
+      "PREFETCH ERROR:",
+      error
+    );
+  }
+}
   async function startExam() {
 
     if (
@@ -785,44 +995,250 @@ useEffect(() => {
   error
 );
     }
+const response = await fetch(
+  "/api/exam/start",
+  {
+    method: "POST",
 
-    setExamStarted(true);
+    headers: {
+      "Content-Type":
+        "application/json",
+    },
 
-    localStorage.setItem(
-      `exam-started-${examId}-${userId}`,
-      "true"
-    );
-    localStorage.setItem(
-
-  `exam-start-time-${examId}-${userId}`,
-
-  Date.now().toString()
-);
+    body: JSON.stringify({
+      examId,
+    }),
   }
+);
 
-  function selectAnswer(
-    questionId: string,
-    answer: string
+const result =
+  await response.json();
+console.log(
+  "START RESULT FULL:",
+  JSON.stringify(
+    result,
+    null,
+    2
+  )
+);
+
+console.log(
+  "SESSION TOKEN FROM API:",
+  result.session?.session_token
+);
+if (!response.ok) {
+
+  if (
+    result.error ===
+    "You have already submitted this exam"
   ) {
 
-    if (
-      alreadyAttempted ||
-      submitted
-    ) {
+    
+    router.push(
+      `/exam-result/${examId}`
+    );
+
+    return;
+  }
+
+  toast.error(
+    result.error ||
+    "Failed to start exam"
+  );
+
+  return;
+}
+
+const token =
+  result.session.session_token;
+
+setSessionToken(token);
+
+localStorage.setItem(
+  `exam-session-${examId}-${userId}`,
+  token
+);
+
+const questionResponse =
+  await fetch(
+    "/api/exam/question",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+      body: JSON.stringify({
+        examId,
+        questionIndex: 0,
+        sessionToken: token,
+      }),
+    }
+  );
+
+const questionResult =
+  await questionResponse.json();
+console.log(
+  "TOTAL QUESTIONS:",
+  questionResult.totalQuestions
+);
+
+setTotalQuestions(
+  questionResult.totalQuestions || 1
+);
+console.log(
+  "TOTAL QUESTIONS:",
+  questionResult.totalQuestions
+);
+console.log(
+  "QUESTION RESULT:",
+  questionResult
+);
+
+if (
+  questionResponse.ok &&
+  questionResult.data
+) {
+
+  const question =
+    questionResult.data;
+
+  const shuffledQuestion = {
+    ...question,
+
+    shuffledOptions: [
+      question.option_a,
+      question.option_b,
+      question.option_c,
+      question.option_d,
+    ].sort(
+      () =>
+        Math.random() - 0.5
+    ),
+  };
+
+  setCurrentQuestionData(
+    shuffledQuestion
+  );
+
+  setCurrentQuestion(0);
+}
+
+setExamStarted(true);
+
+localStorage.setItem(
+  `exam-started-${examId}-${userId}`,
+  "true"
+);
+
+localStorage.setItem(
+  `exam-start-time-${examId}-${userId}`,
+  Date.now().toString()
+);
+}
+    
+  async function selectAnswer(
+  questionId: string,
+  answer: string
+) {
+  if (!sessionToken) {
+
+  toast.error(
+    "Session not initialized"
+  );
+
+  return;
+}
+  if (
+    alreadyAttempted ||
+    submitted
+  ) {
+    return;
+  }
+
+  console.log(
+    "SELECT ANSWER",
+    {
+      questionId,
+      answer,
+      sessionToken,
+      examId,
+    }
+  );
+
+ setAnswers(
+  (prev: any) => ({
+    ...prev,
+
+    [questionId]: answer,
+
+   
+  })
+);
+setAnsweredQuestions(
+  (prev) =>
+    prev.includes(
+      currentQuestion
+    )
+      ? prev
+      : [
+          ...prev,
+          currentQuestion,
+        ]
+);
+  try {
+    const response =
+      await fetch(
+        "/api/exam/save-answer",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            examId,
+            questionId,
+            selectedOption:
+              answer,
+            sessionToken,
+          }),
+        }
+      );
+
+    const result =
+      await response.json();
+
+    console.log(
+      "SAVE ANSWER RESULT:",
+      result
+    );
+
+    if (!response.ok) {
+      console.error(
+        "SAVE ANSWER FAILED:",
+        result
+      );
+
+      toast.error(
+        result.error ||
+        "Failed to save answer"
+      );
 
       return;
     }
 
-    setAnswers(
-      (prev: any) => ({
-
-        ...prev,
-
-        [questionId]:
-          answer,
-      })
+  } catch (error) {
+    console.error(
+      "SAVE ANSWER ERROR:",
+      error
     );
   }
+
+
+  return;
+}
+  
 
   async function submitExam() {
 
@@ -837,40 +1253,228 @@ if (submitted) {
     setSubmitting(true);
 
 
-    let finalScore = 0;
+    const response = await fetch(
+  "/api/exam/submit",
+  {
+    method: "POST",
 
-    questions.forEach((q) => {
+    headers: {
+      "Content-Type":
+        "application/json",
+    },
 
-      if (
-        answers[q.id] ===
-        q.correct_answer
-      ) {
-
-        finalScore++;
-      }
-
-    });
-
-    setScore(
-      finalScore
-    );
-localStorage.setItem(
- `exam-score-${examId}-${userId}`,
-  finalScore.toString()
+    body: JSON.stringify({
+      examId,
+      sessionToken,
+    }),
+  }
 );
-    await saveExamResult({
 
-      exam_id: examId,
+const result =
+  await response.json();
+  console.log(
+  "SUBMIT RESULT:",
+  result
+);
+
+if (!response.ok) {
+
+  toast.error(
+    result.error ||
+    "Submission failed"
+  );
+
+  setSubmitting(false);
+
+  return;
+}
+
+setScore(result.score);
+
+localStorage.setItem(
+  `exam-score-${examId}-${userId}`,
+  result.score.toString()
+);
+    const {
+  data: beforeLevel
+} = await supabase
+
+  .from("user_levels")
+
+  .select("level")
+
+  .eq(
+    "user_id",
+    userId
+  )
+
+  .single();
+const {
+  data: beforeRanks
+} = await supabase
+
+  .from("leaderboard_view")
+
+  .select("user_id")
+
+  .order(
+    "xp",
+    {
+      ascending: false,
+    }
+  );
+
+const previousRankIndex =
+  beforeRanks?.findIndex(
+    (
+      r: any
+    ) =>
+      r.user_id ===
+      userId
+  );
+
+const previousRank =
+
+  previousRankIndex !==
+    undefined &&
+
+  previousRankIndex >= 0
+
+    ? previousRankIndex + 1
+
+    : null;
+await supabase.rpc(
+  "add_user_xp",
+  {
+    p_user_id: userId,
+    p_xp: 50,
+  }
+);
+const {
+  data: afterRanks
+} = await supabase
+
+  .from("leaderboard_view")
+
+  .select("user_id")
+
+  .order(
+    "xp",
+    {
+      ascending: false,
+    }
+  );
+
+const newRankIndex =
+  afterRanks?.findIndex(
+    (
+      r: any
+    ) =>
+      r.user_id ===
+      userId
+  );
+
+const newRank =
+
+  newRankIndex !==
+    undefined &&
+
+  newRankIndex >= 0
+
+    ? newRankIndex + 1
+
+    : null;
+
+if (
+
+  previousRank &&
+
+  newRank &&
+
+  newRank < previousRank
+
+) {
+
+  await supabase
+
+    .from("activity_feed")
+
+    .insert({
 
       user_id: userId,
 
-      score: finalScore,
+      activity_type:
+        "rank",
 
-      answers,
+      title:
+        `${studentName} climbed the leaderboard`,
 
-      total_questions:
-        questions.length,
+      description:
+        `Moved from #${previousRank} to #${newRank}`,
+
+      metadata: {
+
+        old_rank:
+          previousRank,
+
+        new_rank:
+          newRank,
+
+      },
+
     });
+}
+const {
+  data: afterLevel
+} = await supabase
+
+  .from("user_levels")
+
+  .select("level")
+
+  .eq(
+    "user_id",
+    userId
+  )
+
+  .single();
+
+if (
+  afterLevel?.level >
+  beforeLevel?.level
+) {
+
+  setLevelUp(true);
+}
+
+setShowXP(true);
+await supabase
+
+  .from("activity_feed")
+
+  .insert({
+
+    user_id: userId,
+
+    activity_type: "exam",
+
+    title:
+      `${studentName} completed an exam`,
+
+    description:
+      `Scored ${result.score}% in ${examInfo?.title}`,
+
+    metadata: {
+
+      score: result.score,
+
+      exam_id: examId,
+
+      xp_earned: 50,
+
+    },
+
+  });
     await supabase
 
   .from(
@@ -939,9 +1543,18 @@ if (
 
   await document.exitFullscreen();
 }
-    router.push(
-      "/dashboard"
-    );
+localStorage.removeItem(
+  `exam-session-${examId}-${userId}`
+);
+    setTimeout(() => {
+
+  setShowXP(false);
+
+  router.push(
+    `/exam-result/${examId}`
+  );
+
+}, 3000);
   }
 
   if (!mounted) {
@@ -950,7 +1563,13 @@ if (
   }
 
   if (loading) {
-
+console.log(
+  "DEBUG STATE:",
+  {
+    currentQuestion,
+    totalQuestions,
+  }
+);
     return (
       <div className="min-h-screen flex items-center justify-center">
         Loading...
@@ -966,7 +1585,7 @@ if (
 
     <main className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-6">
 
-      <h1 className="text-5xl font-bold mb-6 text-center">
+      <h1 className="text-3xl font-bold mb-3 text-center">
 
         Exam Already Attempted
 
@@ -987,7 +1606,7 @@ if (
           )
         }
 
-        className="bg-black text-white px-8 py-4 rounded-2xl font-bold text-lg"
+        className="bg-black text-white px-8 py-3 rounded-2xl font-bold text-lg"
       >
 
         Go To Dashboard
@@ -1006,31 +1625,31 @@ if (
     return (
       <main className="min-h-screen p-6 flex items-center justify-center bg-gray-50">
 
-        <div className="max-w-2xl w-full bg-white border rounded-3xl p-10 shadow-sm">
+        <div className="max-w-2xl w-full bg-white border rounded-3xl p-6 shadow-sm">
 
           <h1 className="text-4xl font-bold mb-4">
             {examInfo.title}
           </h1>
 
-          <p className="mb-8 text-gray-600">
+          <p className="mb-4 text-gray-600">
             {examInfo.description}
           </p>
 
-          <div className="space-y-4 mb-8">
+          <div className="space-y-4 mb-4">
 
             <p>
               Duration: 30 Minutes
             </p>
 
             <p>
-              Questions: {questions.length}
+              Questions: {examInfo?.total_questions || 30}
             </p>
 
           </div>
 
           <button
             onClick={requestPermissions}
-            className="bg-blue-600 text-white px-6 py-4 rounded-2xl w-full mb-4 font-bold"
+            className="bg-tcd-blue hover:bg-tcd-blue-light text-white px-6 py-3 rounded-2xl w-full mb-4 font-bold"
           >
             Allow Camera & Microphone
           </button>
@@ -1040,7 +1659,7 @@ if (
 
     onClick={resumeExam}
 
-    className="bg-green-600 text-white px-6 py-4 rounded-2xl w-full mb-4 font-bold"
+    className="bg-green-600 text-white px-6 py-3 rounded-2xl w-full mb-4 font-bold"
   >
 
     Resume Previous Session
@@ -1050,7 +1669,7 @@ if (
 )}
           <button
             onClick={startExam}
-            className="bg-black text-white px-6 py-4 rounded-2xl w-full font-bold"
+            className="bg-black text-white px-6 py-3 rounded-2xl w-full font-bold"
           >
             Start Exam
           </button>
@@ -1065,12 +1684,12 @@ if (
 
     <div
       ref={examContainerRef}
-      className="min-h-screen bg-gray-50 p-8"
+      className="min-h-screen bg-gray-50 p-5"
     >
 
       <div className="sticky top-0 z-30 bg-gray-50 pb-2 mb-4">
 
-        <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+        <div className="flex flex-col md:flex-row justify-between md:items-center gap-2">
 
           <h1 className="text-3xl font-bold">
             Exam
@@ -1116,14 +1735,30 @@ if (
       <div className="mt-2 mb-4 overflow-x-auto scrollbar-hide">
 
         <QuestionPalette
-          questions={questions}
-          answers={answers}
-          currentQuestion={currentQuestion}
-          setCurrentQuestion={setCurrentQuestion}
-          visitedQuestions={
-  visitedQuestions
-}
-        />
+  questions={Array.from(
+    {
+      length:
+        Math.max(
+          totalQuestions,
+          1
+        ),
+    },
+    (_, i) => ({
+      id: i,
+    })
+  )}
+  answers={answers}
+  currentQuestion={currentQuestion}
+  setCurrentQuestion={
+    fetchQuestionByIndex
+  }
+  visitedQuestions={
+    visitedQuestions
+  }
+  answeredQuestions={
+    answeredQuestions
+  }
+/>
 
       </div>
 
@@ -1131,21 +1766,21 @@ if (
 
         <div className="bg-white p-6 rounded-2xl border shadow-sm">
 
-          <h2 className="text-2xl font-bold mb-8">
+          <h2 className="text-2xl font-bold mb-4">
             Question {currentQuestion + 1}
           </h2>
 
           <p className="text-xl leading-relaxed mb-10">
             {
-              questions[currentQuestion]
-                ?.question
+              currentQuestionData
+  ?.question
             }
           </p>
 
           <div className="space-y-4">
 
-            {questions[currentQuestion]
-              ?.shuffledOptions
+            {currentQuestionData
+  ?.shuffledOptions
               ?.map(
                 (
                   option: string,
@@ -1157,9 +1792,7 @@ if (
 
                     onClick={() =>
                       selectAnswer(
-                        questions[
-                          currentQuestion
-                        ]?.id,
+                        currentQuestionData?.id,
                         option
                       )
                     }
@@ -1168,12 +1801,10 @@ if (
 
                       ${
                         answers[
-                          questions[
-                            currentQuestion
-                          ]?.id
-                        ] === option
+  currentQuestionData?.id
+] === option
 
-                          ? "bg-blue-600 text-white border-blue-600"
+                          ? "bg-tcd-blue text-white border-tcd-blue border-blue-600"
 
                           : "bg-white hover:border-blue-400"
                       }
@@ -1192,19 +1823,17 @@ if (
 
       </div>
 
-      <div className="flex justify-between items-center mt-10">
+      <div className="flex justify-between items-center mt-5">
 
         <button
           onClick={() =>
-            setCurrentQuestion(
-              (prev) =>
-                Math.max(
-                  prev - 1,
-                  0
-                )
-            )
-          }
-
+  fetchQuestionByIndex(
+    Math.max(
+      currentQuestion - 1,
+      0
+    )
+  )
+}
           disabled={
             currentQuestion === 0
           }
@@ -1234,17 +1863,50 @@ if (
           Previous
         </button>
 
-        <div className="flex gap-4">
+        <div className="flex gap-2">
 
-  {currentQuestion < 29 && (
+  {currentQuestion <
+  Math.max(
+    totalQuestions - 1,
+    0
+  ) && (
 
     <button
-      onClick={() =>
-        setCurrentQuestion(
-          (prev) =>
-            prev + 1
-        )
-      }
+      onClick={
+  async () => {
+
+  const nextIndex =
+    currentQuestion + 1;
+if (
+  nextIndex >=
+  totalQuestions
+) {
+  return;
+}
+  if (
+    prefetchedQuestion
+  ) {
+
+    setCurrentQuestionData(
+      prefetchedQuestion
+    );
+
+    setCurrentQuestion(
+      nextIndex
+    );
+
+    prefetchQuestion(
+      nextIndex + 1
+    );
+
+  } else {
+
+    await fetchQuestionByIndex(
+      nextIndex
+    );
+  }
+}
+}
 
       className="
         px-8
@@ -1252,8 +1914,8 @@ if (
 
         rounded-2xl
 
-        bg-blue-600
-        hover:bg-blue-700
+        bg-tcd-blue
+hover:bg-tcd-blue-light
 
         text-white
         font-bold
@@ -1267,7 +1929,11 @@ if (
     </button>
   )}
 
-  {currentQuestion === 29 && (
+  {currentQuestion ===
+  Math.max(
+    totalQuestions - 1,
+    0
+  ) && (
 
     <button
       onClick={submitExam}
@@ -1305,8 +1971,8 @@ if (
 
     fixed
 
-    top-1/2
-    right-2
+    top-1/3
+    left-2
 
     -translate-y-1/2
 
@@ -1323,7 +1989,11 @@ if (
   <LiveEventFeed />
 
 </div>
-
+<XPRewardPopup
+  show={showXP}
+  xp={50}
+  levelUp={levelUp}
+/>
     </div>
   );
 }

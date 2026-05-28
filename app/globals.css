@@ -1,15 +1,37 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+
+  /* Conclusion Daily Brand */
+
+  --background: #F8F9FB;
+  --foreground: #1F2937;
+
+  --tcd-blue: #2F4B7C;
+  --tcd-blue-light: #3D5F99;
+
+  --tcd-gold: #E6C06E;
+  --tcd-gold-dark: #C9A24A;
+
+  --tcd-ivory: #F8F9FB;
+  --tcd-dark: #1F2937;
+
 }
 
 @theme inline {
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --color-tcd-blue: var(--tcd-blue);
+  --color-tcd-blue-light: var(--tcd-blue-light);
+
+  --color-tcd-gold: var(--tcd-gold);
+  --color-tcd-gold-dark: var(--tcd-gold-dark);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
 }
 
 @media (prefers-color-scheme: dark) {
@@ -20,7 +42,95 @@
 }
 
 body {
-  background: var(--background);
+
+  background:
+    linear-gradient(
+      180deg,
+      #F8F9FB,
+      #EEF2F7
+    );
+
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+}
+/* =========================
+   TCD PREMIUM UI SYSTEM
+========================= */
+
+.tcd-page-title {
+  @apply text-4xl md:text-3xl font-black text-tcd-blue;
+}
+
+.tcd-page-subtitle {
+  @apply text-gray-500 text-base md:text-lg;
+}
+
+.tcd-section-title {
+  @apply text-2xl md:text-3xl font-black text-tcd-blue;
+}
+
+.tcd-card {
+
+  @apply
+    bg-white/90
+    backdrop-blur-xl
+
+    rounded-[28px]
+
+    border
+    border-gray-100
+
+    shadow-sm
+
+    transition-all
+    duration-300;
+}
+
+.tcd-card-hover {
+
+  @apply
+    hover:shadow-lg
+    hover:-translate-y-1;
+}
+
+.tcd-stat-card {
+
+  @apply
+    rounded-2xl
+
+    px-4
+    py-3
+
+    min-w-[160px];
+}
+
+.tcd-hero {
+
+  @apply
+    rounded-[30px]
+
+    p-6 md:p-7
+
+    shadow-xl;
+}
+
+.tcd-badge {
+
+  @apply
+    inline-flex
+    items-center
+    gap-2
+
+    px-4
+    py-2
+
+    rounded-full
+
+    text-sm
+    font-semibold;
 }

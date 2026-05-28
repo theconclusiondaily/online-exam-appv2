@@ -95,7 +95,7 @@ export default function TeacherQuestionsPage() {
   if (loading) {
 
     return (
-      <main className="p-10">
+      <main className="p-6">
         Loading...
       </main>
     );
@@ -121,7 +121,7 @@ export default function TeacherQuestionsPage() {
 
           <Link
             href="/teacher"
-            className="bg-black text-white px-5 py-2 rounded-xl"
+            className="bg-black text-white px-4 py-2 rounded-xl"
           >
 
             Dashboard
@@ -130,7 +130,7 @@ export default function TeacherQuestionsPage() {
 
         </div>
 
-        <div className="bg-white border rounded-3xl p-8 shadow-sm space-y-6">
+        <div className="bg-white border rounded-3xl p-5 shadow-sm space-y-6">
 
           <textarea
             placeholder="Enter Question"

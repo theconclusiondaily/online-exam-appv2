@@ -113,7 +113,7 @@ console.log(
     const interval =
       setInterval(() => {
         loadLeaderboard();
-      }, 5000);
+      }, 30000);
 
     return () =>
       clearInterval(interval);
@@ -133,7 +133,7 @@ console.log(
 
     return (
 
-      <div className="bg-white/80 backdrop-blur-xl border border-white/30 rounded-3xl p-10 shadow-xl text-center">
+      <div className="bg-white/80 backdrop-blur-xl border border-white/30 rounded-3xl p-6 shadow-xl text-center">
 
         <h2 className="text-3xl font-bold mb-3">
           No Live Exam
@@ -154,7 +154,7 @@ console.log(
 
       {/* HEADER */}
 
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-3">
 
         <Trophy className="text-yellow-500" />
 
@@ -186,7 +186,7 @@ console.log(
 
       {/* TOP STATS */}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
 
         <div className="bg-blue-50 rounded-2xl p-4">
 
@@ -252,7 +252,7 @@ console.log(
 
   className={`
     flex items-center justify-between
-    rounded-2xl p-5 border transition-all
+    rounded-2xl p-3 border transition-all
     hover:scale-[1.02]
 
     ${
@@ -268,7 +268,7 @@ console.log(
 >
               
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
 
                <div
   className={`
@@ -302,7 +302,7 @@ console.log(
 
                   </h3>
 
-                  <div className="flex gap-4 text-sm text-gray-500">
+                  <div className="flex gap-2 text-sm text-gray-500">
 
                     <p>
                       Correct:

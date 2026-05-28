@@ -195,7 +195,7 @@ export default function AdminLeaderboardsPage() {
 
     <AdminGuard>
 
-      <main className="min-h-screen bg-gray-50 p-6 md:p-8">
+      <main className="min-h-screen bg-gray-50 p-6 md:p-5">
 
         <div className="max-w-7xl mx-auto">
 
@@ -211,7 +211,7 @@ export default function AdminLeaderboardsPage() {
 
             <a
               href="/admin"
-              className="bg-black text-white px-5 py-2 rounded-xl"
+              className="bg-black text-white px-4 py-2 rounded-xl"
             >
 
               Dashboard
@@ -267,7 +267,7 @@ export default function AdminLeaderboardsPage() {
 
           {selectedExam && (
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-10">
 
               <div className="bg-white border rounded-3xl p-6 shadow-sm">
 
@@ -277,7 +277,7 @@ export default function AdminLeaderboardsPage() {
 
                 </p>
 
-                <h2 className="text-5xl font-bold">
+                <h2 className="text-3xl font-bold">
 
                   {participantCount}
 
@@ -293,7 +293,7 @@ export default function AdminLeaderboardsPage() {
 
                 </p>
 
-                <h2 className="text-5xl font-bold text-green-600">
+                <h2 className="text-3xl font-bold text-green-600">
 
                   {averageScore}
 
@@ -311,7 +311,7 @@ export default function AdminLeaderboardsPage() {
 
             <div>
 
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-3">
 
                 <h2 className="text-3xl font-bold">
 
@@ -319,9 +319,9 @@ export default function AdminLeaderboardsPage() {
 
                 </h2>
 
-                <div className="bg-blue-100 text-blue-700 border border-blue-300 px-4 py-2 rounded-2xl font-bold">
+               <div className="bg-tcd-gold/20 text-tcd-blue border border-tcd-gold px-4 py-2 rounded-2xl font-bold">
 
-                  Attempts:
+                  Learning Journeys:
                   {" "}
                   {attempts.length}
 
@@ -384,7 +384,7 @@ export default function AdminLeaderboardsPage() {
 
                         <div className="text-right">
 
-                          <h2 className="text-5xl font-bold text-green-600">
+                          <h2 className="text-3xl font-bold text-green-600">
 
                             {attempt.score}
 
@@ -407,9 +407,9 @@ export default function AdminLeaderboardsPage() {
 
                 {attempts.length === 0 && (
 
-                  <div className="bg-white border rounded-3xl p-10 text-center text-gray-500 shadow-sm">
+                  <div className="bg-white border rounded-3xl p-6 text-center text-gray-500 shadow-sm">
 
-                    No attempts yet for this exam
+                    No learning journeys recorded yet
 
                   </div>
 

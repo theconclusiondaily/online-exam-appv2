@@ -24,7 +24,7 @@ export default function StatCard({
       }}
       className={`rounded-3xl p-6 text-white shadow-xl ${color}`}
     >
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-3">
         <div className="text-lg font-medium opacity-90">
           {title}
         </div>
@@ -34,7 +34,7 @@ export default function StatCard({
         </div>
       </div>
 
-      <h2 className="text-5xl font-bold">
+      <h2 className="text-3xl font-bold">
         {value}
       </h2>
     </motion.div>

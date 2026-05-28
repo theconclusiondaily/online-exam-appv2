@@ -165,13 +165,13 @@ export default function TeacherLeaderboardsPage() {
 
   return (
 
-    <main className="min-h-screen p-4 md:p-8 bg-gray-50">
+    <main className="min-h-screen p-4 md:p-5 bg-gray-50">
 
       <div className="max-w-7xl mx-auto">
 
         {/* HEADER */}
 
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-4">
 
           <h1 className="text-4xl font-bold">
 
@@ -181,7 +181,7 @@ export default function TeacherLeaderboardsPage() {
 
           <Link
             href="/teacher"
-            className="bg-black text-white px-5 py-2 rounded-xl"
+            className="bg-black text-white px-4 py-2 rounded-xl"
           >
 
             Dashboard
@@ -192,7 +192,7 @@ export default function TeacherLeaderboardsPage() {
 
         {/* SELECT EXAM */}
 
-        <div className="bg-white border rounded-2xl p-6 mb-8">
+        <div className="bg-white border rounded-2xl p-6 mb-4">
 
           <h2 className="text-2xl font-bold mb-4">
 
@@ -235,7 +235,7 @@ export default function TeacherLeaderboardsPage() {
 
         {selectedExam && (
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-10">
 
             <div className="bg-white border rounded-2xl p-6">
 
@@ -279,7 +279,7 @@ export default function TeacherLeaderboardsPage() {
 
           <div>
 
-            <h2 className="text-3xl font-bold mb-6">
+            <h2 className="text-3xl font-bold mb-3">
 
               Leaderboard
 

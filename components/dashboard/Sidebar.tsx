@@ -13,7 +13,7 @@ import {
 export default function Sidebar() {
   return (
     <aside className="w-72 bg-[#0f172a] text-white min-h-screen p-6">
-      <h1 className="text-3xl font-bold mb-12">
+      <h1 className="text-3xl font-bold mb-4">
         Exam SaaS
       </h1>
 

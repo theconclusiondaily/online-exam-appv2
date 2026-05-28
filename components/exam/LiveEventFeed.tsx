@@ -90,7 +90,7 @@ function LiveEventFeed() {
 
       {/* HEADER */}
 
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center justify-between mb-2">
 
         <div>
 
@@ -118,7 +118,7 @@ function LiveEventFeed() {
 
         <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
 
-        <div className="relative z-10 flex items-start gap-4">
+        <div className="relative z-10 flex items-start gap-2">
 
           <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm">
 

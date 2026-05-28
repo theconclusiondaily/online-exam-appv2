@@ -1,0 +1,45 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- OUTER SHADOW -->
+  <circle cx="64" cy="64" r="58" fill="#1F3F77" opacity="0.12"></circle>
+
+  <!-- OUTER COIN -->
+  <circle cx="64" cy="64" r="54" fill="#E3BE5B" stroke="#274C8E" stroke-width="6"></circle>
+
+  <!-- INNER RING -->
+  <circle cx="64" cy="64" r="42" fill="#F4D27A" stroke="#C89A1E" stroke-width="3"></circle>
+
+  <!-- LIGHT REFLECTION -->
+  <ellipse cx="48" cy="42" rx="18" ry="10" fill="white" opacity="0.22"></ellipse>
+
+  <!-- CUSTOM TCD CURRENCY SYMBOL -->
+
+  <g transform="translate(64 64)">
+
+    <!-- MAIN STEM -->
+    <path d="M0 -20V20" stroke="#274C8E" stroke-width="6" stroke-linecap="round"></path>
+
+    <!-- TOP ARC -->
+    <path d="M-14 -10
+         C-8 -18,
+          8 -18,
+          14 -10" stroke="#274C8E" stroke-width="6" stroke-linecap="round" fill="none"></path>
+
+    <!-- LOWER ARC -->
+    <path d="M-14 10
+         C-8 18,
+          8 18,
+          14 10" stroke="#274C8E" stroke-width="6" stroke-linecap="round" fill="none"></path>
+
+    <!-- CENTER BAR -->
+    <path d="M-12 0H12" stroke="#274C8E" stroke-width="6" stroke-linecap="round"></path>
+
+    <!-- GOLD CORE -->
+    <circle cx="0" cy="0" r="5" fill="#D4AF37" stroke="#FFF4CC" stroke-width="2"></circle>
+
+  </g>
+
+  <!-- BOTTOM LABEL -->
+  <text x="64" y="103" text-anchor="middle" fill="#274C8E" font-size="10" font-weight="900" font-family="Arial, sans-serif" letter-spacing="2">
+    TCD
+  </text>
+</svg>

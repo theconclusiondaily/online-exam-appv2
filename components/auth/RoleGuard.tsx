@@ -49,7 +49,7 @@ export default function RoleGuard({
 
   if (loading) {
     return (
-      <div className="text-white p-10">
+      <div className="text-white p-6">
         Loading...
       </div>
     );

@@ -36,9 +36,9 @@ function QuestionCard({
 
     <div className="max-w-5xl mx-auto pb-44">
 
-      <div className="border p-8 rounded-3xl bg-white shadow-sm">
+      <div className="border p-5 rounded-3xl bg-white shadow-sm">
 
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-3">
 
           <h2 className="font-bold text-2xl">
 
@@ -58,7 +58,7 @@ function QuestionCard({
 
         </div>
 
-        <h2 className="font-semibold mb-8 text-xl leading-relaxed">
+        <h2 className="font-semibold mb-4 text-xl leading-relaxed">
 
           {question.question}
 

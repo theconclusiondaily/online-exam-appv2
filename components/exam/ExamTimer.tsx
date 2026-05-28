@@ -78,7 +78,7 @@ function ExamTimer({
 
   return (
 
-    <div className="bg-red-500/20 border border-red-500/30 px-5 py-3 rounded-2xl">
+    <div className="bg-red-500/20 border border-red-500/30 px-4 py-3 rounded-2xl">
 
       <p className="text-sm text-red-700">
 

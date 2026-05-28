@@ -15,7 +15,7 @@ export default function GlobalError({
 
       <body className="min-h-screen flex items-center justify-center bg-gray-50">
 
-        <div className="bg-white rounded-3xl p-10 shadow-xl text-center max-w-xl">
+        <div className="bg-white rounded-3xl p-6 shadow-xl text-center max-w-xl">
 
           <h1 className="text-4xl font-bold text-red-600 mb-4">
 
@@ -23,7 +23,7 @@ export default function GlobalError({
 
           </h1>
 
-          <p className="text-gray-600 mb-8">
+          <p className="text-gray-600 mb-4">
 
             {error.message}
 
@@ -31,7 +31,7 @@ export default function GlobalError({
 
           <button
             onClick={reset}
-            className="bg-black text-white px-6 py-4 rounded-2xl font-bold"
+            className="bg-black text-white px-6 py-3 rounded-2xl font-bold"
           >
 
             Reload App

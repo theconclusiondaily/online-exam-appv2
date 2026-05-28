@@ -172,15 +172,15 @@ export default function PapersPage() {
 
   return (
 
-    <main className="min-h-screen p-4 md:p-8 bg-gray-50">
+    <main className="min-h-screen p-4 md:p-5 bg-gray-50">
 
       <div className="max-w-7xl mx-auto">
 
         {/* NAVBAR */}
 
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4">
 
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex justify-between items-center mb-4">
 
   <h1 className="text-4xl font-bold">
 
@@ -190,7 +190,7 @@ export default function PapersPage() {
 
   <a
     href="/admin"
-    className="bg-black text-white px-5 py-2 rounded-xl"
+    className="bg-black text-white px-4 py-2 rounded-xl"
   >
 
     Dashboard
@@ -244,11 +244,11 @@ export default function PapersPage() {
 
         <div className="bg-white border rounded-2xl p-6 mb-10">
 
-          <h2 className="text-2xl font-bold mb-6">
+          <h2 className="text-2xl font-bold mb-3">
             Create Question Paper
           </h2>
 
-          <div className="grid gap-4">
+          <div className="grid gap-2">
 
             <input
               type="text"
@@ -332,7 +332,7 @@ export default function PapersPage() {
               className="bg-white border rounded-2xl p-6"
             >
 
-              <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+              <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2">
 
                 <div>
 

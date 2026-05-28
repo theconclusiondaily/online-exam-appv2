@@ -1,12 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { supabase }
-from "@/lib/supabase/client";
-
+import { supabase } from "@/lib/supabase/client";
+import AuthHero from "@/components/auth/AuthHero";
 export default function SignupPage() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [name, setName] =
+    useState("");
+
+  const [email, setEmail] =
+    useState("");
+
+  const [mobile, setMobile] =
+    useState("");
+
+  const [dob, setDob] =
+    useState("");
+
   const [password, setPassword] =
     useState("");
 
@@ -16,101 +25,361 @@ export default function SignupPage() {
   async function handleSignup() {
     try {
       setLoading(true);
-console.log("NAME:", name);
-console.log("EMAIL:", email);
-      const { data, error } =
-        await supabase.auth.signUp({
-          email,
-          password,
-        });
+
+      if (
+        !name ||
+        !email ||
+        !mobile ||
+        !dob ||
+        !password
+      ) {
+        alert(
+          "Please fill all fields"
+        );
+        return;
+      }
+
+      const {
+        data,
+        error,
+      } = await supabase.auth.signUp({
+        email,
+        password,
+      });
 
       if (error) {
         alert(error.message);
         return;
       }
 
-      const user = data.user;
+      const user =
+        data.user;
 
       if (!user) {
-        alert("User not created");
+        alert(
+          "User creation failed"
+        );
         return;
       }
 
-      const { data: profileData, error: profileError } =
-  await supabase
-    .from("users")
-    .insert({
-      id: user.id,
-      name,
-      email,
-      role: "student",
-    })
-    .select();
+      const {
+        data: profileData,
+        error: profileError,
+      } = await supabase
+        .from("users")
+        .insert({
+          id: user.id,
+          name,
+          email,
+          mobile,
+          dob,
+          role: "student",
+        })
+        .select();
 
-console.log("PROFILE DATA:", profileData);
-console.log("PROFILE ERROR:", profileError);
+      console.log(
+        "PROFILE DATA:",
+        profileData
+      );
+
+      console.log(
+        "PROFILE ERROR:",
+        profileError
+      );
 
       if (profileError) {
-        console.log(profileError);
-        alert(profileError.message);
+        alert(
+          profileError.message
+        );
         return;
       }
 
-      alert("Signup successful");
+      alert(
+        "Signup successful. Please verify your email."
+      );
+
+      setName("");
+      setEmail("");
+      setMobile("");
+      setDob("");
+      setPassword("");
+
     } catch (err) {
-      console.log(err);
+      console.error(err);
+
+      alert(
+        "Something went wrong"
+      );
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="bg-zinc-900 p-8 rounded-2xl w-full max-w-md space-y-4">
-        <h1 className="text-3xl font-bold text-white">
-          Signup
-        </h1>
 
-        <input
-          type="text"
-          placeholder="Full Name"
-          value={name}
-          onChange={(e) =>
-            setName(e.target.value)
-          }
-          className="w-full p-3 rounded bg-zinc-800 text-white"
-        />
+  <main
+    className="
+      min-h-screen
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) =>
-            setEmail(e.target.value)
-          }
-          className="w-full p-3 rounded bg-zinc-800 text-white"
-        />
+      lg:grid
+      lg:grid-cols-[1.2fr_0.8fr]
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) =>
-            setPassword(e.target.value)
-          }
-          className="w-full p-3 rounded bg-zinc-800 text-white"
-        />
+      bg-[#F7F9FC]
+    "
+  >
 
-        <button
-          onClick={handleSignup}
-          disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded"
-        >
-          {loading
-            ? "Creating Account..."
-            : "Create Account"}
-        </button>
+    <AuthHero />
+
+    <div
+      className="
+        flex
+        items-center
+        justify-center
+
+        p-6
+      "
+    >
+
+      <div
+        className="
+          bg-white
+
+          w-full
+          max-w-lg
+
+          rounded-[36px]
+
+          border
+          border-gray-100
+
+          shadow-2xl
+
+          p-6
+        "
+      >
+
+        <div className="text-center mb-4">
+
+          <img
+            src="/logo.png"
+            alt="TCD"
+            className="
+              w-20
+              h-20
+              mx-auto
+              mb-2
+            "
+          />
+
+          <h1
+            className="
+              text-4xl
+              font-black
+              text-tcd-blue
+            "
+          >
+            Begin Your Journey
+          </h1>
+
+          <p
+            className="
+              text-gray-500
+              mt-3
+            "
+          >
+            Build your future
+            through learning,
+            achievement and
+            consistency.
+          </p>
+
+        </div>
+
+        <div className="space-y-4">
+
+          <input
+            type="text"
+            placeholder="Full Name"
+            value={name}
+            onChange={(e) =>
+              setName(
+                e.target.value
+              )
+            }
+            className="
+              w-full
+              p-3
+
+              rounded-xl
+
+              border
+              border-gray-300
+
+              focus:outline-none
+              focus:ring-2
+              focus:ring-tcd-blue
+            "
+          />
+
+          <input
+            type="email"
+            placeholder="Email Address"
+            value={email}
+            onChange={(e) =>
+              setEmail(
+                e.target.value
+              )
+            }
+            className="
+              w-full
+              p-3
+
+              rounded-xl
+
+              border
+              border-gray-300
+
+              focus:outline-none
+              focus:ring-2
+              focus:ring-tcd-blue
+            "
+          />
+
+          <input
+            type="tel"
+            placeholder="Mobile Number"
+            value={mobile}
+            onChange={(e) =>
+              setMobile(
+                e.target.value
+              )
+            }
+            className="
+              w-full
+              p-3
+
+              rounded-xl
+
+              border
+              border-gray-300
+
+              focus:outline-none
+              focus:ring-2
+              focus:ring-tcd-blue
+            "
+          />
+
+          <input
+            type="date"
+            value={dob}
+            onChange={(e) =>
+              setDob(
+                e.target.value
+              )
+            }
+            className="
+              w-full
+              p-3
+
+              rounded-xl
+
+              border
+              border-gray-300
+
+              focus:outline-none
+              focus:ring-2
+              focus:ring-tcd-blue
+            "
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) =>
+              setPassword(
+                e.target.value
+              )
+            }
+            className="
+              w-full
+              p-3
+
+              rounded-xl
+
+              border
+              border-gray-300
+
+              focus:outline-none
+              focus:ring-2
+              focus:ring-tcd-blue
+            "
+          />
+
+          <button
+            onClick={
+              handleSignup
+            }
+            disabled={loading}
+            className="
+              w-full
+
+              py-3
+
+              rounded-2xl
+
+              bg-gradient-to-r
+              from-[#D4AF37]
+              to-[#F2D27A]
+
+              text-tcd-blue
+
+              font-black
+
+              shadow-lg
+
+              hover:scale-[1.02]
+
+              transition-all
+
+              disabled:opacity-50
+            "
+          >
+            {
+              loading
+                ? "Creating Account..."
+                : "Create Account"
+            }
+          </button>
+
+          <div
+            className="
+              pt-4
+              text-center
+              text-sm
+              text-gray-500
+            "
+          >
+            Already have an account?
+
+            <a
+              href="/login"
+              className="
+                ml-2
+                font-bold
+                text-tcd-blue
+              "
+            >
+              Login
+            </a>
+          </div>
+
+        </div>
+
       </div>
+
     </div>
-  );
+
+  </main>
+);
 }

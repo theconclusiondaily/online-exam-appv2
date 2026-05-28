@@ -138,11 +138,11 @@ export default function InstitutesPage() {
 
     <AdminGuard>
 
-      <main className="min-h-screen bg-gray-50 p-6 md:p-8">
+      <main className="min-h-screen bg-gray-50 p-6 md:p-5">
 
         <div className="max-w-6xl mx-auto">
 
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex justify-between items-center mb-4">
 
             <h1 className="text-4xl font-bold">
 
@@ -152,7 +152,7 @@ export default function InstitutesPage() {
 
             <a
               href="/admin"
-              className="bg-black text-white px-5 py-2 rounded-xl"
+              className="bg-black text-white px-4 py-2 rounded-xl"
             >
 
               Dashboard
@@ -165,7 +165,7 @@ export default function InstitutesPage() {
 
           <div className="bg-white border rounded-3xl p-6 shadow-sm mb-10">
 
-            <h2 className="text-2xl font-bold mb-6">
+            <h2 className="text-2xl font-bold mb-3">
 
               Create Institute
 
@@ -201,7 +201,7 @@ export default function InstitutesPage() {
                 onClick={
                   createInstitute
                 }
-                className="bg-black text-white px-6 py-4 rounded-2xl font-bold w-full"
+                className="bg-black text-white px-6 py-3 rounded-2xl font-bold w-full"
               >
 
                 Create Institute
@@ -216,7 +216,7 @@ export default function InstitutesPage() {
 
           <div className="bg-white border rounded-3xl p-6 shadow-sm">
 
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-4">
 
               <h2 className="text-3xl font-bold">
 
@@ -239,7 +239,7 @@ export default function InstitutesPage() {
 
                   <div
                     key={institute.id}
-                    className="border rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5"
+                    className="border rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3"
                   >
 
                     <div>
@@ -276,7 +276,7 @@ export default function InstitutesPage() {
 
                       </p>
 
-                      <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                      <div className="flex flex-wrap gap-2 text-sm text-gray-600">
 
                         <div>
 
@@ -347,7 +347,7 @@ export default function InstitutesPage() {
                         }}
 
                         className={`
-                          px-5 py-3 rounded-xl text-white font-bold
+                          px-4 py-3 rounded-xl text-white font-bold
 
                           ${
                             institute.active

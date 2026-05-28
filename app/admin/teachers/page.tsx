@@ -120,7 +120,7 @@ export default function TeachersPage() {
 
     <AdminGuard>
 
-      <main className="min-h-screen bg-gray-50 p-6 md:p-8">
+      <main className="min-h-screen bg-gray-50 p-6 md:p-5">
 
         <div className="max-w-7xl mx-auto">
 
@@ -136,7 +136,7 @@ export default function TeachersPage() {
 
             <Link
               href="/admin"
-              className="bg-black text-white px-5 py-2 rounded-xl"
+              className="bg-black text-white px-4 py-2 rounded-xl"
             >
 
               Dashboard
@@ -147,7 +147,7 @@ export default function TeachersPage() {
 
           {/* SUMMARY */}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-10">
 
             <div className="bg-white border rounded-3xl p-6 shadow-sm">
 
@@ -213,7 +213,7 @@ export default function TeachersPage() {
 
           <div className="bg-white border rounded-3xl p-6 shadow-sm">
 
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-4">
 
               <h2 className="text-3xl font-bold">
 
@@ -236,7 +236,7 @@ export default function TeachersPage() {
 
                   <div
                     key={teacher.id}
-                    className="border rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5"
+                    className="border rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3"
                   >
 
                     {/* LEFT */}
@@ -295,7 +295,7 @@ export default function TeachersPage() {
 
                     {/* RIGHT */}
 
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-2">
 
                       {/* ASSIGN INSTITUTE */}
 
@@ -383,7 +383,7 @@ export default function TeachersPage() {
                         }}
 
                         className={`
-                          px-5 py-3 rounded-xl text-white font-bold
+                          px-4 py-3 rounded-xl text-white font-bold
 
                           ${
                             teacher.disabled

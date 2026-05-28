@@ -1,6 +1,11 @@
 import { supabase }
 from "@/lib/supabase/client";
 
+export const SCORING = {
+  CORRECT: 3,
+  WRONG: -1,
+};
+
 export async function
 saveExamResult({
 
@@ -18,125 +23,125 @@ saveExamResult({
 
   try {
 
-    // ANALYTICS
+    const attemptedQuestions =
+      Object.keys(
+        answers || {}
+      ).length;
 
     const correct_count =
-      score;
+      Math.max(
+        0,
+        Math.floor(
+          (
+            score -
+            (
+              attemptedQuestions *
+              SCORING.WRONG
+            )
+          ) /
+          (
+            SCORING.CORRECT -
+            SCORING.WRONG
+          )
+        )
+      );
 
-   const attemptedQuestions =
+    const wrong_count =
+      Math.max(
+        0,
+        attemptedQuestions -
+        correct_count
+      );
 
-  Object.keys(
-    answers || {}
-  ).length;
-
-const wrong_count =
-
-  attemptedQuestions -
-  score;
-
-const unattempted_count =
-
-  total_questions -
-  attemptedQuestions;
+    const unattempted_count =
+      Math.max(
+        0,
+        total_questions -
+        attemptedQuestions
+      );
 
     const accuracy =
 
-  attemptedQuestions > 0
+      attemptedQuestions > 0
 
-    ? Math.round(
+        ? Math.round(
+            (
+              correct_count /
+              attemptedQuestions
+            ) * 100
+          )
 
-        (
-          correct_count /
-
-          attemptedQuestions
-        ) * 100
-      )
-
-    : 0;
+        : 0;
 
     const percentage =
-      accuracy;
 
-    // SAVE RESULT
+      total_questions > 0
 
-   const {
+        ? Math.round(
+            (
+              correct_count /
+              total_questions
+            ) * 100
+          )
 
-  data,
+        : 0;
 
-  error,
+    const {
+      data,
+      error,
+    } = await supabase
 
-} = await supabase
+      .from(
+        "exam_attempts"
+      )
 
-  .from(
-    "exam_attempts"
-  )
+      .upsert(
 
-  .upsert(
+        {
 
-    {
+          exam_id,
 
-      exam_id,
+          user_id,
 
-      user_id,
+          score,
 
-      score,
+          answers,
 
-      answers,
+          total_questions,
 
-      total_questions,
+          correct_count,
 
-      correct_count,
+          wrong_count,
 
-      wrong_count,
+          accuracy,
 
-      accuracy,
+          percentage,
 
-      percentage,
+          status:
+            "submitted",
 
-      status:
-        "submitted",
+          submitted_at:
+            new Date()
+              .toISOString(),
 
-      submitted_at:
-        new Date()
-          .toISOString(),
-    },
+        },
 
-    {
+        {
 
-      onConflict:
-        "exam_id,user_id",
-    }
-  )
+          onConflict:
+            "exam_id,user_id",
 
-  .select();
+        }
+
+      )
+
+      .select();
 
     if (error) {
 
-      console.log(
-        "FULL ERROR:",
+      console.error(
+        "SAVE RESULT ERROR:",
         error
-      );
-
-      console.log(
-        "ERROR MESSAGE:",
-        error?.message
-      );
-
-      console.log(
-        "ERROR DETAILS:",
-        error?.details
-      );
-
-      console.log(
-        "ERROR HINT:",
-        error?.hint
-      );
-
-      alert(
-
-        error?.message ||
-
-        "Unknown Supabase error"
       );
 
       return {
@@ -144,6 +149,7 @@ const unattempted_count =
         success: false,
 
         error,
+
       };
     }
 
@@ -152,6 +158,23 @@ const unattempted_count =
       success: true,
 
       data,
+
+      analytics: {
+
+        attemptedQuestions,
+
+        correct_count,
+
+        wrong_count,
+
+        unattempted_count,
+
+        accuracy,
+
+        percentage,
+
+      },
+
     };
 
   } catch (error) {
@@ -166,6 +189,7 @@ const unattempted_count =
       success: false,
 
       error,
+
     };
   }
 }

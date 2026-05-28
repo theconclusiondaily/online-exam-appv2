@@ -195,11 +195,11 @@ export default function AnalyticsPage() {
 
     <AdminGuard>
 
-      <main className="min-h-screen bg-gray-50 p-6 md:p-8">
+      <main className="min-h-screen bg-gray-50 p-6 md:p-5">
 
         <div className="max-w-7xl mx-auto">
 
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex justify-between items-center mb-4">
 
   <h1 className="text-4xl font-bold">
 
@@ -209,7 +209,7 @@ export default function AnalyticsPage() {
 
   <a
     href="/admin"
-    className="bg-black text-white px-5 py-2 rounded-xl"
+    className="bg-black text-white px-4 py-2 rounded-xl"
   >
 
     Dashboard
@@ -231,7 +231,7 @@ export default function AnalyticsPage() {
                   className="bg-white border rounded-3xl p-6 shadow-sm"
                 >
 
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
 
                     {/* LEFT */}
 
@@ -253,7 +253,7 @@ export default function AnalyticsPage() {
 
                     {/* STATS */}
 
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
 
                       <div>
 
@@ -291,7 +291,7 @@ export default function AnalyticsPage() {
 
                         <p className="text-gray-500 text-sm mb-1">
 
-                          Attempts
+                          Learning Journeys
 
                         </p>
 
@@ -346,7 +346,7 @@ export default function AnalyticsPage() {
 
             {analytics.length === 0 && (
 
-              <div className="bg-white border rounded-3xl p-10 text-center text-gray-500">
+              <div className="bg-white border rounded-3xl p-6 text-center text-gray-500">
 
                 No analytics available yet
 
