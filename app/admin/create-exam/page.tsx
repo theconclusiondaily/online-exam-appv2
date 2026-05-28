@@ -1,12 +1,7 @@
-import { Suspense } from "react";
-import CreateExamClient from "./CreateExamClient";
+import CreateExamClientWrapper from "./CreateExamClientWrapper";
 
 export const dynamic = "force-dynamic";
 
 export default function Page() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <CreateExamClient />
-    </Suspense>
-  );
+  return <CreateExamClientWrapper />;
 }
