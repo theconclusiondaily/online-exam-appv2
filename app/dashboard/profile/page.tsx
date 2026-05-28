@@ -77,7 +77,7 @@ export default function ProfilePage() {
     const accuracy =
       exams > 0
         ? Math.round(
-            attempts.reduce(
+            (attempts || []).reduce(
               (
                 sum,
                 a
