@@ -5,9 +5,29 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import AuthHero from "@/components/auth/AuthHero";
+import { useEffect } from "react";
 export default function LoginPage() {
 
   const router = useRouter();
+
+useEffect(() => {
+
+  async function checkUser() {
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (session) {
+
+      router.replace("/dashboard");
+
+    }
+  }
+
+  checkUser();
+
+}, []);
 
   const [email, setEmail] =
     useState("");
@@ -68,7 +88,21 @@ export default function LoginPage() {
 
         return;
       }
+const sessionToken =
+  crypto.randomUUID();
 
+localStorage.setItem(
+  "tcd_session_token",
+  sessionToken
+);
+
+await supabase
+  .from("active_sessions")
+  .upsert({
+    user_id: user.id,
+    session_token: sessionToken,
+    updated_at: new Date().toISOString(),
+  });
       // FETCH PROFILE
 
       const {
@@ -96,7 +130,7 @@ export default function LoginPage() {
         document.cookie =
           `role=admin; path=/; SameSite=Lax`;
 
-        router.push(
+        router.replace(
           "/admin"
         );
 
@@ -108,7 +142,7 @@ export default function LoginPage() {
         document.cookie =
           `role=teacher; path=/; SameSite=Lax`;
 
-        router.push(
+        router.replace(
           "/teacher"
         );
 
@@ -117,7 +151,7 @@ export default function LoginPage() {
         document.cookie =
           `role=student; path=/; SameSite=Lax`;
 
-        router.push(
+        router.replace(
           "/dashboard"
         );
       }
@@ -233,24 +267,27 @@ growth.
               )
             }
             className="
-              w-full
+w-full
 
-              p-3
+p-4
 
-              rounded-xl
+rounded-xl
 
-              border
-              bg-[#F7F9FC]
+border
 border-[#D8E1F0]
 
+bg-[#F7F9FC]
+
+text-[#274472]
+placeholder:text-gray-500
+
+transition-all
+
+focus:outline-none
 focus:border-[#D4AF37]
 focus:ring-2
 focus:ring-[#D4AF37]/30
-
-              focus:outline-none
-              focus:ring-2
-              focus:ring-tcd-blue
-            "
+"
           />
 
           <input
@@ -263,24 +300,27 @@ focus:ring-[#D4AF37]/30
               )
             }
             className="
-              w-full
+w-full
 
-              p-3
+p-4
 
-              rounded-xl
+rounded-xl
 
-              border
-              bg-[#F7F9FC]
+border
 border-[#D8E1F0]
 
+bg-[#F7F9FC]
+
+text-[#274472]
+placeholder:text-gray-500
+
+transition-all
+
+focus:outline-none
 focus:border-[#D4AF37]
 focus:ring-2
 focus:ring-[#D4AF37]/30
-
-              focus:outline-none
-              focus:ring-2
-              focus:ring-tcd-blue
-            "
+"
           />
 
           {/* FORGOT PASSWORD */}

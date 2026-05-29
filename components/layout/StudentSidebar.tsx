@@ -97,6 +97,13 @@ async function handleLogout() {
 
           return (
             <Link
+            onClick={() => {
+  if (window.innerWidth < 1024) {
+    document
+      .querySelector("body")
+      ?.click();
+  }
+}}
               key={link.href}
               href={link.href}
               className={`
@@ -160,6 +167,13 @@ async function handleLogout() {
       <div className="border-t border-gray-200 pt-6">
 
         <Link
+        onClick={() => {
+  if (window.innerWidth < 1024) {
+    document
+      .querySelector("body")
+      ?.click();
+  }
+}}
           href="/dashboard/profile"
           className="
   flex

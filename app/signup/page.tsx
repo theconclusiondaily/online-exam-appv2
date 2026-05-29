@@ -207,18 +207,27 @@ export default function SignupPage() {
               )
             }
             className="
-              w-full
-              p-3
+w-full
 
-              rounded-xl
+p-4
 
-              border
-              border-gray-300
+rounded-xl
 
-              focus:outline-none
-              focus:ring-2
-              focus:ring-tcd-blue
-            "
+border
+border-[#D8E1F0]
+
+bg-[#F7F9FC]
+
+text-[#274472]
+placeholder:text-gray-500
+
+transition-all
+
+focus:outline-none
+focus:border-[#D4AF37]
+focus:ring-2
+focus:ring-[#D4AF37]/30
+"
           />
 
           <input
@@ -231,18 +240,27 @@ export default function SignupPage() {
               )
             }
             className="
-              w-full
-              p-3
+w-full
 
-              rounded-xl
+p-4
 
-              border
-              border-gray-300
+rounded-xl
 
-              focus:outline-none
-              focus:ring-2
-              focus:ring-tcd-blue
-            "
+border
+border-[#D8E1F0]
+
+bg-[#F7F9FC]
+
+text-[#274472]
+placeholder:text-gray-500
+
+transition-all
+
+focus:outline-none
+focus:border-[#D4AF37]
+focus:ring-2
+focus:ring-[#D4AF37]/30
+"
           />
 
           <input
@@ -255,18 +273,27 @@ export default function SignupPage() {
               )
             }
             className="
-              w-full
-              p-3
+w-full
 
-              rounded-xl
+p-4
 
-              border
-              border-gray-300
+rounded-xl
 
-              focus:outline-none
-              focus:ring-2
-              focus:ring-tcd-blue
-            "
+border
+border-[#D8E1F0]
+
+bg-[#F7F9FC]
+
+text-[#274472]
+placeholder:text-gray-500
+
+transition-all
+
+focus:outline-none
+focus:border-[#D4AF37]
+focus:ring-2
+focus:ring-[#D4AF37]/30
+"
           />
 
           <input
@@ -278,18 +305,26 @@ export default function SignupPage() {
               )
             }
             className="
-              w-full
-              p-3
+w-full
 
-              rounded-xl
+p-4
 
-              border
-              border-gray-300
+rounded-xl
 
-              focus:outline-none
-              focus:ring-2
-              focus:ring-tcd-blue
-            "
+border
+border-[#D8E1F0]
+
+bg-[#F7F9FC]
+
+text-[#274472]
+
+transition-all
+
+focus:outline-none
+focus:border-[#D4AF37]
+focus:ring-2
+focus:ring-[#D4AF37]/30
+"
           />
 
           <input
@@ -302,18 +337,27 @@ export default function SignupPage() {
               )
             }
             className="
-              w-full
-              p-3
+w-full
 
-              rounded-xl
+p-4
 
-              border
-              border-gray-300
+rounded-xl
 
-              focus:outline-none
-              focus:ring-2
-              focus:ring-tcd-blue
-            "
+border
+border-[#D8E1F0]
+
+bg-[#F7F9FC]
+
+text-[#274472]
+placeholder:text-gray-500
+
+transition-all
+
+focus:outline-none
+focus:border-[#D4AF37]
+focus:ring-2
+focus:ring-[#D4AF37]/30
+"
           />
 
           <button

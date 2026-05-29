@@ -38,7 +38,7 @@ export default function RoleGuard({
       ) {
         setAuthorized(true);
       } else {
-        router.push("/login");
+        router.replace("/login");
       }
     }
 

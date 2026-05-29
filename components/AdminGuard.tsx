@@ -44,7 +44,7 @@ export default function AdminGuard({
 
       if (!user) {
 
-        router.push(
+        router.replace(
           "/login"
         );
 

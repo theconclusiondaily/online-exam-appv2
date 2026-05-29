@@ -229,9 +229,8 @@ const levelTitle =
       .auth
       .signOut();
 
-    router.push(
-      "/login"
-    );
+    window.location.href = "/login";
+    
   }
 
   // LOAD DASHBOARD

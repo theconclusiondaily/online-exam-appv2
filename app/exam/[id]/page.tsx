@@ -1077,7 +1077,7 @@ if (!response.ok) {
   ) {
 
     
-    router.push(
+    router.replace(
       `/exam-result/${examId}`
     );
 
@@ -1593,7 +1593,7 @@ localStorage.removeItem(
 
   setShowXP(false);
 
-  router.push(
+  router.replace(
     `/exam-result/${examId}`
   );
 

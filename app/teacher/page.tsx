@@ -261,9 +261,8 @@ setLiveExams(
       .auth
       .signOut();
 
-    router.push(
-      "/login"
-    );
+    window.location.href = "/login";
+    
   }
 
   if (loading) {
