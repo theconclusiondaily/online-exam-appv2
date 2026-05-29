@@ -23,11 +23,12 @@ export default function DashboardLayout({
       <StudentSidebar />
 
       <main
-        className="
-          flex-1
-          overflow-y-auto
-        "
-      >
+  className="
+    flex-1
+    min-w-0
+    overflow-y-auto
+  "
+>
 
         {children}
 

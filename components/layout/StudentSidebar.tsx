@@ -55,8 +55,11 @@ async function handleLogout() {
   window.location.href = "/login";
 }
   return (
-    <aside
+   <aside
   className="
+    hidden
+    lg:flex
+
     w-72
     min-h-screen
 
@@ -66,7 +69,6 @@ async function handleLogout() {
 
     p-6
 
-    flex
     flex-col
 
     border-r

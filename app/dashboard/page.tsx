@@ -1454,12 +1454,12 @@ const handleClaimReward =
           absolute
 
           right-[-60px]
-          bottom-[-60px]
+          bottom-[-40px]
 
           w-48
           h-48
 
-          opacity-[0.04]
+          opacity-[0.08]
         "
       />
 
@@ -1491,7 +1491,9 @@ const handleClaimReward =
           "
         >
 
-          {TCDIcons.leaderboard}
+          <div className="w-5 h-5 flex-shrink-0">
+  {TCDIcons.leaderboard}
+</div>
 
           Competitive Hub
 
@@ -1833,25 +1835,41 @@ const handleClaimReward =
 
   {/* WATERMARK LOGO */}
 
+<div
+  className="
+    relative
+
+    flex
+    items-center
+    justify-center
+
+    min-h-[280px]
+
+    overflow-hidden
+  "
+>
+
   <img
     src="/logo.png"
     alt="TCD"
 
     className="
-      relative
-      z-10
+      w-64
+      h-64
 
-      w-[480px]
-      h-[480px]
+      md:w-80
+      md:h-80
 
       object-contain
 
-      opacity-[0.50]
+      opacity-90
 
       select-none
       pointer-events-none
     "
   />
+
+</div>
 
 </div>
   </div>
