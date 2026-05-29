@@ -78,7 +78,7 @@ const [sidebarOpen, setSidebarOpen] =
         <X size={22} />
       </button>
 
-      <StudentSidebar />
+      <StudentSidebar mobile />
 
     </div>
 

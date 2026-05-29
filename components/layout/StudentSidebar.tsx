@@ -8,7 +8,13 @@ import { usePathname } from "next/navigation";
 import TCDLogo from "@/components/brand/TCDLogo";
 import { supabase }
 from "@/lib/supabase/client";
-export default function StudentSidebar() {
+interface Props {
+  mobile?: boolean;
+}
+
+export default function StudentSidebar({
+  mobile = false,
+}: Props) {
 
   const pathname = usePathname();
 
@@ -56,26 +62,47 @@ async function handleLogout() {
 }
   return (
    <aside
-  className="
-    hidden
-    lg:flex
+  className={
+    mobile
+      ? `
+        w-72
+        h-full
 
-    w-72
-    min-h-screen
+        bg-gradient-to-b
+        from-[#EEF3FF]
+        to-white
 
-    bg-gradient-to-b
-    from-[#EEF3FF]
-    to-white
+        p-6
 
-    p-6
+        flex
+        flex-col
 
-    flex-col
+        border-r
+        border-[#D9E4FF]
 
-    border-r
-    border-[#D9E4FF]
+        shadow-lg
+      `
+      : `
+        hidden
+        lg:flex
 
-    shadow-lg
-  "
+        w-72
+        min-h-screen
+
+        bg-gradient-to-b
+        from-[#EEF3FF]
+        to-white
+
+        p-6
+
+        flex-col
+
+        border-r
+        border-[#D9E4FF]
+
+        shadow-lg
+      `
+  }
 >
     
       {/* Logo */}
