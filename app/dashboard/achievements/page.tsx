@@ -35,13 +35,14 @@ export default function AchievementsPage() {
   ] = useState<any>(null);
 
   const [
-    stats,
-    setStats
-  ] = useState({
-    exams: 0,
-    perfect: 0,
-    high: 0,
-  });
+  stats,
+  setStats
+] = useState({
+  exams: 0,
+  perfect: 0,
+  high: 0,
+  accuracy: 0,
+});
 
   useEffect(() => {
 
@@ -85,7 +86,7 @@ export default function AchievementsPage() {
     } = await supabase
 
       .from(
-  "tcd_achievements"
+  "achievements"
 )
 
       .select("*")
@@ -184,14 +185,23 @@ export default function AchievementsPage() {
           90
       ).length || 0;
 
-    setStats({
-      exams:
-        totalExams,
-      perfect:
-        perfectScores,
-      high:
-        highScores,
-    });
+   const avgAccuracy =
+  attempts?.length
+    ? Math.round(
+        attempts.reduce(
+          (sum, a) =>
+            sum + (a.percentage || 0),
+          0
+        ) / attempts.length
+      )
+    : 0;
+
+setStats({
+  exams: totalExams,
+  perfect: perfectScores,
+  high: highScores,
+  accuracy: avgAccuracy,
+});
 
     setAchievements(
       achievementData ||
@@ -387,7 +397,15 @@ export default function AchievementsPage() {
                   loginStreak
                     ?.current_streak || 0;
               }
+else if (
+  achievement.category ===
+  "ACCURACY"
+) {
 
+  currentProgress =
+    stats.accuracy;
+
+}
               const percent =
                 Math.min(
                   (
@@ -1034,7 +1052,61 @@ export default function AchievementsPage() {
           "LOGIN_STREAK",
           0
         )}
+{renderSection(
+  "Accuracy Mastery",
+  TCDIcons.target,
+  "ACCURACY",
+  0
+)}
 
+{renderSection(
+  "Clean Exams",
+  TCDIcons.shield,
+  "CLEAN_EXAMS",
+  0
+)}
+
+{renderSection(
+  "TCD Earnings",
+  TCDIcons.coin,
+  "TCD_EARNINGS",
+  0
+)}
+
+{renderSection(
+  "XP Progression",
+  TCDIcons.mastery,
+  "XP",
+  0
+)}
+
+{renderSection(
+  "Speed Achievements",
+  TCDIcons.timer,
+  "SPEED",
+  0
+)}
+
+{renderSection(
+  "Leaderboard Prestige",
+  TCDIcons.leaderboard,
+  "LEADERBOARD",
+  0
+)}
+
+{renderSection(
+  "Endurance",
+  TCDIcons.fire,
+  "ENDURANCE",
+  0
+)}
+
+{renderSection(
+  "Special Prestige",
+  TCDIcons.achievement,
+  "SPECIAL",
+  0
+)}
       </div>
 
     </main>
