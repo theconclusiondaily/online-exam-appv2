@@ -175,7 +175,7 @@ export default function XPLevelCard() {
 
       {/* WATERMARK */}
 
-    <img
+   <img
   src="/logo.png"
   alt="TCD"
   className="
@@ -187,10 +187,13 @@ export default function XPLevelCard() {
     -translate-x-1/2
     -translate-y-1/2
 
-    w-64
-    h-64
+    w-32
+    h-32
 
-    opacity-[0.06]
+    md:w-40
+    md:h-40
+
+    opacity-[0.04]
 
     pointer-events-none
   "
@@ -262,7 +265,7 @@ export default function XPLevelCard() {
 
               <h2
                 className="
-                  text-2xl
+                  text-xl
                   font-black
                 "
               >
@@ -359,7 +362,7 @@ export default function XPLevelCard() {
 
             <h3
               className="
-                text-3xl
+                text-2xl
                 font-black
               "
             >
@@ -394,7 +397,7 @@ export default function XPLevelCard() {
 
             <h3
               className="
-                text-3xl
+                text-2xl
                 font-black
 
                 text-tcd-gold
