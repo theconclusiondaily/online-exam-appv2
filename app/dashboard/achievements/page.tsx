@@ -422,12 +422,14 @@ else if (
                     achievement.id
                   }
                   className={`
-                    relative
-                    overflow-hidden
+  relative
+  overflow-hidden
 
-                    w-full
-md:min-w-[320px]
-md:max-w-[320px]
+  min-w-[280px]
+  max-w-[280px]
+
+  md:min-w-[320px]
+  md:max-w-[320px]
 
                     rounded-[36px]
 
