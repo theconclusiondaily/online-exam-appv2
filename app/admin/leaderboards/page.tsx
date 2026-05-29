@@ -197,13 +197,13 @@ export default function AdminLeaderboardsPage() {
 
       <main className="min-h-screen bg-gray-50 p-6 md:p-5">
 
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           {/* HEADER */}
 
           <div className="flex justify-between items-center mb-10">
 
-            <h1 className="text-4xl font-bold">
+            <h1 className="text-2xl font-bold">
 
               Leaderboards
 

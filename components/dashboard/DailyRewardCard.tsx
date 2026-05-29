@@ -83,7 +83,7 @@ export default function DailyRewardCard({
 
         <div
           className="
-            text-4xl
+            text-2xl
             font-black
             tracking-tight
             text-[#D4A017]

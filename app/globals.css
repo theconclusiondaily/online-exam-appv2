@@ -63,7 +63,7 @@ body {
 ========================= */
 
 .tcd-page-title {
-  @apply text-4xl md:text-3xl font-black text-tcd-blue;
+  @apply text-2xl md:text-3xl font-black text-tcd-blue;
 }
 
 .tcd-page-subtitle {

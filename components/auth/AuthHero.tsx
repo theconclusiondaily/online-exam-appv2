@@ -66,7 +66,7 @@ export default function AuthHero() {
 
         <h1
           className="
-            text-4xl
+            text-2xl
             font-black
             leading-tight
             mb-4

@@ -87,7 +87,7 @@ export default function StudyStreakCard({
 
         <div
           className="
-            text-4xl
+            text-2xl
             font-black
             tracking-tight
             text-green-600

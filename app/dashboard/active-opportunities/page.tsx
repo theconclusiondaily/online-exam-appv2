@@ -237,7 +237,7 @@ export default function ActiveOpportunitiesPage() {
       "
     >
 
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* BACK */}
 
@@ -357,7 +357,7 @@ export default function ActiveOpportunitiesPage() {
 
           <h1
             className="
-              text-4xl
+              text-2xl
               font-black
 
               mb-2
@@ -576,7 +576,7 @@ export default function ActiveOpportunitiesPage() {
 
             <h2
               className="
-                text-4xl
+                text-2xl
                 font-black
 
                 text-tcd-blue

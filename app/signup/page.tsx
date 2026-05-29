@@ -173,7 +173,7 @@ export default function SignupPage() {
 
           <h1
             className="
-              text-4xl
+              text-2xl
               font-black
               text-tcd-blue
             "

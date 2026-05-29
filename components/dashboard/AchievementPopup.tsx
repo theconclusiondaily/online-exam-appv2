@@ -103,7 +103,7 @@ export default function AchievementPopup({
           "
         >
 
-          <div className="text-6xl mb-4">
+          <div className="text-3xl mb-4">
 
             🏆
 
@@ -129,7 +129,7 @@ export default function AchievementPopup({
 
           <h2
             className={`
-              text-4xl
+              text-2xl
 
               font-black
 

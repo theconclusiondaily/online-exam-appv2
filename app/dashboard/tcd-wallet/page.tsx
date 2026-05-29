@@ -175,7 +175,7 @@ export default function TCDWalletPage() {
       "
     >
 
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* BACK */}
 
@@ -289,7 +289,7 @@ export default function TCDWalletPage() {
 
             <h1
               className="
-                text-4xl
+                text-2xl
                 font-black
 
                 mb-2

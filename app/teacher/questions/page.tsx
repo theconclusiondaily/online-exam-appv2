@@ -113,7 +113,7 @@ export default function TeacherQuestionsPage() {
 
         <div className="flex justify-between items-center mb-10">
 
-          <h1 className="text-4xl font-bold">
+          <h1 className="text-2xl font-bold">
 
             Upload Questions
 

@@ -284,7 +284,7 @@ flex-1
 
           <h3
             className="
-              text-4xl
+              text-2xl
               font-black
             "
           >
@@ -317,7 +317,7 @@ flex-1
 
           <h3
             className="
-              text-4xl
+              text-2xl
               font-black
             "
           >
@@ -350,7 +350,7 @@ flex-1
 
           <h3
             className="
-              text-4xl
+              text-2xl
               font-black
             "
           >

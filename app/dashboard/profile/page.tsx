@@ -167,7 +167,7 @@ export default function ProfilePage() {
   return (
     <main className="min-h-screen bg-[#F8F9FB] p-6 md:p-5">
 
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* BACK BUTTON */}
 
@@ -374,7 +374,7 @@ export default function ProfilePage() {
                 Personal Information
               </h2>
 
-              <div className="grid md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 
                 <div>
                   <p className="text-gray-500">
@@ -434,14 +434,14 @@ export default function ProfilePage() {
 
         {/* STATS */}
 
-        <div className="grid md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
 
           <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm">
-            <div className="text-4xl mb-3">📚</div>
+            <div className="text-2xl mb-3">📚</div>
             <p className="text-gray-500">
               Exams Attempted
             </p>
-            <h3 className="text-4xl font-black text-tcd-blue mt-3">
+            <h3 className="text-2xl font-black text-tcd-blue mt-3">
               {
   stats.exams
 }
@@ -449,21 +449,21 @@ export default function ProfilePage() {
           </div>
 
           <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm">
-            <div className="text-4xl mb-3">🎯</div>
+            <div className="text-2xl mb-3">🎯</div>
             <p className="text-gray-500">
               Accuracy
             </p>
-            <h3 className="text-4xl font-black text-tcd-gold mt-3">
+            <h3 className="text-2xl font-black text-tcd-gold mt-3">
              {stats.accuracy}%
             </h3>
           </div>
 
           <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm">
-            <div className="text-4xl mb-3">🏆</div>
+            <div className="text-2xl mb-3">🏆</div>
             <p className="text-gray-500">
               Highest Score
             </p>
-            <h3 className="text-4xl font-black text-green-600 mt-3">
+            <h3 className="text-2xl font-black text-green-600 mt-3">
               {
   stats.highest
 }
@@ -471,11 +471,11 @@ export default function ProfilePage() {
           </div>
 
           <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm">
-            <div className="text-4xl mb-3">🪙</div>
+            <div className="text-2xl mb-3">🪙</div>
             <p className="text-gray-500">
               Lifetime TCD
             </p>
-            <h3 className="text-4xl font-black text-tcd-blue mt-3">
+            <h3 className="text-2xl font-black text-tcd-blue mt-3">
             {
   stats.lifetimeTcd
 }
@@ -483,11 +483,11 @@ export default function ProfilePage() {
           </div>
 
         </div>
-<div className="grid md:grid-cols-3 gap-3 mt-8">
+<div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-8">
 
   <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm">
 
-    <div className="text-4xl mb-3">
+    <div className="text-2xl mb-3">
       🔥
     </div>
 
@@ -495,7 +495,7 @@ export default function ProfilePage() {
       Current Streak
     </p>
 
-    <h3 className="text-4xl font-black text-orange-500 mt-3">
+    <h3 className="text-2xl font-black text-orange-500 mt-3">
       {
         stats.currentStreak
       }
@@ -505,7 +505,7 @@ export default function ProfilePage() {
 
   <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm">
 
-    <div className="text-4xl mb-3">
+    <div className="text-2xl mb-3">
       🏔️
     </div>
 
@@ -513,7 +513,7 @@ export default function ProfilePage() {
       Longest Streak
     </p>
 
-    <h3 className="text-4xl font-black text-tcd-blue mt-3">
+    <h3 className="text-2xl font-black text-tcd-blue mt-3">
       {
         stats.longestStreak
       }
@@ -523,7 +523,7 @@ export default function ProfilePage() {
 
   <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm">
 
-    <div className="text-4xl mb-3">
+    <div className="text-2xl mb-3">
       🏆
     </div>
 
@@ -531,7 +531,7 @@ export default function ProfilePage() {
       Achievements
     </p>
 
-    <h3 className="text-4xl font-black text-green-600 mt-3">
+    <h3 className="text-2xl font-black text-green-600 mt-3">
       {
         stats.achievements
       }

@@ -101,7 +101,7 @@ const xpProgress =
         <h1
           className="
             text-3xl
-            md:text-4xl
+            md:text-2xl
 
             font-black
 
@@ -277,7 +277,7 @@ const xpProgress =
 
             <h2
               className="
-                text-4xl
+                text-2xl
 
                 font-black
 

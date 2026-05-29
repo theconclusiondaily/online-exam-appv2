@@ -582,7 +582,7 @@ const isTopper =
 
         <div className="text-center">
 
-          <div className="text-4xl mb-4">
+          <div className="text-2xl mb-4">
             🏆
           </div>
 
@@ -746,7 +746,7 @@ setUnlockedAchievements(
               Final Score
             </p>
 
-            <h2 className="text-4xl font-bold">
+            <h2 className="text-2xl font-bold">
               {result.score ?? 0}
             </h2>
 
@@ -798,7 +798,7 @@ setUnlockedAchievements(
     TCD Rewards
   </h2>
 
-  <div className="grid md:grid-cols-3 gap-3">
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
 
     <div className="text-center">
 
@@ -807,7 +807,7 @@ setUnlockedAchievements(
         className="w-16 h-16 mx-auto mb-3"
       />
 
-      <h3 className="text-4xl font-bold text-tcd-blue">
+      <h3 className="text-2xl font-bold text-tcd-blue">
         {result.reward_earned || 0}
       </h3>
 
@@ -824,7 +824,7 @@ setUnlockedAchievements(
         className="w-16 h-16 mx-auto mb-3"
       />
 
-      <h3 className="text-4xl font-bold text-tcd-blue">
+      <h3 className="text-2xl font-bold text-tcd-blue">
         {
           unlockedAchievements.length
         }
@@ -843,7 +843,7 @@ setUnlockedAchievements(
         className="w-16 h-16 mx-auto mb-3"
       />
 
-      <h3 className="text-4xl font-bold text-tcd-blue">
+      <h3 className="text-2xl font-bold text-tcd-blue">
         {rank || "-"}
       </h3>
 
@@ -902,7 +902,7 @@ setUnlockedAchievements(
             Correct
           </p>
 
-          <h3 className="text-4xl font-bold text-green-600">
+          <h3 className="text-2xl font-bold text-green-600">
             {result.correct_count ?? 0}
           </h3>
 
@@ -914,7 +914,7 @@ setUnlockedAchievements(
             Wrong
           </p>
 
-          <h3 className="text-4xl font-bold text-red-600">
+          <h3 className="text-2xl font-bold text-red-600">
             {result.wrong_count ?? 0}
           </h3>
 
@@ -926,7 +926,7 @@ setUnlockedAchievements(
             Accuracy
           </p>
 
-          <h3 className="text-4xl font-bold text-yellow-600">
+          <h3 className="text-2xl font-bold text-yellow-600">
             {result.accuracy ?? 0}%
           </h3>
 
@@ -938,7 +938,7 @@ setUnlockedAchievements(
             Violations
           </p>
 
-          <h3 className="text-4xl font-bold text-purple-600">
+          <h3 className="text-2xl font-bold text-purple-600">
             {result.violations ?? 0}
           </h3>
 
@@ -955,7 +955,7 @@ p-4">
 
   </h2>
 
-  <div className="grid md:grid-cols-2 gap-3">
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 
     <div className="text-center">
 
@@ -965,7 +965,7 @@ p-4">
 
       </p>
 
-      <h3 className="text-4xl font-bold text-tcd-blue">
+      <h3 className="text-2xl font-bold text-tcd-blue">
 
         #{rank || "-"}
 
@@ -981,7 +981,7 @@ p-4">
 
       </p>
 
-      <h3 className="text-4xl font-bold text-green-600">
+      <h3 className="text-2xl font-bold text-green-600">
 
         {percentile}%
 
@@ -1005,7 +1005,7 @@ p-4">
 
     <div className="text-center">
 
-      <h3 className="text-4xl font-bold text-green-600 mb-2">
+      <h3 className="text-2xl font-bold text-green-600 mb-2">
 
         🏆 You Are The Topper
 
@@ -1021,7 +1021,7 @@ p-4">
 
   ) : (
 
-    <div className="grid md:grid-cols-3 gap-3">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
 
       <div className="text-center">
 
@@ -1031,7 +1031,7 @@ p-4">
 
         </p>
 
-        <h3 className="text-4xl font-bold text-blue-600">
+        <h3 className="text-2xl font-bold text-blue-600">
 
           {scoreGap}
 
@@ -1053,7 +1053,7 @@ p-4">
 
         </p>
 
-        <h3 className="text-4xl font-bold text-green-600">
+        <h3 className="text-2xl font-bold text-green-600">
 
           {topperData?.accuracy || 0}%
 

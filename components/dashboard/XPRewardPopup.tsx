@@ -142,7 +142,7 @@ export default function XPRewardPopup({
 
               <h2
                 className="
-                  text-4xl
+                  text-2xl
                   font-black
 
                   text-tcd-gold
@@ -219,7 +219,7 @@ export default function XPRewardPopup({
 
                   <h3
                     className="
-                      text-4xl
+                      text-2xl
                       font-black
 
                       text-tcd-gold

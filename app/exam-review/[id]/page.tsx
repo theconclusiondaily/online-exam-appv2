@@ -295,7 +295,7 @@ setQuestions(
     return (
       <main className="min-h-screen flex items-center justify-center p-5">
         <div className="bg-white p-6 rounded-3xl shadow-sm border text-center max-w-xl">
-          <h1 className="text-4xl font-bold mb-4">
+          <h1 className="text-2xl font-bold mb-4">
             🔒 Review Locked
           </h1>
 
@@ -345,7 +345,7 @@ setQuestions(
     <main className="min-h-screen bg-gray-50 p-5">
       <div className="max-w-5xl mx-auto">
 
-        <h1 className="text-4xl font-bold mb-4">
+        <h1 className="text-2xl font-bold mb-4">
           Exam Review
         </h1>
 

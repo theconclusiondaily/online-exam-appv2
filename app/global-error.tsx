@@ -17,7 +17,7 @@ export default function GlobalError({
 
         <div className="bg-white rounded-3xl p-6 shadow-xl text-center max-w-xl">
 
-          <h1 className="text-4xl font-bold text-red-600 mb-4">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">
 
             Critical Error
 

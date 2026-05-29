@@ -15,7 +15,7 @@ export default function ErrorFallback({
 
       <div className="bg-white rounded-3xl shadow-xl p-6 max-w-xl w-full text-center">
 
-        <h1 className="text-4xl font-bold text-red-600 mb-4">
+        <h1 className="text-2xl font-bold text-red-600 mb-4">
 
           Something went wrong
 

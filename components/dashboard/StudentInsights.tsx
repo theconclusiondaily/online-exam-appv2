@@ -374,7 +374,7 @@ export default function StudentInsights({
 
               <h3
                 className={`
-                  text-4xl
+                  text-2xl
                   font-black
 
                   ${card.valueColor}

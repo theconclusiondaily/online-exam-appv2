@@ -144,7 +144,7 @@ export default function InstitutesPage() {
 
           <div className="flex justify-between items-center mb-4">
 
-            <h1 className="text-4xl font-bold">
+            <h1 className="text-2xl font-bold">
 
               Institutes
 

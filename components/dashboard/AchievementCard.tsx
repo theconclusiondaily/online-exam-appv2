@@ -117,7 +117,7 @@ export default function AchievementCard({
 
         <div
           className="
-            text-5xl
+            text-3xl
             font-black
 
             tracking-tight

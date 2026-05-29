@@ -287,7 +287,7 @@ setStats({
 
         <h2
           className="
-            text-4xl
+            text-2xl
             font-black
 
             text-tcd-blue
@@ -425,8 +425,9 @@ else if (
                     relative
                     overflow-hidden
 
-                    min-w-[340px]
-                    max-w-[340px]
+                    w-full
+md:min-w-[320px]
+md:max-w-[320px]
 
                     rounded-[36px]
 
@@ -500,8 +501,7 @@ else if (
 
                       <h3
                         className="
-                          text-xl
-                          font-black
+                          text-2xl md:text-3xl font-black
 
                           text-tcd-blue
 
@@ -703,7 +703,7 @@ else if (
       "
     >
 
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* BACK */}
 
@@ -818,7 +818,7 @@ else if (
 
           <h1
             className="
-              text-4xl
+              text-2xl
               font-black
 
               mb-2
@@ -894,7 +894,7 @@ else if (
 
             <h2
               className="
-                text-4xl
+                text-2xl
                 font-black
 
                 text-green-600
@@ -945,7 +945,7 @@ else if (
 
             <h2
               className="
-                text-4xl
+                text-2xl
                 font-black
 
                 text-tcd-blue
@@ -996,7 +996,7 @@ else if (
 
             <h2
               className="
-                text-4xl
+                text-2xl
                 font-black
 
                 text-tcd-gold

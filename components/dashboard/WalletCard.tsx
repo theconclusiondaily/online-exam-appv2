@@ -85,7 +85,7 @@ export default function WalletCard({
 
         <div
           className="
-            text-4xl
+            text-2xl
             font-black
             tracking-tight
             text-tcd-blue

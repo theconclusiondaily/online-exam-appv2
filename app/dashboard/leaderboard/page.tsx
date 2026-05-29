@@ -138,7 +138,7 @@ export default function LeaderboardPage() {
       "
     >
 
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* BACK */}
 
@@ -254,7 +254,7 @@ export default function LeaderboardPage() {
 
               <h1
                 className="
-                  text-4xl
+                  text-2xl
                   font-black
 
                   mb-2
@@ -351,7 +351,7 @@ export default function LeaderboardPage() {
                       top-4
                       right-4
 
-                      text-5xl
+                      text-3xl
                       font-black
 
                       opacity-10

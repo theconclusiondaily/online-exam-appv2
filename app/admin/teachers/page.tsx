@@ -122,13 +122,13 @@ export default function TeachersPage() {
 
       <main className="min-h-screen bg-gray-50 p-6 md:p-5">
 
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           {/* HEADER */}
 
           <div className="flex justify-between items-center mb-10">
 
-            <h1 className="text-4xl font-bold">
+            <h1 className="text-2xl font-bold">
 
               Teacher Management
 
@@ -157,7 +157,7 @@ export default function TeachersPage() {
 
               </p>
 
-              <h2 className="text-4xl font-bold">
+              <h2 className="text-2xl font-bold">
 
                 {teachers.length}
 
@@ -173,7 +173,7 @@ export default function TeachersPage() {
 
               </p>
 
-              <h2 className="text-4xl font-bold">
+              <h2 className="text-2xl font-bold">
 
                 {
                   institutes.filter(
@@ -194,7 +194,7 @@ export default function TeachersPage() {
 
               </p>
 
-              <h2 className="text-4xl font-bold text-red-500">
+              <h2 className="text-2xl font-bold text-red-500">
 
                 {
                   teachers.filter(

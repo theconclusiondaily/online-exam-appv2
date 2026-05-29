@@ -262,7 +262,7 @@ export default function XPLevelCard() {
 
               <h2
                 className="
-                  text-4xl
+                  text-2xl
                   font-black
                 "
               >

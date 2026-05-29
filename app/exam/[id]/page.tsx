@@ -1670,7 +1670,7 @@ console.log(
 
         <div className="max-w-2xl w-full bg-white border rounded-3xl p-6 shadow-sm">
 
-          <h1 className="text-4xl font-bold mb-4">
+          <h1 className="text-2xl font-bold mb-4">
             {examInfo.title}
           </h1>
 

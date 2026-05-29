@@ -356,11 +356,11 @@ await fetchExams();
 
     <main className="min-h-screen p-6 md:p-5 bg-gray-50">
 
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <div className="flex justify-between items-center mb-4">
 
-  <h1 className="text-4xl font-bold">
+  <h1 className="text-2xl font-bold">
 
     Question Paper Builder
 
@@ -663,7 +663,7 @@ await fetchExams();
 
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 
                   <div className="border rounded-xl p-3">
                     A. {q.option_a}
