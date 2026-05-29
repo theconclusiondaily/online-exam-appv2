@@ -96,13 +96,19 @@ localStorage.setItem(
   sessionToken
 );
 
-await supabase
-  .from("active_sessions")
-  .upsert({
-    user_id: user.id,
-    session_token: sessionToken,
-    updated_at: new Date().toISOString(),
-  });
+const { error: sessionError } =
+  await supabase
+    .from("active_sessions")
+    .upsert({
+      user_id: user.id,
+      session_token: sessionToken,
+      updated_at: new Date().toISOString(),
+    });
+
+console.log(
+  "SESSION ERROR:",
+  sessionError
+);
       // FETCH PROFILE
 
       const {
