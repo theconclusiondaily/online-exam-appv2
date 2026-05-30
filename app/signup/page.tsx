@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import AuthHero from "@/components/auth/AuthHero";
+import { Eye, EyeOff } from "lucide-react";
 export default function SignupPage() {
   const [name, setName] =
     useState("");
@@ -18,7 +19,10 @@ export default function SignupPage() {
 
   const [password, setPassword] =
     useState("");
-
+const [
+  showPassword,
+  setShowPassword,
+] = useState(false);
   const [loading, setLoading] =
     useState(false);
 
@@ -327,38 +331,70 @@ focus:ring-[#D4AF37]/30
 "
           />
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) =>
-              setPassword(
-                e.target.value
-              )
-            }
-            className="
-w-full
+          <div className="relative">
 
-p-4
+  <input
+    type={
+      showPassword
+        ? "text"
+        : "password"
+    }
+    placeholder="Password"
+value={password}
+    onChange={(e) =>
+      setPassword(
+        e.target.value
+      )
+    }
+    className="
+      w-full
 
-rounded-xl
+      p-4
 
-border
-border-[#D8E1F0]
+      pr-12
 
-bg-[#F7F9FC]
+      rounded-xl
 
-text-[#274472]
-placeholder:text-gray-500
+      border
+      border-[#D8E1F0]
 
-transition-all
+      bg-[#F7F9FC]
 
-focus:outline-none
-focus:border-[#D4AF37]
-focus:ring-2
-focus:ring-[#D4AF37]/30
-"
-          />
+      text-[#274472]
+      placeholder:text-gray-500
+
+      focus:outline-none
+      focus:border-[#D4AF37]
+      focus:ring-2
+      focus:ring-[#D4AF37]/30
+    "
+  />
+
+  <button
+    type="button"
+    onClick={() =>
+      setShowPassword(
+        !showPassword
+      )
+    }
+    className="
+      absolute
+      right-4
+      top-1/2
+
+      -translate-y-1/2
+
+      text-gray-500
+    "
+  >
+    {
+      showPassword
+        ? <EyeOff size={20} />
+        : <Eye size={20} />
+    }
+  </button>
+
+</div>
 
           <button
             onClick={

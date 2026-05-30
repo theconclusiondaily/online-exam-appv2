@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import AuthHero from "@/components/auth/AuthHero";
 import { useEffect } from "react";
+import { Eye, EyeOff } from "lucide-react";
 export default function LoginPage() {
 
   const router = useRouter();
@@ -34,10 +35,45 @@ useEffect(() => {
 
   const [password, setPassword] =
     useState("");
-
+const [
+  showPassword,
+  setShowPassword,
+] = useState(false);
   const [loading, setLoading] =
     useState(false);
+async function handleForgotPassword() {
 
+  if (!email) {
+
+    alert(
+      "Please enter your email address first."
+    );
+
+    return;
+  }
+
+  const { error } =
+    await supabase.auth.resetPasswordForEmail(
+      email,
+      {
+        redirectTo:
+          window.location.hostname === "localhost"
+            ? "http://localhost:3000/reset-password"
+            : "https://www.theconclusiondaily.com/reset-password",
+      }
+    );
+
+  if (error) {
+
+    alert(error.message);
+
+    return;
+  }
+
+  alert(
+    "Password reset link sent to your email."
+  );
+}
   async function handleLogin() {
 
     try {
@@ -296,56 +332,89 @@ focus:ring-[#D4AF37]/30
 "
           />
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) =>
-              setPassword(
-                e.target.value
-              )
-            }
-            className="
-w-full
+          <div className="relative">
 
-p-4
+  <input
+    type={
+      showPassword
+        ? "text"
+        : "password"
+    }
+    placeholder="Password"
+    value={password}
+    onChange={(e) =>
+      setPassword(
+        e.target.value
+      )
+    }
+    className="
+      w-full
 
-rounded-xl
+      p-4
 
-border
-border-[#D8E1F0]
+      pr-12
 
-bg-[#F7F9FC]
+      rounded-xl
 
-text-[#274472]
-placeholder:text-gray-500
+      border
+      border-[#D8E1F0]
 
-transition-all
+      bg-[#F7F9FC]
 
-focus:outline-none
-focus:border-[#D4AF37]
-focus:ring-2
-focus:ring-[#D4AF37]/30
-"
-          />
+      text-[#274472]
+      placeholder:text-gray-500
 
-          {/* FORGOT PASSWORD */}
+      focus:outline-none
+      focus:border-[#D4AF37]
+      focus:ring-2
+      focus:ring-[#D4AF37]/30
+    "
+  />
 
-          <div className="flex justify-end">
+  <button
+    type="button"
+    onClick={() =>
+      setShowPassword(
+        !showPassword
+      )
+    }
+    className="
+      absolute
+      right-4
+      top-1/2
 
-            <button
-              className="
-                text-sm
+      -translate-y-1/2
 
-                text-tcd-blue
+      text-gray-500
+    "
+  >
+    {
+      showPassword
+        ? <EyeOff size={20} />
+        : <Eye size={20} />
+    }
+  </button>
 
-                hover:underline
-              "
-            >
-              Forgot Password?
-            </button>
+</div>
 
-          </div>
+         {/* FORGOT PASSWORD */}
+
+<div className="flex justify-end">
+
+  <button
+    onClick={handleForgotPassword}
+    className="
+      text-sm
+
+      text-tcd-blue
+
+      hover:underline
+    "
+  >
+    Forgot Password?
+  </button>
+
+</div>
 
           {/* LOGIN BUTTON */}
 
