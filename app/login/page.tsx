@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import AuthHero from "@/components/auth/AuthHero";
 import { useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { Turnstile } from "@marsidev/react-turnstile";
 export default function LoginPage() {
 
   const router = useRouter();
@@ -39,6 +40,10 @@ const [
   showPassword,
   setShowPassword,
 ] = useState(false);
+const [
+  captchaToken,
+  setCaptchaToken,
+] = useState("");
   const [loading, setLoading] =
     useState(false);
 async function handleForgotPassword() {
@@ -74,144 +79,291 @@ async function handleForgotPassword() {
     "Password reset link sent to your email."
   );
 }
+async function handleResendVerification() {
+
+  if (!email) {
+
+    alert(
+      "Please enter your email address first."
+    );
+
+    return;
+  }
+
+  const {
+    error,
+  } = await supabase.auth.resend({
+
+    type: "signup",
+
+    email,
+
+    options: {
+
+      emailRedirectTo:
+        window.location.hostname ===
+        "localhost"
+          ? "http://localhost:3000/login"
+          : "https://www.theconclusiondaily.com/login",
+
+    },
+
+  });
+
+  if (error) {
+
+  if (
+    error.message
+      .toLowerCase()
+      .includes(
+        "email not confirmed"
+      )
+  ) {
+
+    alert(
+      "Please verify your email before logging in. You can use the Resend Verification button below."
+    );
+
+  } else {
+
+    alert(
+      error.message
+    );
+  }
+
+  return;
+}
+  alert(
+    "Verification email sent successfully."
+  );
+}
   async function handleLogin() {
+if (!captchaToken) {
 
-    try {
+  alert(
+    "Please complete the security verification."
+  );
 
-      setLoading(true);
+  return;
+}
+  try {
 
-      if (
-        !email ||
-        !password
-      ) {
+    setLoading(true);
 
-        alert(
-          "Please enter email and password"
-        );
+    if (
+      !email ||
+      !password
+    ) {
 
-        return;
-      }
+      alert(
+        "Please enter email and password"
+      );
+
+      return;
+    }
+
+    const {
+      error,
+    } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+    if (error) {
+
+      alert(
+        error.message
+      );
+
+      return;
+    }
+
+    const {
+      data: { user },
+    } =
+      await supabase
+        .auth
+        .getUser();
+
+    if (!user) {
+
+      alert(
+        "Login failed"
+      );
+
+      return;
+    }
+
+    // CREATE PROFILE IF MISSING
+
+    const {
+      data: existingProfile,
+    } = await supabase
+      .from("users")
+      .select("id, role")
+      .eq(
+        "id",
+        user.id
+      )
+      .maybeSingle();
+
+    if (!existingProfile) {
 
       const {
-        error,
-      } =
-        await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-      if (error) {
-
-        alert(
-          error.message
-        );
-
-        return;
-      }
-
-      const {
-        data: { user },
-      } =
-        await supabase
-          .auth
-          .getUser();
-
-      if (!user) {
-
-        alert(
-          "Login failed"
-        );
-
-        return;
-      }
-const sessionToken =
-  crypto.randomUUID();
-
-localStorage.setItem(
-  "tcd_session_token",
-  sessionToken
-);
-
-const { error: sessionError } =
-  await supabase
-    .from("active_sessions")
-    .upsert({
-      user_id: user.id,
-      session_token: sessionToken,
-      updated_at: new Date().toISOString(),
-    });
-
-console.log(
-  "SESSION ERROR:",
-  sessionError
-);
-      // FETCH PROFILE
-
-      const {
-        data: profile,
+        error: profileError,
       } = await supabase
         .from("users")
-        .select(`
-          role
-        `)
+        .insert({
+
+          id: user.id,
+
+          email: user.email,
+
+          role: "student",
+
+          name:
+            user.user_metadata?.name ??
+            "Student",
+
+        });
+
+      if (profileError) {
+
+        console.error(
+          "PROFILE ERROR:",
+          profileError
+        );
+
+        alert(
+          "Failed to create profile."
+        );
+
+        return;
+      }
+    }
+
+    // SESSION TOKEN
+
+    const sessionToken =
+      crypto.randomUUID();
+
+    localStorage.setItem(
+      "tcd_session_token",
+      sessionToken
+    );
+
+    const {
+      error: sessionError,
+    } =
+      await supabase
+        .from("active_sessions")
+        .upsert({
+
+          user_id:
+            user.id,
+
+          session_token:
+            sessionToken,
+
+          updated_at:
+            new Date()
+              .toISOString(),
+
+        });
+
+    console.log(
+      "SESSION ERROR:",
+      sessionError
+    );
+
+    // FETCH PROFILE
+
+    const {
+      data: profile,
+      error: profileFetchError,
+    } =
+      await supabase
+        .from("users")
+        .select("role")
         .eq(
-          "email",
-          user.email
+          "id",
+          user.id
         )
         .single();
 
-      console.log(profile);
+    if (
+      profileFetchError
+    ) {
 
-      // ROLE REDIRECT
-
-      if (
-        profile?.role ===
-        "admin"
-      ) {
-
-        document.cookie =
-          `role=admin; path=/; SameSite=Lax`;
-
-        router.replace(
-          "/admin"
-        );
-
-      } else if (
-        profile?.role ===
-        "teacher"
-      ) {
-
-        document.cookie =
-          `role=teacher; path=/; SameSite=Lax`;
-
-        router.replace(
-          "/teacher"
-        );
-
-      } else {
-
-        document.cookie =
-          `role=student; path=/; SameSite=Lax`;
-
-        router.replace(
-          "/dashboard"
-        );
-      }
-
-    } catch (err) {
-
-      console.error(err);
-
-      alert(
-        "Something went wrong"
+      console.error(
+        profileFetchError
       );
 
-    } finally {
+      alert(
+        "Unable to load profile."
+      );
 
-      setLoading(false);
-
+      return;
     }
+
+    console.log(
+      profile
+    );
+
+    // ROLE REDIRECT
+
+    if (
+      profile?.role ===
+      "admin"
+    ) {
+
+      document.cookie =
+        "role=admin; path=/; SameSite=Lax";
+
+      router.replace(
+        "/admin"
+      );
+
+    } else if (
+      profile?.role ===
+      "teacher"
+    ) {
+
+      document.cookie =
+        "role=teacher; path=/; SameSite=Lax";
+
+      router.replace(
+        "/teacher"
+      );
+
+    } else {
+
+      document.cookie =
+        "role=student; path=/; SameSite=Lax";
+
+      router.replace(
+        "/dashboard"
+      );
+    }
+
+  } catch (err) {
+
+    console.error(
+      err
+    );
+
+    alert(
+      "Something went wrong"
+    );
+
+  } finally {
+
+    setLoading(
+      false
+    );
   }
+}
 
   return (
 
@@ -401,21 +553,55 @@ focus:ring-[#D4AF37]/30
 
 <div className="flex justify-end">
 
+ <div
+  className="
+    flex
+    justify-between
+    items-center
+
+    gap-4
+
+    mt-2
+  "
+>
+
+  <button
+    onClick={handleResendVerification}
+    className="
+  text-sm
+  text-tcd-blue
+  hover:underline
+  whitespace-nowrap
+"
+  >
+    
+    Resend Verification
+  </button>
+
   <button
     onClick={handleForgotPassword}
     className="
-      text-sm
-
-      text-tcd-blue
-
-      hover:underline
-    "
+  text-sm
+  text-tcd-blue
+  hover:underline
+  whitespace-nowrap
+"
   >
     Forgot Password?
   </button>
 
 </div>
 
+</div>
+<Turnstile
+  siteKey={
+    process.env
+      .NEXT_PUBLIC_TURNSTILE_SITE_KEY!
+  }
+  onSuccess={(token) =>
+    setCaptchaToken(token)
+  }
+/>
           {/* LOGIN BUTTON */}
 
           <button

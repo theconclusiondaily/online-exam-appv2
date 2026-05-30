@@ -4,7 +4,10 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import AuthHero from "@/components/auth/AuthHero";
 import { Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Turnstile } from "@marsidev/react-turnstile";
 export default function SignupPage() {
+  const router = useRouter();
   const [name, setName] =
     useState("");
 
@@ -23,101 +26,136 @@ const [
   showPassword,
   setShowPassword,
 ] = useState(false);
+const [
+  captchaToken,
+  setCaptchaToken,
+] = useState("");
   const [loading, setLoading] =
     useState(false);
 
   async function handleSignup() {
-    try {
-      setLoading(true);
+if (!captchaToken) {
 
-      if (
-        !name ||
-        !email ||
-        !mobile ||
-        !dob ||
-        !password
-      ) {
-        alert(
-          "Please fill all fields"
-        );
-        return;
-      }
+  alert(
+    "Please complete the security verification."
+  );
 
-      const {
-        data,
-        error,
-      } = await supabase.auth.signUp({
-        email,
-        password,
-      });
+  return;
+}
+  try {
 
-      if (error) {
-        alert(error.message);
-        return;
-      }
+    setLoading(true);
 
-      const user =
-        data.user;
+    if (
+      !name ||
+      !email ||
+      !mobile ||
+      !dob ||
+      !password
+    ) {
 
-      if (!user) {
-        alert(
-          "User creation failed"
-        );
-        return;
-      }
+      alert(
+        "Please fill all fields"
+      );
 
-      const {
-        data: profileData,
-        error: profileError,
-      } = await supabase
-        .from("users")
-        .insert({
-          id: user.id,
+      return;
+    }
+
+    const {
+      data,
+      error,
+    } = await supabase.auth.signUp({
+
+      email,
+
+      password,
+
+      options: {
+
+        emailRedirectTo:
+          window.location.hostname ===
+          "localhost"
+            ? "http://localhost:3000/login"
+            : "https://www.theconclusiondaily.com/login",
+
+        data: {
           name,
-          email,
           mobile,
           dob,
-          role: "student",
-        })
-        .select();
+        },
 
-      console.log(
-        "PROFILE DATA:",
-        profileData
-      );
+      },
 
-      console.log(
-        "PROFILE ERROR:",
-        profileError
-      );
+    });
 
-      if (profileError) {
-        alert(
-          profileError.message
-        );
-        return;
-      }
+    if (error) {
 
       alert(
-        "Signup successful. Please verify your email."
+        error.message
       );
 
-      setName("");
-      setEmail("");
-      setMobile("");
-      setDob("");
-      setPassword("");
-
-    } catch (err) {
-      console.error(err);
-
-      alert(
-        "Something went wrong"
-      );
-    } finally {
-      setLoading(false);
+      return;
     }
+
+    const user =
+      data.user;
+
+    if (!user) {
+
+      alert(
+        "User creation failed"
+      );
+
+      return;
+    }
+
+    if (
+      data.session === null
+    ) {
+
+      alert(
+        "Verification email sent. Please check your inbox and verify your email before logging in."
+      );
+
+    } else {
+
+      alert(
+        "Account created successfully."
+      );
+
+    }
+
+    setName("");
+
+    setEmail("");
+
+    setMobile("");
+
+    setDob("");
+
+    setPassword("");
+
+    router.replace(
+      "/login"
+    );
+
+  } catch (err) {
+
+    console.error(
+      err
+    );
+
+    alert(
+      "Something went wrong"
+    );
+
+  } finally {
+
+    setLoading(
+      false
+    );
   }
+}
 
   return (
 
@@ -396,6 +434,15 @@ value={password}
 
 </div>
 
+<Turnstile
+  siteKey={
+    process.env
+      .NEXT_PUBLIC_TURNSTILE_SITE_KEY!
+  }
+  onSuccess={(token) =>
+    setCaptchaToken(token)
+  }
+/>
           <button
             onClick={
               handleSignup
