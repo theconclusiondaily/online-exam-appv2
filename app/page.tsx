@@ -81,14 +81,30 @@ export default function Home() {
           >
             <div>
 
-              <div className="mb-6">
-                <Image
-                  src="/icons/banyan-tree.svg"
-                  alt="TCD Banyan Tree"
-                  width={90}
-                  height={90}
-                />
-              </div>
+             <div className="mb-8">
+
+  <Image
+    src="/tcd-logo.svg"
+    alt="The Conclusion Daily"
+    width={220}
+    height={220}
+    priority
+  />
+
+</div>
+<p
+  className="
+    text-[#F2D27A]
+
+    font-bold
+
+    tracking-[0.3em]
+
+    uppercase
+  "
+>
+  Hope • Faith • Excellence
+</p>
 
               <p
                 className="
