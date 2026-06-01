@@ -1,472 +1,369 @@
-
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 
 const features = [
   {
-    title: "Learning Journey",
+    title: "Live Competitive Exams",
     description:
-      "Structured learning paths to help you improve every day.",
-    icon: "/icons/learning-journey.svg",
+      "Compete with aspirants across India in real-time and climb national rankings.",
+    icon: "/icons/fire.svg",
   },
   {
-    title: "Live Exams",
+    title: "National Leaderboards",
     description:
-      "Compete in real-time exams and track your performance.",
-    icon: "/icons/tcd-stopwatch.svg",
-  },
-  {
-    title: "Leaderboards",
-    description:
-      "See where you stand among top performers.",
+      "Track your performance and compare yourself with the best learners.",
     icon: "/icons/leaderboard.svg",
   },
   {
-    title: "Achievements",
+    title: "Achievements & Rewards",
     description:
-      "Unlock medals, milestones and recognition.",
-    icon: "/icons/achievement-medal.svg",
+      "Unlock medals, trophies, crowns, shields and mastery badges.",
+    icon: "/icons/trophy.svg",
   },
   {
-    title: "TCD Credits",
+    title: "TCD Credits Economy",
     description:
-      "Earn credits through participation and excellence.",
+      "Earn TCD Credits through exams, achievements and participation.",
     icon: "/icons/tcd-coin.svg",
-  },
-  {
-    title: "Rankings",
-    description:
-      "Track your national and institute rankings.",
-    icon: "/icons/rank.svg",
   },
 ];
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <main className="min-h-screen bg-white">
+    <main className="bg-black text-white overflow-x-hidden">
+
+      {/* NAVBAR */}
+
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/90 to-transparent">
+        <div className="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
+
+          <Image
+            src="/logo.png"
+            alt="The Conclusion Daily"
+            width={220}
+            height={60}
+            priority
+          />
+
+          <div className="flex gap-4">
+            <Link
+              href="/login"
+              className="px-5 py-2 rounded-md border border-white/20 hover:bg-white/10 transition"
+            >
+              Login
+            </Link>
+
+            <Link
+              href="/signup"
+              className="px-5 py-2 rounded-md bg-[#D4AF37] text-black font-semibold hover:opacity-90 transition"
+            >
+              Sign Up
+            </Link>
+          </div>
+        </div>
+      </nav>
 
       {/* HERO */}
 
-      <section
-        className="
-          relative
-          overflow-hidden
+      <section className="relative min-h-screen flex items-center">
 
-          bg-gradient-to-br
-          from-[#12355B]
-          via-[#274472]
-          to-[#3B5998]
-
-          text-white
-        "
-      >
-        <div
-          className="
-            max-w-7xl
-            mx-auto
-
-            px-6
-            py-20
-          "
-        >
+        <div className="absolute inset-0">
           <div
-            className="
-              grid
-              lg:grid-cols-2
+            className="absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(circle at center, rgba(0,123,255,.35), rgba(0,0,0,.95) 70%)",
+            }}
+          />
 
-              gap-12
+          <div className="absolute inset-0 bg-black/60" />
+        </div>
 
-              items-center
-            "
-          >
-            <div>
+        <div className="relative z-10 max-w-7xl mx-auto px-6 pt-28">
 
-             <div className="mb-8">
+          <div className="max-w-3xl">
 
-  <Image
-    src="/tcd-logo.svg"
-    alt="The Conclusion Daily"
-    width={220}
-    height={220}
-    priority
-  />
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#D4AF37]/40 bg-[#D4AF37]/10 mb-6">
 
-</div>
-<p
-  className="
-    text-[#F2D27A]
+              <Image
+                src="/icons/tcd-crown.svg"
+                alt=""
+                width={20}
+                height={20}
+              />
 
-    font-bold
-
-    tracking-[0.3em]
-
-    uppercase
-  "
->
-  Hope • Faith • Excellence
-</p>
-
-              <p
-                className="
-                  text-[#F2D27A]
-
-                  font-bold
-
-                  tracking-[0.3em]
-
-                  uppercase
-                "
-              >
-                Hope • Faith • Excellence
-              </p>
-
-              <h1
-                className="
-                  mt-6
-
-                  text-5xl
-                  md:text-7xl
-
-                  font-black
-
-                  leading-tight
-                "
-              >
-                Learn.
-                <br />
-                Compete.
-                <br />
-                Achieve.
-              </h1>
-
-              <p
-                className="
-                  mt-8
-
-                  text-xl
-
-                  text-blue-100
-
-                  max-w-2xl
-                "
-              >
-                Transform knowledge into achievement through
-                Notes, PYQs, Practice Sheets, Live Exams,
-                Rankings, Rewards and continuous growth.
-              </p>
-
-              <div
-                className="
-                  flex
-                  flex-col
-                  sm:flex-row
-
-                  gap-4
-
-                  mt-10
-                "
-              >
-                <Link
-                  href="/signup"
-                  className="
-                    px-8
-                    py-4
-
-                    rounded-2xl
-
-                    bg-gradient-to-r
-                    from-[#D4AF37]
-                    to-[#F2D27A]
-
-                    text-[#12355B]
-
-                    font-bold
-
-                    text-center
-                  "
-                >
-                  Create Account
-                </Link>
-
-                <Link
-                  href="/login"
-                  className="
-                    px-8
-                    py-4
-
-                    rounded-2xl
-
-                    border
-                    border-white/30
-
-                    bg-white/10
-
-                    text-center
-
-                    font-semibold
-                  "
-                >
-                  Student Login
-                </Link>
-              </div>
-
+              <span className="text-[#D4AF37] text-sm">
+                India's Competitive Learning Platform
+              </span>
             </div>
 
-            <div>
+            <h1 className="text-5xl md:text-7xl font-extrabold leading-tight">
 
-              <div className="grid gap-5">
+              Learn.
+              <br />
+              Compete.
+              <br />
+              Rise to the Top.
+            </h1>
 
-                {[
-                  {
-                    title: "Notes & PYQs",
-                    icon: "/icons/tcd-target.svg",
-                  },
-                  {
-                    title: "Practice Sheets",
-                    icon: "/icons/precision-target.svg",
-                  },
-                  {
-                    title: "Live Exams",
-                    icon: "/icons/tcd-stopwatch.svg",
-                  },
-                  {
-                    title: "Rankings & Rewards",
-                    icon: "/icons/tcd-crown.svg",
-                  },
-                ].map((item) => (
-                  <div
-                    key={item.title}
-                    className="
-                      bg-white/10
+            <p className="mt-6 text-lg text-gray-300 max-w-2xl">
+              Notes, PYQs, Practice Sheets, Live Exams, Rankings,
+              Achievements and TCD Credits — all in one powerful ecosystem.
+            </p>
 
-                      backdrop-blur-sm
+            <div className="flex flex-wrap gap-4 mt-8">
 
-                      rounded-3xl
+              <Link
+                href="/signup"
+                className="bg-[#D4AF37] text-black px-8 py-4 rounded-md font-bold hover:scale-105 transition"
+              >
+                Get Started
+              </Link>
 
-                      p-5
-
-                      border
-                      border-white/10
-
-                      flex
-                      items-center
-
-                      gap-4
-                    "
-                  >
-                    <Image
-                      src={item.icon}
-                      alt={item.title}
-                      width={50}
-                      height={50}
-                    />
-
-                    <h3
-                      className="
-                        text-xl
-                        font-bold
-                      "
-                    >
-                      {item.title}
-                    </h3>
-                  </div>
-                ))}
-
-              </div>
-
+              <Link
+                href="/login"
+                className="bg-white/15 backdrop-blur px-8 py-4 rounded-md font-semibold"
+              >
+                Login
+              </Link>
             </div>
 
+            <div className="flex flex-wrap gap-6 mt-10 text-sm text-gray-300">
+
+              <div>🏆 National Rankings</div>
+              <div>🔥 Live Exams</div>
+              <div>🪙 TCD Credits</div>
+              <div>👑 Achievements</div>
+
+            </div>
           </div>
         </div>
       </section>
 
       {/* FEATURES */}
 
-      <section
-        className="
-          py-20
-          px-6
-        "
-      >
-        <div className="max-w-7xl mx-auto">
-
-          <h2
-            className="
-              text-4xl
-
-              font-black
-
-              text-center
-
-              text-[#12355B]
-            "
-          >
-            Why Students Choose TCD
-          </h2>
-
+      {features.map((feature, index) => (
+        <section
+          key={feature.title}
+          className="py-24 border-t border-white/10"
+        >
           <div
-            className="
-              grid
-              md:grid-cols-2
-              lg:grid-cols-3
-
-              gap-8
-
-              mt-14
-            "
+            className={`max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-14 items-center ${
+              index % 2 ? "md:[&>*:first-child]:order-2" : ""
+            }`}
           >
-            {features.map((feature) => (
-              <div
-                key={feature.title}
-                className="
-                  bg-white
 
-                  rounded-3xl
+            <div>
 
-                  p-8
+              <h2 className="text-4xl md:text-5xl font-bold mb-6">
+                {feature.title}
+              </h2>
 
-                  border
-                  border-gray-100
+              <p className="text-xl text-gray-300">
+                {feature.description}
+              </p>
+            </div>
 
-                  shadow-lg
+            <div className="flex justify-center">
 
-                  hover:-translate-y-1
+              <div className="w-72 h-72 rounded-3xl bg-gradient-to-br from-[#007BFF]/20 to-[#D4AF37]/20 border border-white/10 flex items-center justify-center">
 
-                  transition-all
-                "
-              >
                 <Image
                   src={feature.icon}
                   alt={feature.title}
-                  width={64}
-                  height={64}
+                  width={140}
+                  height={140}
+                />
+              </div>
+
+            </div>
+          </div>
+        </section>
+      ))}
+
+      {/* LIVE EXAMS */}
+
+      <section className="py-24 bg-gradient-to-b from-black to-[#021327]">
+
+        <div className="max-w-7xl mx-auto px-6">
+
+          <h2 className="text-5xl font-bold text-center mb-16">
+            Live Exam Arena
+          </h2>
+
+          <div className="grid md:grid-cols-3 gap-8">
+
+            {[
+              "/icons/fire.svg",
+              "/icons/timer.svg",
+              "/icons/rank.svg",
+            ].map((icon, i) => (
+              <div
+                key={i}
+                className="bg-white/5 rounded-2xl p-8 border border-white/10"
+              >
+                <Image
+                  src={icon}
+                  alt=""
+                  width={70}
+                  height={70}
                 />
 
-                <h3
-                  className="
-                    mt-5
-
-                    text-2xl
-
-                    font-bold
-
-                    text-[#12355B]
-                  "
-                >
-                  {feature.title}
+                <h3 className="text-2xl font-semibold mt-6">
+                  Real Competition
                 </h3>
 
-                <p
-                  className="
-                    mt-3
-
-                    text-gray-600
-                  "
-                >
-                  {feature.description}
+                <p className="text-gray-400 mt-4">
+                  Compete against thousands of learners and earn rankings.
                 </p>
               </div>
             ))}
           </div>
+        </div>
+      </section>
 
+      {/* LEADERBOARDS */}
+
+      <section className="py-24">
+
+        <div className="max-w-7xl mx-auto px-6">
+
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+
+            <div>
+              <Image
+                src="/icons/leaderboard.svg"
+                alt=""
+                width={220}
+                height={220}
+              />
+            </div>
+
+            <div>
+
+              <h2 className="text-5xl font-bold mb-6">
+                National Rankings
+              </h2>
+
+              <p className="text-xl text-gray-300">
+                Every exam impacts your position. Climb leaderboards,
+                outperform competitors and earn recognition.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ACHIEVEMENTS */}
+
+      <section className="py-24 bg-[#071018]">
+
+        <div className="max-w-7xl mx-auto px-6">
+
+          <h2 className="text-center text-5xl font-bold mb-14">
+            Achievements & Badges
+          </h2>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+
+            {[
+              "/icons/tcd-crown.svg",
+              "/icons/tcd-medal.svg",
+              "/icons/tcd-star.svg",
+              "/icons/tcd-shield.svg",
+              "/icons/tcd-target.svg",
+              "/icons/tcd-flame.svg",
+              "/icons/tcd-mountain.svg",
+              "/icons/mastery-star.svg",
+            ].map((icon) => (
+              <div
+                key={icon}
+                className="bg-white/5 rounded-2xl p-8 flex justify-center border border-white/10"
+              >
+                <Image
+                  src={icon}
+                  alt=""
+                  width={90}
+                  height={90}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* TCD CREDITS */}
+
+      <section className="py-24">
+
+        <div className="max-w-7xl mx-auto px-6 text-center">
+
+          <Image
+            src="/icons/tcd-coin.svg"
+            alt=""
+            width={120}
+            height={120}
+            className="mx-auto"
+          />
+
+          <h2 className="text-5xl font-bold mt-8">
+            Earn TCD Credits
+          </h2>
+
+          <p className="max-w-3xl mx-auto text-xl text-gray-300 mt-6">
+            Gain credits from exams, participation, streaks,
+            achievements and rankings. Build your learning reputation.
+          </p>
         </div>
       </section>
 
       {/* CTA */}
 
-      <section
-        className="
-          py-20
-          px-6
+      <section className="py-32">
 
-          bg-[#F8FAFF]
-        "
-      >
-        <div
-          className="
-            max-w-4xl
-            mx-auto
+        <div className="max-w-5xl mx-auto px-6 text-center">
 
-            text-center
-          "
-        >
-          <Image
-            src="/icons/trophy.svg"
-            alt="TCD Trophy"
-            width={90}
-            height={90}
-            className="mx-auto"
-          />
-
-          <h2
-            className="
-              mt-8
-
-              text-5xl
-
-              font-black
-
-              text-[#12355B]
-            "
-          >
-            Start Your Success Journey
+          <h2 className="text-5xl md:text-7xl font-bold">
+            Ready to Become
+            <br />
+            a Top Ranker?
           </h2>
 
-          <p
-            className="
-              mt-6
-
-              text-xl
-
-              text-gray-600
-            "
-          >
-            Join The Conclusion Daily and transform
-            consistency into achievement.
+          <p className="mt-8 text-xl text-gray-300">
+            Join thousands of aspirants already competing on
+            The Conclusion Daily.
           </p>
 
           <Link
             href="/signup"
-            className="
-              inline-block
-
-              mt-10
-
-              px-10
-              py-4
-
-              rounded-2xl
-
-              bg-gradient-to-r
-              from-[#D4AF37]
-              to-[#F2D27A]
-
-              text-[#12355B]
-
-              font-black
-            "
+            className="inline-block mt-10 bg-[#D4AF37] text-black px-10 py-5 rounded-md text-lg font-bold hover:scale-105 transition"
           >
-            Join TCD Today
+            Create Free Account
           </Link>
         </div>
       </section>
 
       {/* FOOTER */}
 
-      <footer
-        className="
-          py-8
+      <footer className="border-t border-white/10 py-12">
 
-          border-t
+        <div className="max-w-7xl mx-auto px-6">
 
-          text-center
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
 
-          text-gray-500
-        "
-      >
-        © 2026 The Conclusion Daily. All Rights Reserved.
+            <Image
+              src="/logo.png"
+              alt="TCD"
+              width={180}
+              height={50}
+            />
+
+            <p className="text-gray-500 text-sm">
+              © 2026 The Conclusion Daily. All rights reserved.
+            </p>
+          </div>
+        </div>
       </footer>
-
     </main>
   );
 }
