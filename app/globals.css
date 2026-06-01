@@ -134,3 +134,111 @@ body {
     text-sm
     font-semibold;
 }
+
+@keyframes tcdLogo {
+
+  0% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+
+
+@keyframes goldPulse {
+
+  0% {
+    transform: scale(0.5);
+    opacity: 0.2;
+  }
+
+  50% {
+    transform: scale(1.2);
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+@keyframes streakLeft {
+
+  0% {
+    transform:
+      translateX(-120vw)
+      rotate(-25deg);
+
+    opacity: 0;
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  100% {
+    transform:
+      translateX(120vw)
+      rotate(-25deg);
+
+    opacity: 0;
+  }
+}
+
+@keyframes streakRight {
+
+  0% {
+    transform:
+      translateX(120vw)
+      rotate(25deg);
+
+    opacity: 0;
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  100% {
+    transform:
+      translateX(-120vw)
+      rotate(25deg);
+
+    opacity: 0;
+  }
+}
+
+@keyframes flashReveal {
+
+  0% {
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 0.15;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes landingFade {
+
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+

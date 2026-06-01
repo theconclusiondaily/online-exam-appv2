@@ -1,5 +1,13 @@
+"use client";
+
+
 import Image from "next/image";
 import Link from "next/link";
+import {
+  useEffect,
+  useState,
+} from "react";
+import TCDIntro from "@/components/TCDIntro";
 
 const features = [
   {
@@ -29,8 +37,44 @@ const features = [
 ];
 
 export default function HomePage() {
-  return (
-    <main className="bg-black text-white overflow-x-hidden">
+    const [
+    showIntro,
+    setShowIntro,
+  ] = useState(false);
+
+useEffect(() => {
+
+  const seen =
+    sessionStorage.getItem(
+      "tcd_intro_seen"
+    );
+
+  if (!seen) {
+
+    setShowIntro(true);
+
+  }
+
+}, []);
+
+  if (showIntro) {
+
+    return (
+      <TCDIntro
+        onComplete={() =>
+          setShowIntro(false)
+        }
+      />
+    );
+  }
+  
+
+return (
+  <main
+    className="
+      animate-[landingFade_1s_ease-out]
+    "
+  >
 
       {/* NAVBAR */}
 
@@ -40,22 +84,66 @@ export default function HomePage() {
           <Image
             src="/logo.png"
             alt="The Conclusion Daily"
-            width={220}
-            height={60}
+            width={90}
+            height={90}
             priority
           />
 
           <div className="flex gap-4">
             <Link
               href="/login"
-              className="px-5 py-2 rounded-md border border-white/20 hover:bg-white/10 transition"
+              className="
+  bg-[#2F4B7C]/80
+
+  border
+  border-[#D4AF37]/40
+
+  text-white
+
+  backdrop-blur-xl
+
+  px-8
+  py-4
+
+  rounded-lg
+
+  font-semibold
+
+  shadow-[0_0_30px_rgba(47,75,124,0.4)]
+
+  hover:bg-[#3D5F99]
+
+  hover:border-[#D4AF37]
+
+  hover:scale-105
+
+  transition-all
+  duration-300
+"
             >
               Login
             </Link>
 
             <Link
               href="/signup"
-              className="px-5 py-2 rounded-md bg-[#D4AF37] text-black font-semibold hover:opacity-90 transition"
+              className="
+  bg-[#D4AF37]
+
+  text-black
+
+  px-10
+  py-4
+
+  rounded-lg
+
+  font-bold
+
+  shadow-[0_0_30px_rgba(212,175,55,0.35)]
+
+  hover:scale-105
+
+  transition
+"
             >
               Sign Up
             </Link>
@@ -65,45 +153,169 @@ export default function HomePage() {
 
       {/* HERO */}
 
-      <section className="relative min-h-screen flex items-center">
+      <section className="relative min-h-[55vh] flex items-center">
 
-        <div className="absolute inset-0">
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(circle at center, rgba(0,123,255,.35), rgba(0,0,0,.95) 70%)",
-            }}
-          />
+        
+          
+<div className="absolute inset-0 overflow-hidden">
 
-          <div className="absolute inset-0 bg-black/60" />
-        </div>
+  {/* Base Background */}
+
+  <div className="absolute inset-0 bg-[#020812]" />
+
+  {/* Blue Glow */}
+
+  <div
+    className="
+      absolute
+
+      left-1/2
+      top-1/2
+
+      -translate-x-1/2
+      -translate-y-1/2
+
+      w-[1000px]
+      h-[1000px]
+
+      rounded-full
+
+      bg-[#2F4B7C]/30
+
+      blur-[200px]
+    "
+  />
+
+  {/* Gold Glow */}
+
+  <div
+    className="
+      absolute
+
+      right-0
+      top-0
+
+      w-[500px]
+      h-[500px]
+
+      rounded-full
+
+      bg-[#D4AF37]/10
+
+      blur-[180px]
+    "
+  />
+
+</div>
+
+
+          
+        
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 pt-28">
 
-          <div className="max-w-3xl">
+          <div className="max-w-2xl">
 
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#D4AF37]/40 bg-[#D4AF37]/10 mb-6">
+           <div className="mb-6">
 
-              <Image
-                src="/icons/tcd-crown.svg"
-                alt=""
-                width={20}
-                height={20}
-              />
+  <h2
+  className="
+    text-[#D4AF37]
 
-              <span className="text-[#D4AF37] text-sm">
-                India's Competitive Learning Platform
-              </span>
-            </div>
+    text-2xl
+    md:text-4xl
 
-            <h1 className="text-5xl md:text-7xl font-extrabold leading-tight">
+    font-black
 
-              Learn.
-              <br />
-              Compete.
-              <br />
-              Rise to the Top.
+    tracking-[0.15em]
+
+    uppercase
+
+    mb-4
+
+    drop-shadow-[0_0_20px_rgba(212,175,55,0.35)]
+  "
+>
+  THE CONCLUSION DAILY
+</h2>
+
+  <div
+    className="
+      inline-flex
+      items-center
+      gap-2
+
+      px-4
+      py-2
+
+      rounded-full
+
+      border
+      border-[#D4AF37]/40
+
+      bg-[#D4AF37]/10
+    "
+  >
+
+    <Image
+      src="/icons/tcd-crown.svg"
+      alt=""
+      width={20}
+      height={20}
+    />
+
+    <span className="text-[#D4AF37] text-sm">
+      India's Competitive Learning Platform
+    </span>
+
+  </div>
+
+</div>
+<p className="mt-4 text-[#D4AF37] uppercase tracking-[0.25em] font-semibold">
+  Hope • Faith • Excellence
+</p>
+            <h1
+  className="
+    text-white
+
+    text-4xl
+md:text-6xl
+
+    font-black
+
+    leading-tight
+
+    tracking-tight
+
+    drop-shadow-[0_0_30px_rgba(255,255,255,0.15)]
+  "
+>
+<div
+  className="
+    absolute
+
+    left-1/2
+    top-1/2
+
+    -translate-x-1/2
+    -translate-y-1/2
+
+    w-[900px]
+    h-[900px]
+
+    rounded-full
+
+    bg-[#D4AF37]/10
+
+    blur-[180px]
+  "
+/>
+              
+              <br />Learn.
+<br />
+Compete.
+<br />
+Achieve Greatness.
             </h1>
 
             <p className="mt-6 text-lg text-gray-300 max-w-2xl">
@@ -115,156 +327,182 @@ export default function HomePage() {
 
               <Link
                 href="/signup"
-                className="bg-[#D4AF37] text-black px-8 py-4 rounded-md font-bold hover:scale-105 transition"
+                className="
+  bg-[#D4AF37]
+
+  text-black
+
+  px-10
+  py-4
+
+  rounded-lg
+
+  font-bold
+
+  shadow-[0_0_30px_rgba(212,175,55,0.35)]
+
+  hover:scale-105
+
+  transition
+"
               >
                 Get Started
               </Link>
 
               <Link
                 href="/login"
-                className="bg-white/15 backdrop-blur px-8 py-4 rounded-md font-semibold"
+               className="
+  bg-[#2F4B7C]/80
+
+  border
+  border-[#D4AF37]/40
+
+  text-white
+
+  backdrop-blur-xl
+
+  px-8
+  py-4
+
+  rounded-lg
+
+  font-semibold
+
+  shadow-[0_0_30px_rgba(47,75,124,0.4)]
+
+  hover:bg-[#3D5F99]
+
+  hover:border-[#D4AF37]
+
+  hover:scale-105
+
+  transition-all
+  duration-300
+"
               >
                 Login
               </Link>
             </div>
 
-            <div className="flex flex-wrap gap-6 mt-10 text-sm text-gray-300">
+            
+<div className="flex flex-wrap gap-8 mt-12">
 
-              <div>🏆 National Rankings</div>
-              <div>🔥 Live Exams</div>
-              <div>🪙 TCD Credits</div>
-              <div>👑 Achievements</div>
+  <div className="flex items-center gap-3">
+    <Image
+      src="/icons/leaderboard.svg"
+      alt="Rankings"
+      width={24}
+      height={24}
+    />
+    <span className="text-gray-200 font-medium">
+      National Rankings
+    </span>
+  </div>
 
-            </div>
+  <div className="flex items-center gap-3">
+    <Image
+      src="/icons/fire.svg"
+      alt="Live Exams"
+      width={24}
+      height={24}
+    />
+    <span className="text-gray-200 font-medium">
+      Live Exams
+    </span>
+  </div>
+
+  <div className="flex items-center gap-3">
+    <Image
+      src="/icons/tcd-coin.svg"
+      alt="TCD Credits"
+      width={24}
+      height={24}
+    />
+    <span className="text-gray-200 font-medium">
+      TCD Credits
+    </span>
+  </div>
+
+  <div className="flex items-center gap-3">
+    <Image
+      src="/icons/achievement-medal.svg"
+      alt="Achievements"
+      width={24}
+      height={24}
+    />
+    <span className="text-gray-200 font-medium">
+      Achievements
+    </span>
+  </div>
+
+</div>
+
           </div>
         </div>
       </section>
 
-      {/* FEATURES */}
+     {/* FEATURES */}
 
-      {features.map((feature, index) => (
-        <section
+<section className="py-12">
+
+  <div className="max-w-6xl mx-auto px-6">
+
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+      {features.map((feature) => (
+
+        <div
           key={feature.title}
-          className="py-24 border-t border-white/10"
+          className="
+            bg-white/5
+            border
+            border-white/10
+            rounded-2xl
+            p-5
+            backdrop-blur
+          "
         >
-          <div
-            className={`max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-14 items-center ${
-              index % 2 ? "md:[&>*:first-child]:order-2" : ""
-            }`}
-          >
 
-            <div>
+          <Image
+            src={feature.icon}
+            alt={feature.title}
+            width={48}
+            height={48}
+          />
 
-              <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                {feature.title}
-              </h2>
+          <h3 className="mt-4 text-lg font-bold text-gold">
+            {feature.title}
+          </h3>
 
-              <p className="text-xl text-gray-300">
-                {feature.description}
-              </p>
-            </div>
+          <p className="mt-2 text-sm text-gray-400">
+            {feature.description}
+          </p>
 
-            <div className="flex justify-center">
+        </div>
 
-              <div className="w-72 h-72 rounded-3xl bg-gradient-to-br from-[#007BFF]/20 to-[#D4AF37]/20 border border-white/10 flex items-center justify-center">
-
-                <Image
-                  src={feature.icon}
-                  alt={feature.title}
-                  width={140}
-                  height={140}
-                />
-              </div>
-
-            </div>
-          </div>
-        </section>
       ))}
 
-      {/* LIVE EXAMS */}
+    </div>
 
-      <section className="py-24 bg-gradient-to-b from-black to-[#021327]">
+  </div>
 
-        <div className="max-w-7xl mx-auto px-6">
+</section>
 
-          <h2 className="text-5xl font-bold text-center mb-16">
-            Live Exam Arena
-          </h2>
+      
 
-          <div className="grid md:grid-cols-3 gap-8">
 
-            {[
-              "/icons/fire.svg",
-              "/icons/timer.svg",
-              "/icons/rank.svg",
-            ].map((icon, i) => (
-              <div
-                key={i}
-                className="bg-white/5 rounded-2xl p-8 border border-white/10"
-              >
-                <Image
-                  src={icon}
-                  alt=""
-                  width={70}
-                  height={70}
-                />
-
-                <h3 className="text-2xl font-semibold mt-6">
-                  Real Competition
-                </h3>
-
-                <p className="text-gray-400 mt-4">
-                  Compete against thousands of learners and earn rankings.
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* LEADERBOARDS */}
-
-      <section className="py-24">
-
-        <div className="max-w-7xl mx-auto px-6">
-
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-
-            <div>
-              <Image
-                src="/icons/leaderboard.svg"
-                alt=""
-                width={220}
-                height={220}
-              />
-            </div>
-
-            <div>
-
-              <h2 className="text-5xl font-bold mb-6">
-                National Rankings
-              </h2>
-
-              <p className="text-xl text-gray-300">
-                Every exam impacts your position. Climb leaderboards,
-                outperform competitors and earn recognition.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ACHIEVEMENTS */}
 
-      <section className="py-24 bg-[#071018]">
+      <section className="py-16 bg-[#071018]">
 
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-3xl mx-auto px-6">
 
-          <h2 className="text-center text-5xl font-bold mb-14">
+          <h2 className="text-center text-3xl font-bold mb-14">
             Achievements & Badges
           </h2>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-8 gap-8">
 
             {[
               "/icons/tcd-crown.svg",
@@ -278,13 +516,13 @@ export default function HomePage() {
             ].map((icon) => (
               <div
                 key={icon}
-                className="bg-white/5 rounded-2xl p-8 flex justify-center border border-white/10"
+                className="bg-white/5 rounded-2xl p-4 flex justify-center border border-white/10"
               >
                 <Image
                   src={icon}
                   alt=""
-                  width={90}
-                  height={90}
+                  width={45}
+                  height={45}
                 />
               </div>
             ))}
@@ -292,38 +530,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* TCD CREDITS */}
-
-      <section className="py-24">
-
-        <div className="max-w-7xl mx-auto px-6 text-center">
-
-          <Image
-            src="/icons/tcd-coin.svg"
-            alt=""
-            width={120}
-            height={120}
-            className="mx-auto"
-          />
-
-          <h2 className="text-5xl font-bold mt-8">
-            Earn TCD Credits
-          </h2>
-
-          <p className="max-w-3xl mx-auto text-xl text-gray-300 mt-6">
-            Gain credits from exams, participation, streaks,
-            achievements and rankings. Build your learning reputation.
-          </p>
-        </div>
-      </section>
-
+    
       {/* CTA */}
 
-      <section className="py-32">
+      <section className="py-20">
 
         <div className="max-w-5xl mx-auto px-6 text-center">
 
-          <h2 className="text-5xl md:text-7xl font-bold">
+          <h2 className="text-3xl md:text-5xl font-bold">
             Ready to Become
             <br />
             a Top Ranker?

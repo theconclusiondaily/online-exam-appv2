@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { TCDIcons }
 from "@/components/ui/tcd-icons";
 import Image from "next/image";
@@ -38,17 +39,31 @@ export default function StudentSidebar({
     icon: TCDIcons.leaderboard,
   },
 
-  {
-    name: "Achievements",
-    href: "/dashboard/achievements",
-    icon: TCDIcons.achievement,
-  },
+ {
+  name: "Achievements",
+  href: "/dashboard/achievements",
+  icon: TCDIcons.achievement,
+},
 
-  {
-    name: "Active Opportunities",
-    href: "/dashboard/active-opportunities",
-    icon: TCDIcons.target,
-  },
+{
+  name: "Notifications",
+  href: "/dashboard/notifications",
+  icon: (
+    <Image
+      src="/icons/notification-bell.svg"
+      alt="Notifications"
+      width={20}
+      height={20}
+    />
+  ),
+},
+
+{
+  name: "Active Opportunities",
+  href: "/dashboard/active-opportunities",
+  icon: TCDIcons.target,
+},
+
 
   {
     name: "TCD Vault",
@@ -56,6 +71,35 @@ export default function StudentSidebar({
     icon: TCDIcons.coin,
   },
 ];
+const [unreadCount, setUnreadCount] =
+  useState(0);
+  useEffect(() => {
+  loadUnreadCount();
+}, []);
+async function loadUnreadCount() {
+
+  const {
+    data: authData,
+  } =
+    await supabase.auth.getUser();
+
+  const user =
+    authData.user;
+
+  if (!user) return;
+
+  const { count } =
+    await supabase
+      .from("notifications")
+      .select("*", {
+        count: "exact",
+        head: true,
+      })
+      .eq("user_id", user.id)
+      .eq("is_read", false);
+
+  setUnreadCount(count || 0);
+}
 async function handleLogout() {
   await supabase.auth.signOut();
   window.location.href = "/login";
@@ -182,9 +226,34 @@ async function handleLogout() {
 >
                 {link.name}
               </span>
+{link.name === "Notifications" &&
+  unreadCount > 0 && (
 
+    <span
+      className="
+        ml-auto
+
+        bg-tcd-gold
+        text-tcd-blue
+
+        text-xs
+        font-bold
+
+        px-2
+        py-1
+
+        rounded-full
+      "
+    >
+      {unreadCount}
+    </span>
+
+)}
             </Link>
+
+            
           );
+          
         })}
 
       </div>

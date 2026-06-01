@@ -19,6 +19,19 @@ export default function ProfilePage() {
       longestStreak: 0,
       achievements: 0,
     });
+    const [achievements, setAchievements] =
+  useState<any[]>([]);
+const [bestRank, setBestRank] =
+  useState<any>(null);
+
+  const [certificates, setCertificates] =
+  useState<any[]>([]);
+  
+
+
+
+
+
 
   useEffect(() => {
     loadProfile();
@@ -120,48 +133,81 @@ export default function ProfilePage() {
       )
       .single();
 
+      
+
     // ACHIEVEMENTS
 
-    const {
-      count:
-        achievementCount,
-    } = await supabase
-      .from(
-        "user_achievements"
+   const { data: achievementsData } =
+  await supabase
+    .from("user_achievements")
+    .select(`
+      *,
+      achievements(
+        title,
+        description,
+        rarity,
+        reward_tcd
       )
-      .select(
-        "*",
-        {
-          count:
-            "exact",
-          head: true,
-        }
-      )
-      .eq(
-        "user_id",
-        user.id
-      );
+    `)
+    .eq("user_id", user.id);
 
-    setStats({
-      exams,
-      highest,
-      accuracy,
-      lifetimeTcd:
-        wallet
-          ?.lifetime_earned ||
-        0,
-      currentStreak:
-        streak
-          ?.current_streak ||
-        0,
-      longestStreak:
-        streak
-          ?.longest_streak ||
-        0,
-      achievements:
-        achievementCount ||
-        0,
-    });
+setAchievements(
+  achievementsData || []
+);
+
+// CERTIFICATES
+
+const { data: certificatesData } =
+  await supabase
+    .from("certificates")
+    .select("*")
+    .eq("user_id", user.id)
+    .order(
+      "issued_at",
+      { ascending: false }
+    );
+
+setCertificates(
+  certificatesData || []
+);
+
+// RANKING
+
+const { data: rankData } =
+  await supabase
+    .from("leaderboard")
+    .select(`
+      score,
+      percentile
+    `)
+    .eq("user_id", user.id)
+    .order(
+      "percentile",
+      {
+        ascending: false
+      }
+    )
+    .limit(1)
+    .single();
+
+setBestRank(rankData);
+
+setStats({
+  exams,
+  highest,
+  accuracy,
+  lifetimeTcd:
+    wallet?.lifetime_earned || 0,
+
+  currentStreak:
+    streak?.current_streak || 0,
+
+  longestStreak:
+    streak?.longest_streak || 0,
+
+  achievements:
+    achievementsData?.length || 0,
+});
   }
 
   return (
@@ -437,7 +483,11 @@ export default function ProfilePage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
 
           <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm">
-            <div className="text-2xl mb-3">📚</div>
+            <div className="text-2xl mb-3"><img
+  src="/icons/learning-journey.svg"
+  alt="Exams"
+  className="w-10 h-10 mb-3"
+/></div>
             <p className="text-gray-500">
               Exams Attempted
             </p>
@@ -449,7 +499,11 @@ export default function ProfilePage() {
           </div>
 
           <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm">
-            <div className="text-2xl mb-3">🎯</div>
+            <div className="text-2xl mb-3"><img
+  src="/icons/precision-target.svg"
+  alt="Accuracy"
+  className="w-10 h-10 mb-3"
+/></div>
             <p className="text-gray-500">
               Accuracy
             </p>
@@ -459,7 +513,11 @@ export default function ProfilePage() {
           </div>
 
           <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm">
-            <div className="text-2xl mb-3">🏆</div>
+            <div className="text-2xl mb-3"><img
+  src="/icons/mastery-star.svg"
+  alt="Highest Score"
+  className="w-10 h-10 mb-3"
+/></div>
             <p className="text-gray-500">
               Highest Score
             </p>
@@ -471,7 +529,11 @@ export default function ProfilePage() {
           </div>
 
           <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm">
-            <div className="text-2xl mb-3">🪙</div>
+            <div className="text-2xl mb-3"><img
+  src="/icons/coin.svg"
+  alt="TCD Credits"
+  className="w-10 h-10 mb-3"
+/></div>
             <p className="text-gray-500">
               Lifetime TCD
             </p>
@@ -488,7 +550,11 @@ export default function ProfilePage() {
   <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm">
 
     <div className="text-2xl mb-3">
-      🔥
+      <img
+  src="/icons/fire.svg"
+  alt="Current Streak"
+  className="w-10 h-10 mb-3"
+/>
     </div>
 
     <p className="text-gray-500">
@@ -506,7 +572,11 @@ export default function ProfilePage() {
   <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm">
 
     <div className="text-2xl mb-3">
-      🏔️
+      <img
+  src="/icons/mount-kilimanjaro.svg"
+  alt="Longest Streak"
+  className="w-10 h-10 mb-3"
+/>
     </div>
 
     <p className="text-gray-500">
@@ -524,7 +594,11 @@ export default function ProfilePage() {
   <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm">
 
     <div className="text-2xl mb-3">
-      🏆
+      <img
+  src="/icons/achievement-medal.svg"
+  alt="Achievements"
+  className="w-10 h-10 mb-3"
+/>
     </div>
 
     <p className="text-gray-500">
@@ -540,9 +614,147 @@ export default function ProfilePage() {
   </div>
 
 </div>
+
+  <div className="mt-10">
+
+  <h2 className="text-2xl font-black text-tcd-blue mb-4">
+    Achievements
+  </h2>
+
+  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+    {achievements.map((item) => (
+
+      <div
+        key={item.id}
+        className="
+          bg-white
+          rounded-[28px]
+          border
+          border-gray-100
+          shadow-sm
+          p-5
+          hover:shadow-md
+          transition-all
+        "
+      >
+
+        <div className="flex items-center gap-3 mb-4">
+
+          <img
+            src="/icons/achievement-medal.svg"
+            alt="Achievement"
+            className="w-12 h-12"
+          />
+
+          <div>
+
+            <h3 className="font-black text-lg text-tcd-blue">
+              {item.achievements?.title}
+            </h3>
+
+            <span
+              className="
+                text-xs
+                px-2
+                py-1
+                rounded-full
+                bg-tcd-gold/10
+                text-tcd-gold
+              "
+            >
+              {item.achievements?.rarity || "Common"}
+            </span>
+
+          </div>
+
+        </div>
+
+        <p className="text-gray-500 text-sm mb-4">
+          {item.achievements?.description}
+        </p>
+
+        <div className="flex items-center gap-2">
+
+          <img
+            src="/icons/coin.svg"
+            alt="TCD"
+            className="w-5 h-5"
+          />
+
+          <span className="font-semibold">
+            {item.achievements?.reward_tcd} TCD
+          </span>
+
+        </div>
+
       </div>
 
-    </main>
+    ))}
 
+  </div>
+
+</div>
+
+ 
+<div className="mt-8">
+
+  <h2 className="text-2xl font-black text-tcd-blue mb-4">
+    Ranking
+  </h2>
+
+  <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm max-w-sm">
+
+    <img
+      src="/icons/rank.svg"
+      alt="Rank"
+      className="w-10 h-10 mb-3"
+    />
+
+    <p className="text-gray-500">
+      Best Percentile
+    </p>
+
+    <h3 className="text-2xl font-black text-purple-600 mt-3">
+      {bestRank?.percentile || 0}%
+    </h3>
+
+  </div>
+
+</div>
+<div className="mt-10">
+
+  <h2 className="text-2xl font-black text-tcd-blue mb-4">
+    Certificates
+  </h2>
+
+  <div className="bg-white rounded-[28px] p-5">
+
+    {certificates.length === 0 ? (
+      <p>No certificates earned yet.</p>
+    ) : (
+      certificates.map((cert) => (
+        <div
+          key={cert.id}
+          className="border-b py-3"
+        >
+          <div>
+            {cert.certificate_type}
+          </div>
+
+          <div className="text-sm text-gray-500">
+            {cert.certificate_number}
+          </div>
+        </div>
+      ))
+    )}
+
+  </div>
+
+</div>
+      </div>
+ 
+    </main>
+  
   );
 }
