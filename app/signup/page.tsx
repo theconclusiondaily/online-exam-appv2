@@ -32,7 +32,8 @@ const [
 ] = useState("");
   const [loading, setLoading] =
     useState(false);
-
+const [referralCode, setReferralCode] =
+  useState("");
   async function handleSignup() {
 if (!captchaToken) {
 
@@ -82,6 +83,8 @@ if (!captchaToken) {
           name,
           mobile,
           dob,
+          referral_code:
+      referralCode || null,
         },
 
       },
@@ -337,7 +340,30 @@ focus:ring-2
 focus:ring-[#D4AF37]/30
 "
           />
-
+<input
+  type="text"
+  placeholder="Referral Code (Optional)"
+  value={referralCode}
+  onChange={(e) =>
+    setReferralCode(
+      e.target.value.toUpperCase()
+    )
+  }
+  className="
+    w-full
+    p-4
+    rounded-xl
+    border
+    border-[#D8E1F0]
+    bg-[#F7F9FC]
+    text-[#274472]
+    placeholder:text-gray-500
+    focus:outline-none
+    focus:border-[#D4AF37]
+    focus:ring-2
+    focus:ring-[#D4AF37]/30
+  "
+/>
           <input
             type="date"
             value={dob}

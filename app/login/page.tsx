@@ -8,6 +8,8 @@ import AuthHero from "@/components/auth/AuthHero";
 import { useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Turnstile } from "@marsidev/react-turnstile";
+import { processReferral }
+from "@/lib/referrals/processReferral";
 export default function LoginPage() {
 
   const router = useRouter();
@@ -197,53 +199,85 @@ if (!captchaToken) {
 
     // CREATE PROFILE IF MISSING
 
-    const {
-      data: existingProfile,
-    } = await supabase
-      .from("users")
-      .select("id, role")
-      .eq(
-        "id",
-        user.id
-      )
-      .maybeSingle();
+const {
+  data: existingProfile,
+} = await supabase
+  .from("users")
+  .select("id, role")
+  .eq("id", user.id)
+  .maybeSingle();
 
-    if (!existingProfile) {
+if (!existingProfile) {
 
-      const {
-        error: profileError,
-      } = await supabase
-        .from("users")
-        .insert({
+  const generatedCode =
+    "TCD" +
+    Math.random()
+      .toString(36)
+      .substring(2, 8)
+      .toUpperCase();
 
-          id: user.id,
+  const {
+    error: profileError,
+  } = await supabase
+    .from("users")
+    .insert({
 
-          email: user.email,
+      id: user.id,
 
-          role: "student",
+      email: user.email,
 
-          name:
-            user.user_metadata?.name ??
-            "Student",
+      role: "student",
 
-        });
+      name:
+        user.user_metadata?.name ??
+        "Student",
 
-      if (profileError) {
+      mobile:
+        user.user_metadata?.mobile,
 
-        console.error(
-          "PROFILE ERROR:",
-          profileError
-        );
+      dob:
+        user.user_metadata?.dob,
 
-        alert(
-          "Failed to create profile."
-        );
+      referral_code:
+        generatedCode,
 
-        return;
-      }
-    }
+    });
 
-    // SESSION TOKEN
+  if (profileError) {
+
+    console.error(
+      "PROFILE ERROR:",
+      profileError
+    );
+
+    alert(
+      "Failed to create profile."
+    );
+
+    return;
+  }
+
+  await supabase
+    .from("referral_codes")
+    .insert({
+
+      user_id: user.id,
+
+      referral_code:
+        generatedCode,
+
+      total_referrals: 0,
+
+      total_rewards: 0,
+
+    });
+
+  await processReferral(
+    user.id,
+    user.user_metadata
+      ?.referral_code
+  );
+}   // SESSION TOKEN
 
     const sessionToken =
       crypto.randomUUID();
