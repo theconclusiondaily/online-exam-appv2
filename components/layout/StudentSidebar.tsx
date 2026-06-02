@@ -45,18 +45,6 @@ export default function StudentSidebar({
   icon: TCDIcons.achievement,
 },
 
-{
-  name: "Notifications",
-  href: "/dashboard/notifications",
-  icon: (
-    <Image
-      src="/icons/notification-bell.svg"
-      alt="Notifications"
-      width={20}
-      height={20}
-    />
-  ),
-},
 
 {
   name: "Active Opportunities",
@@ -70,6 +58,25 @@ export default function StudentSidebar({
     href: "/dashboard/tcd-wallet",
     icon: TCDIcons.coin,
   },
+  {
+  name: "Referrals",
+  href: "/dashboard/referrals",
+  icon: TCDIcons.coin,
+
+},
+
+{
+  name: "Notifications",
+  href: "/dashboard/notifications",
+  icon: (
+    <Image
+      src="/icons/notification-bell.svg"
+      alt="Notifications"
+      width={20}
+      height={20}
+    />
+  ),
+},
 ];
 const [unreadCount, setUnreadCount] =
   useState(0);

@@ -66,7 +66,9 @@ const {
 console.log(
   currentLiveExam
 );
-
+setLiveExam(
+  currentLiveExam
+);
 console.log(
   liveExamError
 );

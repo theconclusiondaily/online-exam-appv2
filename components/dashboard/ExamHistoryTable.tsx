@@ -470,49 +470,99 @@ export default function ExamHistoryTable({
 
                     </div>
 
-                    {/* ACTION */}
+                    {/* ACTIONS */}
 
-                    <div>
+<div
+  className="
+    flex
+    flex-col
+    sm:flex-row
 
-                      <Link
-                        href={`/exam-review/${attempt.id}`}
+    gap-2
+  "
+>
 
-                        className="
-                          inline-flex
-                          items-center
-                          gap-2
+  {/* RESULT */}
 
-                          bg-tcd-blue
-                          hover:bg-tcd-blue-light
+  <Link
+    href={`/exam-result/${attempt.id}`}
+    className="
+      inline-flex
+      items-center
+      justify-center
+      gap-2
 
-                          text-white
+      bg-tcd-gold
+      hover:bg-[#D6A72B]
 
-                          px-5
-                          py-3
+      text-tcd-blue
 
-                          rounded-2xl
+      px-5
+      py-3
 
-                          font-semibold
-                          text-sm
+      rounded-2xl
 
-                          shadow-sm
-                          hover:shadow-md
+      font-semibold
+      text-sm
 
-                          transition-all
-                        "
-                      >
+      shadow-sm
+      hover:shadow-md
 
-                        <span>
+      transition-all
+    "
+  >
 
-                          {TCDIcons.target}
+    <span>
 
-                        </span>
+      {TCDIcons.rank}
 
-                        Review Answers
+    </span>
 
-                      </Link>
+    View Result
 
-                    </div>
+  </Link>
+
+  {/* REVIEW */}
+
+  <Link
+    href={`/exam-review/${attempt.id}`}
+    className="
+      inline-flex
+      items-center
+      justify-center
+      gap-2
+
+      bg-tcd-blue
+      hover:bg-tcd-blue-light
+
+      text-white
+
+      px-5
+      py-3
+
+      rounded-2xl
+
+      font-semibold
+      text-sm
+
+      shadow-sm
+      hover:shadow-md
+
+      transition-all
+    "
+  >
+
+    <span>
+
+      {TCDIcons.target}
+
+    </span>
+
+    Review Answers
+
+  </Link>
+
+</div>
 
                   </div>
 

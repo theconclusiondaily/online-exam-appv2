@@ -88,6 +88,7 @@ export async function processReferral(
 
     if (existingReferral) {
       return;
+      
     }
 
     // -----------------------------------
@@ -176,10 +177,10 @@ export async function processReferral(
         .update({
 
           current_balance:
-            (referrerWallet.current_balance || 0) + 50,
+            (referrerWallet.current_balance || 0) + 500,
 
           lifetime_earned:
-            (referrerWallet.lifetime_earned || 0) + 50,
+            (referrerWallet.lifetime_earned || 0) + 500,
 
         })
         .eq(
@@ -210,10 +211,10 @@ export async function processReferral(
         .update({
 
           current_balance:
-            (newUserWallet.current_balance || 0) + 25,
+            (newUserWallet.current_balance || 0) + 200,
 
           lifetime_earned:
-            (newUserWallet.lifetime_earned || 0) + 25,
+            (newUserWallet.lifetime_earned || 0) + 200,
 
         })
         .eq(
@@ -233,7 +234,7 @@ export async function processReferral(
           user_id:
             referrer.id,
 
-          credits: 50,
+          credits: 500,
 
           transaction_type:
             "referral_reward",
@@ -246,7 +247,7 @@ export async function processReferral(
           user_id:
             user.id,
 
-          credits: 25,
+          credits: 200,
 
           transaction_type:
             "referral_bonus",
@@ -271,7 +272,7 @@ export async function processReferral(
             "Referral Successful",
 
           message:
-            "You earned 50 TCD Credits.",
+            "You earned 500 TCD Credits.",
 
           type:
             "reward",
@@ -285,7 +286,7 @@ export async function processReferral(
             "Welcome Bonus",
 
           message:
-            "You earned 25 TCD Credits.",
+            "You earned 200 TCD Credits.",
 
           type:
             "reward",

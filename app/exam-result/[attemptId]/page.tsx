@@ -8,9 +8,10 @@ export default function ExamResultPage() {
   const params = useParams();
   const router = useRouter();
 
-  const examId = Array.isArray(params.id)
-    ? params.id[0]
-    : params.id;
+ const attemptId =
+  Array.isArray(params.attemptId)
+    ? params.attemptId[0]
+    : params.attemptId;
 
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState<any>(null);
@@ -74,24 +75,45 @@ const [
         }
 
         const {
-          data,
-          error,
-        } = await supabase
-          .from("exam_attempts")
-          .select("*")
-          .eq("exam_id", examId)
-          .eq("user_id", user.id)
-          .order("created_at", {
-            ascending: false,
-          })
-          .limit(1)
-          .maybeSingle();
+  data: attempt,
+  error,
+} = await supabase
+
+  .from("exam_attempts")
+
+  .select("*")
+
+  .eq(
+    "id",
+    attemptId
+  )
+
+  .single();
+
+if (!attempt) {
+  setLoading(false);
+  return;
+}
+
+setResult(attempt);
+
+const examId =
+  attempt.exam_id;
+
+if (error) {
+  console.error(error);
+}
+
+console.log(
+  "RESULT FOUND:",
+  attempt
+);
 
         if (error) {
           console.error(error);
         }
 
-        setResult(data);
+        setResult(attempt);
 
 const {
   data: achievements,
@@ -191,17 +213,17 @@ setReviewLocked(
 );
 }
 if (
-  data?.started_at &&
-  data?.submitted_at
+  attempt?.started_at &&
+  attempt?.submitted_at
 ) {
 
   const diff =
     new Date(
-      data.submitted_at
+      attempt.submitted_at
     ).getTime()
     -
     new Date(
-      data.started_at
+      attempt.started_at
     ).getTime();
 
   const minutes =
@@ -221,7 +243,7 @@ if (
   );
 }
 
-        if (data) {
+        if (attempt) {
 
   const {
     data: leaderboard,
@@ -257,17 +279,31 @@ if (
         entry.user_id ===
         user.id
     );
+console.log(
+  "USER ID:",
+  user.id
+);
 
+console.log(
+  "LEADERBOARD:",
+  leaderboard
+);
+
+console.log(
+  "CURRENT USER:",
+  currentUser
+);
   if (!currentUser) {
-    return;
-  }
+
+  setRank(null);
+
+} else {
 
   const userScore =
     Number(
       currentUser.score || 0
     );
 
-  // Rank based on higher scores only
   const position =
     leaderboard.filter(
       (entry) =>
@@ -278,7 +314,6 @@ if (
 
   setRank(position);
 
-  // Percentile based on score
   const studentsBelowOrEqual =
     leaderboard.filter(
       (entry) =>
@@ -298,6 +333,7 @@ if (
       percentileValue.toFixed(2)
     )
   );
+}
 const {
   data: topper,
 } = await supabase
@@ -335,14 +371,19 @@ setTopperData(
       } catch (error) {
         console.error(error);
       } finally {
-        setLoading(false);
-      }
+
+  console.log(
+    "FINALLY EXECUTED"
+  );
+
+  setLoading(false);
+}
     }
 
-    if (examId) {
-      loadResult();
-    }
-  }, [examId, router]);
+    if (attemptId) {
+  loadResult();
+}
+  }, [attemptId, router]);
 useEffect(() => {
 
   if (
@@ -1217,7 +1258,7 @@ p-4">
 
         onClick={() =>
           router.push(
-            `/exam-review/${examId}`
+            `/exam-review/${result.id}`
           )
         }
 
@@ -1266,7 +1307,7 @@ p-4">
         <button
           onClick={() =>
             router.push(
-              `/leaderboard/${examId}`
+              `/leaderboard/${result?.exam_id}`
             )
           }
           className="

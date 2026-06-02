@@ -146,48 +146,44 @@ const [tags,
       return;
     }
 
-    const { error } =
-      await supabase
-        .from("questions")
-        .insert([
-          {
-            exam_id:
-              selectedExam,
+   const {
+  data: insertedQuestion,
+  error,
+} = await supabase
 
-            question,
+  .from("questions")
 
-            option_a:
-              optionA,
+  .insert([
+    {
+      exam_id: selectedExam,
 
-            option_b:
-              optionB,
+      question,
 
-            option_c:
-              optionC,
+      option_a: optionA,
+      option_b: optionB,
+      option_c: optionC,
+      option_d: optionD,
 
-            option_d:
-              optionD,
+      correct_answer:
+        correctAnswer,
 
-            correct_answer:
-              correctAnswer,
+      subject,
+      chapter,
+      topic,
+      difficulty,
 
-            subject,
+      tags:
+        tags
+          .split(",")
+          .map((t) =>
+            t.trim()
+          ),
+    },
+  ])
 
-chapter,
+  .select()
 
-topic,
-
-difficulty,
-
-tags:
-  tags
-    .split(",")
-    .map((t) =>
-      t.trim()
-    ),
-          },
-        ]);
-
+  .single();
     if (error) {
 
       console.log(error);
@@ -198,7 +194,17 @@ tags:
 
       return;
     }
+await supabase
 
+  .from("exam_questions")
+
+  .insert({
+    exam_id:
+      selectedExam,
+
+    question_id:
+      insertedQuestion.id,
+  });
     alert(
       "Question added"
     );
@@ -321,13 +327,58 @@ alert(
     })
   );
 
-      const { error } =
-        await supabase
-          .from("questions")
-          .insert(
-            formattedQuestions
-          );
+      const {
+  data: insertedQuestions,
+  error,
+} = await supabase
 
+  .from("questions")
+
+  .insert(
+    formattedQuestions
+  )
+
+  .select("id");
+
+  if (
+  !error &&
+  insertedQuestions
+) {
+
+  const mappings =
+    insertedQuestions.map(
+      (q) => ({
+        exam_id:
+          selectedExam,
+
+        question_id:
+          q.id,
+      })
+    );
+
+  const {
+    error: mappingError,
+  } = await supabase
+
+    .from(
+      "exam_questions"
+    )
+
+    .insert(mappings);
+
+  if (mappingError) {
+
+    console.log(
+      mappingError
+    );
+
+    alert(
+      "Question mapping failed"
+    );
+
+    return;
+  }
+}
       if (error) {
 
         console.log(error);

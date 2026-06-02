@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { SCORING }
 from "@/lib/exam";
+import {
+  updateWeeklyChallenges
+}
+from "@/lib/challenges/updateWeeklyChallenges";
+
 export async function POST(
   req: NextRequest
 ) {
@@ -520,7 +525,11 @@ const timeTaken =
       "ATTEMPT ERROR:",
       attemptError
     );
-
+await updateWeeklyChallenges(
+  user.id,
+  totalScore,
+  percentage
+);
     if (attemptError) {
   return NextResponse.json(
     {
@@ -534,7 +543,15 @@ const timeTaken =
     }
   );
 }
+await updateWeeklyChallenges(
 
+  user.id,
+
+  totalScore,
+
+  percentage
+
+);
 const { error: rewardError } =
   await supabase.rpc(
     "award_participation_tcd",
@@ -555,18 +572,7 @@ await supabase.rpc(
     p_user_id: user.id,
   }
 );
-const { error: streakError } =
-  await supabase.rpc(
-    "update_study_streak",
-    {
-      p_user_id: user.id,
-    }
-  );
 
-console.log(
-  "STREAK ERROR:",
-  streakError
-);
 await supabase.rpc(
   "award_exam_achievements",
   {

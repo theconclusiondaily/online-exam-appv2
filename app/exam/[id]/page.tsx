@@ -128,6 +128,10 @@ const [
   answeredQuestions,
   setAnsweredQuestions,
 ] = useState<number[]>([]);
+const [
+  markedQuestions,
+  setMarkedQuestions
+] = useState<number[]>([]);
 const [visitedQuestions,
   setVisitedQuestions] =
   useState<number[]>([0]); 
@@ -374,17 +378,33 @@ if (savedAnswersData) {
 
 if (existingAttempt) {
 
-  setAlreadyAttempted(
-    true
-  );
+  if (
+    existingAttempt.status ===
+    "submitted"
+  ) {
 
-  setScore(
-    existingAttempt.score
-  );
+    setAlreadyAttempted(
+      true
+    );
 
-  setLoading(false);
+    setScore(
+      existingAttempt.score
+    );
 
-  return;
+    setLoading(false);
+
+    return;
+  }
+
+  if (
+    existingAttempt.status ===
+    "active"
+  ) {
+
+    setResumeAvailable(
+      true
+    );
+  }
 }
       const {
         data: examData,
@@ -564,6 +584,34 @@ useEffect(() => {
 
   examId,
 ]);
+
+useEffect(() => {
+
+  function disableRightClick(
+    e: MouseEvent
+  ) {
+
+    e.preventDefault();
+
+    handleViolation(
+      "Right click detected"
+    );
+  }
+
+  document.addEventListener(
+    "contextmenu",
+    disableRightClick
+  );
+
+  return () => {
+
+    document.removeEventListener(
+      "contextmenu",
+      disableRightClick
+    );
+  };
+
+}, []);
 useEffect(() => {
 
   if (!userId) {
@@ -730,28 +778,43 @@ useEffect(() => {
     lastViolationRef.current =
       now;
 
-    setViolations(
-      (prev) => {
+   const updated =
+  violations + 1;
 
-        const updated =
-          prev + 1;
+setViolations(
+  updated
+);
 
-        alert(
-          `${reason}. Violations: ${updated}/2`
-        );
+alert(
+  `${reason}. Violations: ${updated}/2`
+);
+console.log(
+  "VIOLATIONS:",
+  updated
+);
+if (
+  updated >= 2
+) {
 
-        if (updated >= 2) {
+  console.log(
+    "AUTO SUBMIT TRIGGERED"
+  );
 
-  setTimeout(() => {
+  toast.error(
+    "Maximum violations reached. Exam submitted automatically."
+  );
 
-    submitExam();
+  setTimeout(
+    async () => {
 
-  }, 100);
+      await submitExam();
+
+    },
+    500
+  );
+
+  return;
 }
-
-        return updated;
-      }
-    );
   }
 
   async function requestPermissions() {
@@ -788,14 +851,27 @@ useEffect(() => {
       );
     }
   }
-function resumeExam() {
+async function resumeExam() {
+
+  if (!sessionToken) {
+
+    toast.error(
+      "Session missing"
+    );
+
+    return;
+  }
+
+  await fetchQuestionByIndex(
+    currentQuestion
+  );
 
   setExamStarted(
     true
   );
 
   toast.success(
-    "Recovered previous exam session"
+    "Exam session restored"
   );
 }
 useEffect(() => {
@@ -1121,6 +1197,32 @@ const questionResponse =
 
 const questionResult =
   await questionResponse.json();
+  console.log(
+  "QUESTION RESPONSE STATUS:",
+  questionResponse.status
+);
+
+console.log(
+  "QUESTION RESULT FULL:",
+  JSON.stringify(
+    questionResult,
+    null,
+    2
+  )
+);
+
+if (!questionResponse.ok) {
+
+  alert(
+    JSON.stringify(
+      questionResult,
+      null,
+      2
+    )
+  );
+
+  return;
+}
 console.log(
   "TOTAL QUESTIONS:",
   questionResult.totalQuestions
@@ -1592,10 +1694,18 @@ localStorage.removeItem(
     setTimeout(() => {
 
   setShowXP(false);
+console.log(
+  "ATTEMPT ID:",
+  result.attemptId
+);
 
-  router.replace(
-    `/exam-result/${examId}`
-  );
+console.log(
+  "FULL RESULT:",
+  result
+);
+    router.replace(
+  `/exam-result/${result.attemptId}`
+);
 
 }, 3000);
   }
@@ -1681,14 +1791,59 @@ console.log(
           <div className="space-y-4 mb-4">
 
             <p>
-              Duration: 30 Minutes
-            </p>
+  Duration:
+  {" "}
+  {examInfo?.duration || 30}
+  {" "}
+  Minutes
+</p>
 
             <p>
               Questions: {examInfo?.total_questions || 30}
             </p>
 
           </div>
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 mb-5">
+
+  <h3 className="font-bold text-lg mb-3">
+
+    📋 Exam Instructions
+
+  </h3>
+
+  <ul className="space-y-2 text-gray-700">
+
+    <li>
+      ✅ Fullscreen mode is mandatory
+    </li>
+
+    <li>
+      ✅ Camera access is mandatory
+    </li>
+
+    <li>
+      ✅ Microphone access is mandatory
+    </li>
+
+    <li>
+      ✅ Answers are automatically saved
+    </li>
+
+    <li>
+      ✅ Resume available if browser closes
+    </li>
+
+    <li>
+      ⚠️ Two violations will auto-submit the exam
+    </li>
+
+    <li>
+      ⚠️ Do not switch tabs during the exam
+    </li>
+
+  </ul>
+
+</div>
 
           <button
             onClick={requestPermissions}
@@ -1739,10 +1894,13 @@ console.log(
           </h1>
 
           <ExamTopStats
-            liveStudents={liveStudents}
-            violations={violations}
-            onTimeUp={submitExam}
-          />
+  durationMinutes={
+    examInfo?.duration || 30
+  }
+  liveStudents={liveStudents}
+  violations={violations}
+  onTimeUp={submitExam}
+/>
 
         </div>
 
@@ -1801,6 +1959,9 @@ console.log(
   answeredQuestions={
     answeredQuestions
   }
+  markedQuestions={
+  markedQuestions
+}
 />
 
       </div>
@@ -1905,7 +2066,43 @@ console.log(
         >
           Previous
         </button>
+  <button
+  onClick={() => {
 
+    setMarkedQuestions(
+      prev =>
+        prev.includes(
+          currentQuestion
+        )
+          ? prev
+          : [
+              ...prev,
+              currentQuestion
+            ]
+    );
+
+    toast.success(
+      "Marked for review"
+    );
+  }}
+
+  className="
+    px-8
+    py-3
+
+    rounded-2xl
+
+    bg-yellow-500
+    hover:bg-yellow-600
+
+    text-white
+    font-bold
+  "
+>
+
+  Mark For Review
+
+</button>
         <div className="flex gap-2">
 
   {currentQuestion <
@@ -1966,6 +2163,7 @@ hover:bg-tcd-blue-light
         transition
       "
     >
+  
 
       Next
 

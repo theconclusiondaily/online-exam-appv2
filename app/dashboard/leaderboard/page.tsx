@@ -300,7 +300,7 @@ export default function LeaderboardPage() {
             ) => (
 
               <TCDMotion
-                key={user.user_id}
+                key={user.id}
                 delay={
                   index * 0.1
                 }
@@ -512,7 +512,7 @@ export default function LeaderboardPage() {
             ) => (
 
               <TCDMotion
-                key={user.user_id}
+                key={user.id}
                 delay={
                   index * 0.03
                 }

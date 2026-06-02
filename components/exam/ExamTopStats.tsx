@@ -7,14 +7,17 @@ from "./ExamTimer";
 
 type Props = {
 
+  durationMinutes: number;
+
   liveStudents: number;
 
   violations: number;
 
   onTimeUp: () => void;
 };
-
 function ExamTopStats({
+
+  durationMinutes,
 
   liveStudents,
 
@@ -22,20 +25,22 @@ function ExamTopStats({
 
   onTimeUp,
 
-}: Props) {
+}: Props){
 
   return (
 
     <div className="flex gap-3 flex-wrap items-stretch">
 
       {/* TIMER */}
-
-      <ExamTimer
-        initialTime={1800}
-        onTimeUp={
-          onTimeUp
-        }
-      />
+<ExamTimer
+  initialTime={
+    durationMinutes * 60
+  }
+  onTimeUp={
+    onTimeUp
+  }
+/>
+      
 
       {/* LIVE STUDENTS */}
 

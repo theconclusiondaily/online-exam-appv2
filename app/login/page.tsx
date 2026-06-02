@@ -277,7 +277,41 @@ if (!existingProfile) {
     user.user_metadata
       ?.referral_code
   );
-}   // SESSION TOKEN
+}  
+
+const {
+  data: existingReferral,
+} = await supabase
+  .from("referral_codes")
+  .select("user_id")
+  .eq(
+    "user_id",
+    user.id
+  )
+  .maybeSingle();
+
+if (!existingReferral) {
+
+  const generatedCode =
+    "TCD" +
+    Math.random()
+      .toString(36)
+      .substring(2, 8)
+      .toUpperCase();
+
+  await supabase
+    .from("referral_codes")
+    .insert({
+      user_id: user.id,
+      referral_code: generatedCode,
+      total_referrals: 0,
+      total_rewards: 0,
+    });
+
+}
+
+
+// SESSION TOKEN
 
     const sessionToken =
       crypto.randomUUID();

@@ -18,8 +18,13 @@ type Props = {
   ) => void;
 
   answeredQuestions:
-  number[];
-  visitedQuestions: number[];
+    number[];
+
+  visitedQuestions:
+    number[];
+
+  markedQuestions:
+    number[];
 };
 
 function QuestionPalette({
@@ -35,6 +40,8 @@ function QuestionPalette({
   visitedQuestions,
 
   answeredQuestions,
+
+  markedQuestions,
 
 }: Props) {
 
@@ -52,7 +59,10 @@ function QuestionPalette({
   answeredQuestions.includes(
     index
   );
-
+const marked =
+  markedQuestions.includes(
+    index
+  );
           return (
 
             <button
@@ -82,19 +92,23 @@ function QuestionPalette({
   items-center
   justify-center
 ${
-  answered
+  currentQuestion === index
 
-    ? "bg-green-500 text-white"
+    ? "bg-blue-600 text-white ring-4 ring-blue-200"
 
-    : currentQuestion === index
+    : answered
 
-    ? "bg-blue-500 text-white"
+    ? "bg-green-600 text-white"
+
+    : marked
+
+    ? "bg-yellow-500 text-white"
 
     : visitedQuestions.includes(
         index
       )
 
-    ? "bg-yellow-500 text-white"
+    ? "bg-gray-400 text-white"
 
     : "bg-gray-200 text-black"
 }
