@@ -663,7 +663,15 @@ setStats({
                 text-tcd-gold
               "
             >
-              {item.achievements?.rarity || "Common"}
+              <div>
+  <h4 className="font-bold">
+    {item.achievements?.title || "Achievement"}
+  </h4>
+
+  <p className="text-xs text-gray-500">
+    {item.achievements?.rarity || "Common"}
+  </p>
+</div>
             </span>
 
           </div>
@@ -712,11 +720,11 @@ setStats({
     />
 
     <p className="text-gray-500">
-      Best Percentile
+      Best Rank
     </p>
 
     <h3 className="text-2xl font-black text-purple-600 mt-3">
-      {bestRank?.percentile || 0}%
+      {bestRank}
     </h3>
 
   </div>
