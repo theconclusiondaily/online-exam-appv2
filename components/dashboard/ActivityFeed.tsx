@@ -372,10 +372,14 @@ useEffect(() => {
         ) : (
 
           <div
-            className="
-              space-y-3
-            "
-          >
+  className="
+    space-y-3
+    max-h-[450px]
+    lg:max-h-[700px]
+    overflow-y-auto
+    pr-2
+  "
+>
 
             {
               activities.map(

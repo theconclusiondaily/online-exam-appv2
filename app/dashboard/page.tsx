@@ -423,27 +423,29 @@ if (
   );
 }
     const {
-  data: activityData
+  data: activityData,
 } = await supabase
+  .from("activity_feed")
+  .select("*")
+  .order("created_at", {
+    ascending: false,
+  })
+  .limit(100);
 
- .from("activity_feed")
-.select("*")
-.in(
-  "activity_type",
-  [
-    "exam",
-    "level_up",
-    "certificate",
-    "major_achievement"
-  ]
-)
-.order("created_at", {
-  ascending: false
-})
-.limit(20)
+const uniqueActivities =
+  (activityData || []).filter(
+    (activity, index, self) =>
+      index ===
+      self.findIndex(
+        (a) =>
+          a.user_id === activity.user_id &&
+          a.activity_type ===
+            activity.activity_type
+      )
+  );
 
 setActivities(
-  activityData || []
+  uniqueActivities.slice(0, 10)
 );
 const {
   data: leaderboardData
@@ -1964,7 +1966,17 @@ const handleClaimReward =
   </div>
 
 </div>
+{/* LIVE EXAMS */}
 
+<LiveExamsSection
+  liveExams={liveExams}
+/>
+
+{/* PERFORMANCE */}
+
+      <StatsGrid
+        stats={stats}
+      />
       {/* STREAK CARDS */}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
@@ -2002,18 +2014,7 @@ const handleClaimReward =
     setActivities
   }
 />
-      {/* PERFORMANCE */}
-
-      <StatsGrid
-        stats={stats}
-      />
-
-      {/* LIVE EXAMS */}
-
-      <LiveExamsSection
-        liveExams={liveExams}
-      />
-
+      
       {/* HISTORY */}
 
       <ExamHistoryTable

@@ -143,7 +143,7 @@ export default function LiveExamsSection({
                     font-semibold
                   "
                 >
-                  LIVE
+                🔴 LIVE NOW
                 </span>
 
                 <div
@@ -228,28 +228,22 @@ export default function LiveExamsSection({
               {/* CTA */}
 
               <Link
-                href={`/exam/${exam.id}`}
-                className="
-                  block
-                  w-full
-
-                  bg-tcd-blue
-                  hover:bg-[#3F5D94]
-
-                  text-white
-
-                  py-3
-
-                  rounded-2xl
-
-                  text-center
-                  font-bold
-
-                  transition-all
-                "
-              >
-                Start Exam
-              </Link>
+  href={`/exam/${exam.id}/intro`}
+  className="
+    block
+    w-full
+    bg-tcd-blue
+    hover:bg-[#3F5D94]
+    text-white
+    py-3
+    rounded-2xl
+    text-center
+    font-bold
+    transition-all
+  "
+>
+  Begin  Challenge
+</Link>
 
             </div>
 
