@@ -641,46 +641,38 @@ setStats({
 
         <div className="flex items-center gap-3 mb-4">
 
-          <img
-            src="/icons/achievement-medal.svg"
-            alt="Achievement"
-            className="w-12 h-12"
-          />
+  <img
+    src="/icons/achievement-medal.svg"
+    alt="Achievement"
+    className="w-12 h-12"
+  />
 
-          <div>
+  <div>
 
-            <h3 className="font-black text-lg text-tcd-blue">
-              {item.achievements?.title}
-            </h3>
+    <h3 className="font-black text-lg text-tcd-blue">
+      {item.achievements?.title || "Achievement"}
+    </h3>
 
-            <span
-              className="
-                text-xs
-                px-2
-                py-1
-                rounded-full
-                bg-tcd-gold/10
-                text-tcd-gold
-              "
-            >
-              <div>
-  <h4 className="font-bold">
-    {item.achievements?.title || "Achievement"}
-  </h4>
+    <span
+      className="
+        inline-block
+        mt-1
+        text-xs
+        px-2
+        py-1
+        rounded-full
+        bg-tcd-gold/10
+        text-tcd-gold
+      "
+    >
+      {item.achievements?.rarity || "Common"}
+    </span>
 
-  <p className="text-xs text-gray-500">
-    {item.achievements?.rarity || "Common"}
-  </p>
+  </div>
+
 </div>
-            </span>
 
-          </div>
-
-        </div>
-
-        <p className="text-gray-500 text-sm mb-4">
-          {item.achievements?.description}
-        </p>
+         
 
         <div className="flex items-center gap-2">
 
@@ -724,8 +716,10 @@ setStats({
     </p>
 
     <h3 className="text-2xl font-black text-purple-600 mt-3">
-      {bestRank}
-    </h3>
+  {bestRank?.percentile
+    ? `#${bestRank.percentile}`
+    : "-"}
+</h3>
 
   </div>
 

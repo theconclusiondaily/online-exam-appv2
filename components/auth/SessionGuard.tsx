@@ -27,6 +27,25 @@ export default function SessionGuard({
     let interval:
       NodeJS.Timeout;
 
+    async function forceLogout(
+      message?: string
+    ) {
+
+      if (message) {
+        alert(message);
+      }
+
+      localStorage.removeItem(
+        "tcd_session_token"
+      );
+
+      await supabase.auth.signOut();
+
+      router.replace(
+        "/login"
+      );
+    }
+
     async function checkSession() {
 
       try {
@@ -39,6 +58,11 @@ export default function SessionGuard({
           await supabase.auth.getUser();
 
         if (!user) {
+
+          router.replace(
+            "/login"
+          );
+
           return;
         }
 
@@ -49,11 +73,7 @@ export default function SessionGuard({
 
         if (!localToken) {
 
-          await supabase.auth.signOut();
-
-          router.replace(
-            "/login"
-          );
+          await forceLogout();
 
           return;
         }
@@ -79,11 +99,7 @@ export default function SessionGuard({
           !activeSession
         ) {
 
-          await supabase.auth.signOut();
-
-          router.replace(
-            "/login"
-          );
+          await forceLogout();
 
           return;
         }
@@ -93,19 +109,11 @@ export default function SessionGuard({
           localToken
         ) {
 
-          alert(
+          await forceLogout(
             "Your account has been logged in on another device."
           );
 
-          localStorage.removeItem(
-            "tcd_session_token"
-          );
-
-          await supabase.auth.signOut();
-
-          router.replace(
-            "/login"
-          );
+          return;
         }
 
       } catch (err) {
@@ -117,18 +125,48 @@ export default function SessionGuard({
       }
     }
 
+    // Initial check
     checkSession();
 
+    // Check every 30 seconds
     interval =
       setInterval(
         checkSession,
         30000
       );
 
-    return () =>
+    // Listen for Supabase auth changes
+    const {
+      data: authListener,
+    } = supabase.auth.onAuthStateChange(
+      async (
+        event,
+        session
+      ) => {
+
+        if (!session) {
+
+          localStorage.removeItem(
+            "tcd_session_token"
+          );
+
+          router.replace(
+            "/login"
+          );
+        }
+      }
+    );
+
+    return () => {
+
       clearInterval(
         interval
       );
+
+      authListener
+        .subscription
+        .unsubscribe();
+    };
 
   }, [router]);
 

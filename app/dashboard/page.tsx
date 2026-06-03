@@ -25,6 +25,8 @@ import DailyRewardCard from "@/components/dashboard/DailyRewardCard";
 import AchievementCard from "@/components/dashboard/AchievementCard";
 import StudyStreakCard from "@/components/dashboard/StudyStreakCard";
 import LoginStreakCard from "@/components/dashboard/LoginStreakCard";
+import useInactivityLogout
+from "@/hooks/useInactivityLogout";
 import StatsGrid
 from "@/components/dashboard/StatsGrid";
 import LiveExamsSection
@@ -48,7 +50,7 @@ import {
   getExamStatus
 } from "@/lib/getExamStatus";
 export default function DashboardPage() {
-
+useInactivityLogout();
   const router =
     useRouter();
 
@@ -424,18 +426,21 @@ if (
   data: activityData
 } = await supabase
 
-  .from("activity_feed")
-
-  .select("*")
-
-  .order(
-    "created_at",
-    {
-      ascending: false,
-    }
-  )
-
-  .limit(10);
+ .from("activity_feed")
+.select("*")
+.in(
+  "activity_type",
+  [
+    "exam",
+    "level_up",
+    "certificate",
+    "major_achievement"
+  ]
+)
+.order("created_at", {
+  ascending: false
+})
+.limit(20)
 
 setActivities(
   activityData || []
@@ -559,17 +564,17 @@ const {
 const {
   data: achievementsData,
 } = await supabase
-
-  .from(
-    "user_achievements"
-  )
-
-  .select("*")
-
-  .eq(
-    "user_id",
-    user.id
-  );
+  .from("user_achievements")
+  .select(`
+    *,
+    achievements (
+      title,
+      description,
+      rarity,
+      reward_tcd
+    )
+  `)
+  .eq("user_id", user.id);
 
 setAchievements(
   achievementsData || []

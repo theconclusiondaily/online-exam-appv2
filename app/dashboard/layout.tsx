@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-
+import useInactivityLogout
+from "@/hooks/useInactivityLogout";
 import SessionGuard from "@/components/auth/SessionGuard";
 import StudentSidebar from "@/components/layout/StudentSidebar";
 
@@ -11,6 +12,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+   useInactivityLogout();
   const [sidebarOpen, setSidebarOpen] =
     useState(false);
 
