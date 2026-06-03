@@ -1,215 +1,254 @@
 "use client";
 
+import Image from "next/image";
+
 import {
-  getAchievementRarity
+  getAchievementRarity,
 } from "@/lib/getAchievementRarity";
 
 interface Props {
-
   achievement: any;
-
   onClose: () => void;
-
 }
 
 export default function AchievementPopup({
-
   achievement,
-
   onClose,
-
 }: Props) {
-
-  if (!achievement) {
-    return null;
-  }
+  if (!achievement) return null;
 
   const rarity =
     getAchievementRarity(
       achievement?.rarity ||
-      "common"
+        "common"
     );
 
   return (
-
     <div
       className="
         fixed
         inset-0
-
-        bg-black/50
-
+        bg-black/70
+        backdrop-blur-sm
         flex
         items-center
         justify-center
-
         z-[100]
+        p-4
       "
     >
-
       <div
         className={`
           relative
-
           overflow-hidden
 
-          rounded-2xl
+          w-full
+          max-w-lg
+
+          max-h-[85vh]
+          overflow-y-auto
+
+          rounded-3xl
 
           border
 
+          shadow-[0_25px_80px_rgba(0,0,0,0.4)]
+
           p-8
 
-          w-full
-          max-w-md
-
-          shadow-2xl
-
-          animate-in
-          zoom-in-95
-          duration-300
-
           ${rarity.bg}
-
           ${rarity.border}
         `}
       >
-
-        {/* GLOW */}
+        {/* Glow Effects */}
 
         <div
           className="
             absolute
-
-            right-[-40px]
-            top-[-40px]
-
-            w-40
-            h-40
-
+            top-[-60px]
+            right-[-60px]
+            h-48
+            w-48
             rounded-full
-
             bg-white/10
           "
         />
 
-        {/* CONTENT */}
-
         <div
           className="
-            relative
-            z-10
-
-            text-center
+            absolute
+            bottom-[-40px]
+            left-[-40px]
+            h-32
+            w-32
+            rounded-full
+            bg-white/5
           "
-        >
+        />
 
-          <div className="text-3xl mb-4">
+        {/* Content */}
 
-            🏆
+        <div className="relative z-10 text-center">
+
+          {/* Brand Achievement Icon */}
+
+          <div className="flex justify-center mb-6">
+
+            <div
+              className="
+                h-24
+                w-24
+
+                rounded-full
+
+                bg-white/15
+
+                flex
+                items-center
+                justify-center
+
+                border
+                border-white/20
+              "
+            >
+              <Image
+                src="/icons/achievement-medal.svg"
+                alt="Achievement"
+                width={60}
+                height={60}
+              />
+            </div>
 
           </div>
 
           <p
             className={`
-              text-sm
-
+              text-xs
               font-black
-
+              tracking-[4px]
               uppercase
-
-              tracking-[3px]
 
               ${rarity.text}
             `}
           >
-
             Achievement Unlocked
-
           </p>
 
           <h2
             className={`
-              text-2xl
-
+              mt-4
+              text-3xl
               font-black
-
-              mt-3
 
               ${rarity.text}
             `}
           >
-
             {achievement.title}
-
           </h2>
 
-       <p
-  className={`
-    mt-3
+          <p
+            className={`
+              mt-3
+              text-lg
 
-    text-lg
+              ${
+                rarity.label ===
+                "Common"
+                  ? "text-gray-700"
+                  : "text-white/90"
+              }
+            `}
+          >
+            {rarity.label} Achievement
+          </p>
 
-    ${
-      rarity.label ===
-      "Common"
+          {/* Rewards */}
 
-        ? "text-gray-700"
+          <div
+            className="
+              mt-8
 
-        : "text-white/90"
-    }
-  `}
->
+              grid
+              grid-cols-2
 
-  {rarity.label} Achievement
+              gap-4
+            "
+          >
+            <div
+              className="
+                rounded-2xl
 
-</p>
+                bg-white/15
 
-<div
-  className={`
-    mt-6
+                p-4
 
-    inline-flex
-    items-center
+                flex
+                flex-col
+                items-center
+              "
+            >
+              <Image
+                src="/icons/coin.svg"
+                alt="TCD"
+                width={28}
+                height={28}
+              />
 
-    gap-2
+              <p className="mt-2 text-sm text-white/80">
+                TCD Credits
+              </p>
 
-    px-5
-    py-3
+              <p className="font-black text-xl text-white">
+                +{achievement.reward_tcd}
+              </p>
+            </div>
 
-    rounded-2xl
+            <div
+              className="
+                rounded-2xl
 
-    font-black
+                bg-white/15
 
-    ${
-      rarity.label ===
-      "Common"
+                p-4
 
-        ? "bg-white text-tcd-blue"
+                flex
+                flex-col
+                items-center
+              "
+            >
+              <Image
+                src="/icons/mastery-star.svg"
+                alt="Mastery"
+                width={28}
+                height={28}
+              />
 
-        : "bg-white/15 text-white"
-    }
-  `}
->
+              <p className="mt-2 text-sm text-white/80">
+                Achievement
+              </p>
 
-  +{achievement.reward_tcd} TCD
+              <p className="font-black text-xl text-white">
+                Unlocked
+              </p>
+            </div>
+          </div>
 
-</div>
+          {/* Continue */}
 
           <button
             onClick={onClose}
-
             className="
-              mt-6
+              mt-8
 
               w-full
+
+              rounded-2xl
 
               bg-white
 
               text-black
 
-              py-3
-
-              rounded-2xl
+              py-4
 
               font-black
 
@@ -218,16 +257,10 @@ export default function AchievementPopup({
               transition-all
             "
           >
-
             Continue Journey
-
           </button>
-
         </div>
-
       </div>
-
     </div>
-    
   );
 }

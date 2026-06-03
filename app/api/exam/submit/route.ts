@@ -552,6 +552,28 @@ await updateWeeklyChallenges(
   percentage
 
 );
+const { error: xpError } =
+  await supabase.rpc(
+    "add_user_xp",
+    {
+      p_user_id: user.id,
+      p_xp:
+  Math.max(
+    10,
+    Math.floor(
+      percentage
+    )
+  )
+    }
+  );
+
+if (xpError) {
+
+  console.error(
+    "XP ERROR:",
+    xpError
+  );
+}
 const { error: rewardError } =
   await supabase.rpc(
     "award_participation_tcd",
@@ -713,9 +735,15 @@ if (rewardError) {
     "seen",
     false
   );
-
+console.log(
+  "RETURNING ATTEMPT:",
+  attemptData?.[0]?.id
+);
  return NextResponse.json({
   success: true,
+
+  attemptId:
+    attemptData?.[0]?.id,
 
   score: totalScore,
 

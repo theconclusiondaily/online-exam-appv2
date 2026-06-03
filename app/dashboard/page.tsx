@@ -196,6 +196,7 @@ const [
   setShowRewardPopup
 ] = useState(false);
 const [
+
   userXP,
   setUserXP
 ] = useState(0);
@@ -366,6 +367,59 @@ if (!walletData) {
         0,
 
     });
+  const {
+    data: newWallet,
+  } = await supabase
+
+    .from(
+      "tcd_wallets"
+    )
+
+    .select("*")
+
+    .eq(
+      "user_id",
+      user.id
+    )
+
+    .single();
+
+  walletData =
+    newWallet;
+}
+if (walletData) {
+  setWallet(walletData);
+}
+const {
+  data: rewardData,
+} = await supabase
+
+  .from(
+    "daily_login_rewards"
+  )
+
+  .select(
+    "last_claim_date"
+  )
+
+  .eq(
+    "user_id",
+    user.id
+  )
+
+  .maybeSingle();
+
+if (
+  rewardData?.last_claim_date ===
+  new Date()
+    .toISOString()
+    .split("T")[0]
+) {
+
+  setRewardClaimed(
+    true
+  );
+}
     const {
   data: activityData
 } = await supabase
@@ -412,8 +466,11 @@ if (
   setTopLeader(
     leaderboardData[0]
   );
-}const {
-  data: levelData
+}
+
+const {
+  data: levelData,
+  error: levelError,
 } = await supabase
 
   .from("user_levels")
@@ -427,6 +484,30 @@ if (
 
   .single();
 
+console.log(
+  "LEVEL ERROR:",
+  levelError
+);
+
+console.log(
+  "LEVEL DATA:",
+  levelData
+);
+
+console.log(
+  "LEVEL DATA:",
+  levelData
+);
+
+console.log(
+  "XP:",
+  levelData?.xp
+);
+
+console.log(
+  "LEVEL:",
+  levelData?.level
+);
 setUserXP(
   levelData?.xp || 0
 );
@@ -435,26 +516,7 @@ setUserLevel(
   levelData?.level || 0
 );
 
-  const {
-    data: newWallet,
-  } = await supabase
 
-    .from(
-      "tcd_wallets"
-    )
-
-    .select("*")
-
-    .eq(
-      "user_id",
-      user.id
-    )
-
-    .single();
-
-  walletData =
-    newWallet;
-}
 
 if (walletData) {
 
@@ -559,37 +621,6 @@ const {
 setLoginStreak(
   loginStreakData
 );
-
-const {
-  data: rewardData,
-} = await supabase
-
-  .from(
-    "daily_login_rewards"
-  )
-
-  .select(
-    "last_claim_date"
-  )
-
-  .eq(
-    "user_id",
-    user.id
-  )
-
-  .maybeSingle();
-
-if (
-  rewardData?.last_claim_date ===
-  new Date()
-    .toISOString()
-    .split("T")[0]
-) {
-
-  setRewardClaimed(
-    true
-  );
-}
       // FETCH PROFILE
 
     const {
@@ -1376,6 +1407,7 @@ const handleClaimReward =
       {/* HERO */}
 
      <DashboardHero
+     
   name={
   profile?.name ||
   "Student"

@@ -778,43 +778,30 @@ useEffect(() => {
     lastViolationRef.current =
       now;
 
-   const updated =
-  violations + 1;
+   setViolations(prev => {
 
-setViolations(
-  updated
-);
+  const updated =
+    prev + 1;
 
-alert(
-  `${reason}. Violations: ${updated}/2`
-);
-console.log(
-  "VIOLATIONS:",
-  updated
-);
-if (
-  updated >= 2
-) {
-
-  console.log(
-    "AUTO SUBMIT TRIGGERED"
+  alert(
+    `${reason}. Violations: ${updated}/2`
   );
 
-  toast.error(
-    "Maximum violations reached. Exam submitted automatically."
-  );
+  if (updated >= 2) {
 
-  setTimeout(
-    async () => {
+    console.log(
+      "AUTO SUBMIT TRIGGERED"
+    );
 
-      await submitExam();
+    setTimeout(() => {
 
-    },
-    500
-  );
+      submitExam();
 
-  return;
-}
+    }, 500);
+  }
+
+  return updated;
+});
   }
 
   async function requestPermissions() {
@@ -1146,7 +1133,10 @@ console.log(
   result.session?.session_token
 );
 if (!response.ok) {
-
+console.log(
+  "START API ERROR:",
+  result
+);
   if (
     result.error ===
     "You have already submitted this exam"
@@ -1422,6 +1412,11 @@ const result =
   result
 );
 
+console.log(
+  "ATTEMPT ID:",
+  result?.attemptId
+);
+
 if (!response.ok) {
 
   toast.error(
@@ -1488,13 +1483,7 @@ const previousRank =
     ? previousRankIndex + 1
 
     : null;
-await supabase.rpc(
-  "add_user_xp",
-  {
-    p_user_id: userId,
-    p_xp: 50,
-  }
-);
+
 const {
   data: afterRanks
 } = await supabase
@@ -1707,7 +1696,7 @@ console.log(
   `/exam-result/${result.attemptId}`
 );
 
-}, 3000);
+}, 5000);
   }
 
   if (!mounted) {
