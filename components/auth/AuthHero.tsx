@@ -122,7 +122,8 @@ export default function AuthHero() {
               mb-2
             "
           >
-            🌱 Banyan Growth
+            🌱 Knowledge Growth
+
           </h3>
 
           <p className="text-white/80">

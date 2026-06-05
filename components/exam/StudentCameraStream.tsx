@@ -3,14 +3,14 @@
 import {
   useEffect,
   useRef,
+  memo,
 } from "react";
 
 type Props = {
   stream: MediaStream | null;
 };
 
-export default function
-StudentCameraStream({
+function StudentCameraStream({
   stream,
 }: Props) {
 
@@ -39,7 +39,23 @@ StudentCameraStream({
       autoPlay
       muted
       playsInline
-      className="w-full rounded-2xl border bg-black"
+      className="
+        w-full
+        h-full
+
+        rounded-2xl
+
+        border
+
+        bg-black
+
+        object-cover
+      "
     />
+
   );
 }
+
+export default memo(
+  StudentCameraStream
+);

@@ -543,27 +543,19 @@ await updateWeeklyChallenges(
     }
   );
 }
-await updateWeeklyChallenges(
 
-  user.id,
+const xpEarned =
+  10 +
+  Math.floor(
+    percentage / 2
+  );
 
-  totalScore,
-
-  percentage
-
-);
 const { error: xpError } =
   await supabase.rpc(
     "add_user_xp",
     {
       p_user_id: user.id,
-      p_xp:
-  Math.max(
-    10,
-    Math.floor(
-      percentage
-    )
-  )
+      p_xp: xpEarned,
     }
   );
 
@@ -609,13 +601,14 @@ const {
   .from("user_achievements")
 
   .select(`
+  id,
+  achievements (
     id,
-    achievements (
-      id,
-      title,
-      reward_tcd
-    )
-  `)
+    title,
+    reward_tcd,
+    rarity
+  )
+`)
 
   .eq(
     "user_id",
@@ -626,7 +619,25 @@ const {
     "seen",
     false
   );
+const achievementCount =
+  newAchievements?.length || 0;
 
+const achievementReward =
+  newAchievements?.reduce(
+    (sum: number, item: any) =>
+      sum +
+      (
+        (item.achievements as any)
+          ?.reward_tcd || 0
+      ),
+    0
+  ) || 0;
+
+console.log(
+  "EXAM ACHIEVEMENTS:",
+  achievementCount,
+  achievementReward
+);
 if (newAchievements?.length) {
 
   for (
@@ -656,15 +667,11 @@ if (newAchievements?.length) {
         description:
           achievement?.title,
 
-        metadata: {
-
-          achievement_id:
-            achievement?.id,
-
-          reward_tcd:
-            achievement?.reward_tcd,
-
-        },
+       metadata: {
+  achievement_id: achievement?.id,
+  reward_tcd: achievement?.reward_tcd,
+  rarity: achievement?.rarity,
+},
 
       });
   }
@@ -760,6 +767,10 @@ console.log(
   submitted: true,
 
   unlockedAchievements,
+
+   achievementCount,
+
+  achievementReward,
 });
 
   } catch (error) {

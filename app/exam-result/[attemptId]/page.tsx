@@ -53,14 +53,19 @@ const [
   unlockedAchievements,
   setUnlockedAchievements
 ] = useState<any[]>([]);
+const [
+  achievementCount,
+  setAchievementCount
+] = useState(0);
 
+const [
+  achievementReward,
+  setAchievementReward
+] = useState(0);
 const [
   showAchievementPopup,
   setShowAchievementPopup
 ] = useState(false);
-
-
-
 
   useEffect(() => {
     async function loadResult() {
@@ -99,7 +104,35 @@ setResult(attempt);
 
 const examId =
   attempt.exam_id;
+const savedCount =
+  Number(
+    sessionStorage.getItem(
+      `achievement-count-${attemptId}`
+    ) || 0
+  );
 
+const savedReward =
+  Number(
+    sessionStorage.getItem(
+      `achievement-reward-${attemptId}`
+    ) || 0
+  );
+
+setAchievementCount(
+  savedCount
+);
+
+setAchievementReward(
+  savedReward
+);
+
+console.log(
+  "SESSION ACHIEVEMENTS:",
+  {
+    savedCount,
+    savedReward,
+  }
+);
 if (error) {
   console.error(error);
 }
@@ -114,14 +147,11 @@ console.log(
         }
 
         setResult(attempt);
-
 const {
   data: achievements,
 } = await supabase
 
-  .from(
-    "user_achievements"
-  )
+  .from("user_achievements")
 
   .select(`
     id,
@@ -592,6 +622,15 @@ const scoreGap =
 
 const isTopper =
   scoreGap === 0;
+
+console.log(
+  "RENDER VALUES:",
+  {
+    achievementCount,
+    achievementReward,
+  }
+);
+
  return (
   <main className="min-h-screen bg-gray-50 p-5">
     <div className="max-w-5xl mx-auto">
@@ -849,7 +888,7 @@ setUnlockedAchievements(
       />
 
       <h3 className="text-2xl font-bold text-tcd-blue">
-        {result.reward_earned || 0}
+        {achievementReward}
       </h3>
 
       <p className="text-gray-500">
@@ -866,9 +905,7 @@ setUnlockedAchievements(
       />
 
       <h3 className="text-2xl font-bold text-tcd-blue">
-        {
-          unlockedAchievements.length
-        }
+        {achievementCount}
       </h3>
 
       <p className="text-gray-500">

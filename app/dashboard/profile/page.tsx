@@ -17,19 +17,39 @@ export default function ProfilePage() {
       lifetimeTcd: 0,
       currentStreak: 0,
       longestStreak: 0,
-      achievements: 0,
+     
     });
-    const [achievements, setAchievements] =
-  useState<any[]>([]);
+    
 const [bestRank, setBestRank] =
   useState<any>(null);
 
   const [certificates, setCertificates] =
   useState<any[]>([]);
-  
+  const [recentAchievements, setRecentAchievements] =
+  useState<any[]>([]);
+const [achievementCount, setAchievementCount] =
+  useState(0);
 
+const [achievementScore, setAchievementScore] =
+  useState(0);
 
+const [prestigeLevel, setPrestigeLevel] =
+  useState("Bronze");
 
+const [userXP, setUserXP] =
+  useState(0);
+
+const [userLevel, setUserLevel] =
+  useState(0);
+
+const [nextPrestige, setNextPrestige] =
+  useState("");
+
+const [prestigeProgress, setPrestigeProgress] =
+  useState(0);
+
+const [pointsRemaining, setPointsRemaining] =
+  useState(0);
 
 
 
@@ -60,7 +80,83 @@ const [bestRank, setBestRank] =
       .single();
 
     setProfile(profileData);
+setAchievementScore(
+  profileData?.achievement_score || 0
+);
 
+setPrestigeLevel(
+  profileData?.prestige_level || "Bronze"
+);
+const score =
+  profileData?.achievement_score || 0;
+
+let nextLevel = "";
+let progress = 0;
+let remaining = 0;
+
+if (score < 100) {
+
+  nextLevel = "Silver";
+
+  progress =
+    (score / 100) * 100;
+
+  remaining =
+    100 - score;
+
+}
+
+else if (score < 200) {
+
+  nextLevel = "Gold";
+
+  progress =
+    ((score - 100) / 100) * 100;
+
+  remaining =
+    200 - score;
+
+}
+
+else if (score < 300) {
+
+  nextLevel = "Platinum";
+
+  progress =
+    ((score - 200) / 100) * 100;
+
+  remaining =
+    300 - score;
+
+}
+
+else if (score < 5000) {
+
+  const currentBand =
+    Math.floor(score / 100) * 100;
+
+  nextLevel =
+    `${currentBand + 100}`;
+
+  progress =
+    ((score - currentBand) / 100) * 100;
+
+  remaining =
+    currentBand + 100 - score;
+
+}
+
+setNextPrestige(
+  nextLevel
+);
+
+setPrestigeProgress(
+  progress
+);
+
+setPointsRemaining(
+  remaining
+);
     // EXAMS
 
     const {
@@ -119,7 +215,26 @@ const [bestRank, setBestRank] =
         user.id
       )
       .single();
+const { data: levelData } =
+  await supabase
+    .from("user_levels")
+    .select(`
+      xp,
+      level
+    `)
+    .eq(
+      "user_id",
+      user.id
+    )
+    .single();
 
+setUserXP(
+  levelData?.xp || 0
+);
+
+setUserLevel(
+  levelData?.level || 0
+);
     // STREAK
 
     const {
@@ -135,27 +250,7 @@ const [bestRank, setBestRank] =
 
       
 
-    // ACHIEVEMENTS
-
-   const { data: achievementsData } =
-  await supabase
-    .from("user_achievements")
-    .select(`
-      *,
-      achievements(
-        title,
-        description,
-        rarity,
-        reward_tcd
-      )
-    `)
-    .eq("user_id", user.id);
-
-setAchievements(
-  achievementsData || []
-);
-
-// CERTIFICATES
+    // CERTIFICATES
 
 const { data: certificatesData } =
   await supabase
@@ -170,7 +265,54 @@ const { data: certificatesData } =
 setCertificates(
   certificatesData || []
 );
+const {
+  data: achievementData
+} =
+  await supabase
+    .from("user_achievements")
+    .select(`
+      unlocked_at,
+      achievements (
+        title,
+        reward_tcd,
+        rarity
+      )
+    `)
+    .eq(
+      "user_id",
+      user.id
+    )
+    .order(
+      "unlocked_at",
+      {
+        ascending: false
+      }
+    )
+    .limit(6);
 
+setRecentAchievements(
+  achievementData || []
+);
+const {
+  count: achievementsUnlocked
+} =
+  await supabase
+    .from("user_achievements")
+    .select(
+      "*",
+      {
+        count: "exact",
+        head: true,
+      }
+    )
+    .eq(
+      "user_id",
+      user.id
+    );
+
+setAchievementCount(
+  achievementsUnlocked || 0
+);
 // RANKING
 
 const { data: rankData } =
@@ -205,8 +347,7 @@ setStats({
   longestStreak:
     streak?.longest_streak || 0,
 
-  achievements:
-    achievementsData?.length || 0,
+  
 });
   }
 
@@ -311,7 +452,7 @@ setStats({
           <p className="text-white/80 text-lg">
 
             Track your learning journey,
-            achievements and growth.
+            performance and growth.
 
           </p>
 
@@ -477,7 +618,246 @@ setStats({
           </div>
 
         </div>
+{/* TCD JOURNEY */}
 
+<div
+  className="
+    bg-white
+
+    rounded-[28px]
+
+    border
+    border-gray-100
+
+    p-6
+
+    shadow-sm
+
+    mb-8
+  "
+>
+
+  <h2
+    className="
+      text-2xl
+      font-black
+
+      text-tcd-blue
+
+      mb-5
+    "
+  >
+    Your TCD Journey
+  </h2>
+
+  <div
+    className="
+      grid
+      grid-cols-2
+      md:grid-cols-5
+
+      gap-4
+    "
+  >
+<div className="mt-6">
+
+  <div
+    className="
+      flex
+      justify-between
+
+      mb-2
+    "
+  >
+
+    <span
+      className="
+        text-sm
+        text-gray-500
+      "
+    >
+      Progress to {nextPrestige}
+    </span>
+
+    <span
+      className="
+        text-sm
+        font-semibold
+
+        text-tcd-blue
+      "
+    >
+      {pointsRemaining}
+      {" "}
+      points remaining
+    </span>
+
+  </div>
+
+  <div
+    className="
+      h-3
+
+      bg-gray-100
+
+      rounded-full
+
+      overflow-hidden
+    "
+  >
+
+    <div
+      className="
+        h-full
+
+        bg-gradient-to-r
+
+        from-tcd-gold
+        to-tcd-blue
+
+        rounded-full
+      "
+      style={{
+        width:
+          `${prestigeProgress}%`
+      }}
+    />
+
+  </div>
+
+</div>
+    {/* PRESTIGE */}
+
+    <div>
+
+      <img
+        src="/icons/rank.svg"
+        alt="Prestige"
+        className="w-10 h-10 mb-2"
+      />
+
+      <p className="text-gray-500 text-sm">
+        Prestige
+      </p>
+
+      <h3
+        className="
+          font-black
+          text-tcd-blue
+        "
+      >
+        {prestigeLevel}
+      </h3>
+
+    </div>
+
+    {/* SCORE */}
+
+    <div>
+
+      <img
+        src="/icons/achievement-medal.svg"
+        alt="Achievement"
+        className="w-10 h-10 mb-2"
+      />
+
+      <p className="text-gray-500 text-sm">
+        Achievement Score
+      </p>
+
+      <h3
+        className="
+          font-black
+          text-purple-600
+        "
+      >
+        {achievementScore}
+      </h3>
+
+    </div>
+
+    {/* ACHIEVEMENTS */}
+
+    <div>
+
+      <img
+        src="/icons/mastery-star.svg"
+        alt="Achievements"
+        className="w-10 h-10 mb-2"
+      />
+
+      <p className="text-gray-500 text-sm">
+        Achievements
+      </p>
+
+      <h3
+        className="
+          font-black
+          text-tcd-blue
+        "
+      >
+        {achievementCount}
+      </h3>
+
+    </div>
+
+    {/* XP */}
+
+    <div>
+
+      <img
+        src="/icons/learning-journey.svg"
+        alt="XP"
+        className="w-10 h-10 mb-2"
+      />
+
+      <p className="text-gray-500 text-sm">
+        XP / Level
+      </p>
+
+      <h3
+        className="
+          font-black
+          text-green-600
+        "
+      >
+        {userXP} XP
+      </h3>
+
+      <p className="text-sm">
+        Level {userLevel}
+      </p>
+
+    </div>
+
+    {/* STREAK */}
+
+    <div>
+
+      <img
+        src="/icons/fire.svg"
+        alt="Streak"
+        className="w-10 h-10 mb-2"
+      />
+
+      <p className="text-gray-500 text-sm">
+        Study Streak
+      </p>
+
+      <h3
+        className="
+          font-black
+          text-orange-500
+        "
+      >
+        {stats.currentStreak}
+      </h3>
+
+    </div>
+
+  </div>
+
+</div>
         {/* STATS */}
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -545,7 +925,7 @@ setStats({
           </div>
 
         </div>
-<div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-8">
+<div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-8">
 
   <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm">
 
@@ -591,139 +971,87 @@ setStats({
 
   </div>
 
-  <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm">
 
-    <div className="text-2xl mb-3">
-      <img
-  src="/icons/achievement-medal.svg"
-  alt="Achievements"
-  className="w-10 h-10 mb-3"
-/>
-    </div>
 
-    <p className="text-gray-500">
-      Achievements
-    </p>
 
-    <h3 className="text-2xl font-black text-green-600 mt-3">
-      {
-        stats.achievements
+
+  </div>
+
+
+
+ {/* ACHIEVEMENT SHOWCASE */}
+
+<div className="mt-10">
+
+  <h2 className="text-2xl font-black text-tcd-blue mb-4">
+    Latest Achievements
+  </h2>
+<p className="text-gray-500 mb-4">
+  Your most recently unlocked milestones.
+</p>
+  <div
+    className="
+      grid
+      md:grid-cols-3
+      gap-3
+    "
+  >
+
+    {recentAchievements.map(
+  (item: any, index: number) => {
+
+        const achievement =
+          item.achievements;
+
+        return (
+
+          <div
+             key={`${item.unlocked_at}-${index}`}
+            className="
+              bg-white
+              rounded-[28px]
+              p-5
+              border
+              border-gray-100
+              shadow-sm
+            "
+          >
+
+            <img
+              src="/icons/achievement-medal.svg"
+              alt="Achievement"
+              className="w-10 h-10 mb-3"
+            />
+
+            <h3
+              className="
+                font-black
+                text-tcd-blue
+              "
+            >
+              {achievement?.title}
+            </h3>
+
+            <p
+              className="
+                text-sm
+                text-gray-500
+                mt-2
+              "
+            >
+              Reward: {achievement?.reward_tcd} TCD
+            </p>
+
+          </div>
+
+        );
       }
-    </h3>
+    )}
 
   </div>
 
 </div>
 
-  <div className="mt-10">
-
-  <h2 className="text-2xl font-black text-tcd-blue mb-4">
-    Achievements
-  </h2>
-
-  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-
-    {achievements.map((item) => (
-
-      <div
-        key={item.id}
-        className="
-          bg-white
-          rounded-[28px]
-          border
-          border-gray-100
-          shadow-sm
-          p-5
-          hover:shadow-md
-          transition-all
-        "
-      >
-
-        <div className="flex items-center gap-3 mb-4">
-
-  <img
-    src="/icons/achievement-medal.svg"
-    alt="Achievement"
-    className="w-12 h-12"
-  />
-
-  <div>
-
-    <h3 className="font-black text-lg text-tcd-blue">
-      {item.achievements?.title || "Achievement"}
-    </h3>
-
-    <span
-      className="
-        inline-block
-        mt-1
-        text-xs
-        px-2
-        py-1
-        rounded-full
-        bg-tcd-gold/10
-        text-tcd-gold
-      "
-    >
-      {item.achievements?.rarity || "Common"}
-    </span>
-
-  </div>
-
-</div>
-
-         
-
-        <div className="flex items-center gap-2">
-
-          <img
-            src="/icons/coin.svg"
-            alt="TCD"
-            className="w-5 h-5"
-          />
-
-          <span className="font-semibold">
-            {item.achievements?.reward_tcd} TCD
-          </span>
-
-        </div>
-
-      </div>
-
-    ))}
-
-  </div>
-
-</div>
-
- 
-<div className="mt-8">
-
-  <h2 className="text-2xl font-black text-tcd-blue mb-4">
-    Ranking
-  </h2>
-
-  <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm max-w-sm">
-
-    <img
-      src="/icons/rank.svg"
-      alt="Rank"
-      className="w-10 h-10 mb-3"
-    />
-
-    <p className="text-gray-500">
-      Best Rank
-    </p>
-
-    <h3 className="text-2xl font-black text-purple-600 mt-3">
-  {bestRank?.percentile
-    ? `#${bestRank.percentile}`
-    : "-"}
-</h3>
-
-  </div>
-
-</div>
 <div className="mt-10">
 
   <h2 className="text-2xl font-black text-tcd-blue mb-4">

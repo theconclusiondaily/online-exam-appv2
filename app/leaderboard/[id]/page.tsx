@@ -414,17 +414,11 @@ const [liveUpdate,
 
 </h2>
 
-                    <p className="text-gray-600 mt-2">
+                    <p className="text-gray-600 mt-2 font-semibold">
 
-                      User:
-                      {" "}
+  {attempt.users?.name || "Student"}
 
-                      {attempt.user_id.slice(
-                        0,
-                        8
-                      )}
-
-                    </p>
+</p>
 
                     {attempt.user_id ===
                       currentUserId && (

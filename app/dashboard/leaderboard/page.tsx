@@ -15,7 +15,41 @@ from "@/components/ui/tcd-icons";
 
 import TCDMotion
 from "@/components/ui/TCDMotion";
+function getPrestigeStyle(prestige: string) {
 
+  switch (prestige) {
+
+    case "Immortal":
+      return "bg-black text-yellow-400";
+
+    case "Mythic":
+      return "bg-red-100 text-red-700";
+
+    case "Elite":
+      return "bg-pink-100 text-pink-700";
+
+    case "Grandmaster":
+      return "bg-indigo-100 text-indigo-700";
+
+    case "Master":
+      return "bg-purple-100 text-purple-700";
+
+    case "Diamond":
+      return "bg-cyan-100 text-cyan-700";
+
+    case "Platinum":
+      return "bg-blue-100 text-blue-700";
+
+    case "Gold":
+      return "bg-yellow-100 text-yellow-700";
+
+    case "Silver":
+      return "bg-gray-100 text-gray-700";
+
+    default:
+      return "bg-amber-100 text-amber-700";
+  }
+}
 import {
   getExamStatus
 } from "@/lib/getExamStatus";
@@ -362,48 +396,111 @@ export default function LeaderboardPage() {
 
                   </div>
 
-                  <div className="mb-4">
+                  <div
+  className="
+    flex
+    items-center
 
-                    {index === 0
+    gap-2
 
-                      ? TCDIcons.achievement
+    mb-4
+  "
+>
 
-                      : TCDIcons.rank}
+  <div className="w-8 h-8">
 
-                  </div>
+    {index === 0
+
+      ? TCDIcons.achievement
+
+      : TCDIcons.rank}
+
+  </div>
+
+  {index === 0 && (
+
+    <div
+      className="
+        bg-tcd-gold/20
+
+        text-tcd-blue
+
+        px-3
+        py-1
+
+        rounded-full
+
+        text-xs
+        font-black
+      "
+    >
+
+      Champion
+
+    </div>
+
+  )}
+
+</div>
 
                   <h2
-                    className="
-                      text-xl
-                      font-black
+  className="
+    text-xl
+    font-black
 
-                      text-tcd-blue
+    text-tcd-blue
 
-                      mb-1
-                    "
-                  >
+    mb-2
+  "
+>
+  {user.name || "Student"}
+</h2>
 
-                    {
-                      user.email
-                        ?.split("@")[0]
-                    }
+<div
+  className={`
+    inline-flex
+    items-center
 
-                  </h2>
+    gap-2
 
-                  <p
-                    className="
-                      text-sm
-                      text-gray-600
+    px-3
+    py-1
 
-                      mb-4
-                    "
-                  >
+    rounded-full
 
-                    Level {user.level}
+    text-xs
+    font-bold
 
-                  </p>
+    mb-2
 
-                  <div
+    ${getPrestigeStyle(
+      user.prestige_level
+    )}
+  `}
+>
+
+  <div className="w-4 h-4">
+    {TCDIcons.rank}
+  </div>
+
+  {user.prestige_level} League
+
+</div>
+
+<p
+  className="
+    text-sm
+    text-gray-600
+
+    mb-4
+  "
+>
+  Level {user.level}
+</p>
+
+   
+
+                    <div
                     className="
                       flex
                       flex-wrap
@@ -483,6 +580,52 @@ export default function LeaderboardPage() {
                       </h3>
 
                     </div>
+                    <div
+  className="
+    bg-white/70
+
+    px-3
+    py-2
+
+    rounded-xl
+  "
+>
+
+  <div
+    className="
+      flex
+      items-center
+      gap-2
+
+      mb-1
+    "
+  >
+
+    <div className="w-4 h-4">
+      {TCDIcons.achievement}
+    </div>
+
+    <p
+      className="
+        text-xs
+        text-gray-500
+      "
+    >
+      Score
+    </p>
+
+  </div>
+
+  <h3
+    className="
+      font-black
+      text-tcd-blue
+    "
+  >
+    {user.achievement_score || 0}
+  </h3>
+
+</div>
 
                   </div>
 
@@ -594,10 +737,7 @@ export default function LeaderboardPage() {
                           "
                         >
 
-                          {
-                            user.email
-                              ?.split("@")[0]
-                          }
+                          {user.name || "Student"}
 
                         </h3>
 
@@ -611,7 +751,35 @@ export default function LeaderboardPage() {
                           Level {user.level}
 
                         </p>
+<div
+  className={`
+    inline-flex
+    items-center
+    gap-2
 
+    px-2
+    py-1
+
+    rounded-full
+
+    text-xs
+    font-bold
+
+    mt-1
+
+    ${getPrestigeStyle(
+      user.prestige_level
+    )}
+  `}
+>
+
+  <div className="w-4 h-4">
+    {TCDIcons.rank}
+  </div>
+
+  {user.prestige_level} League
+
+</div>
                       </div>
 
                     </div>
@@ -661,7 +829,38 @@ export default function LeaderboardPage() {
                         </h4>
 
                       </div>
+<div
+  className="
+    bg-[#F5F0FF]
 
+    px-4
+    py-2
+
+    rounded-xl
+  "
+>
+
+  <p
+    className="
+      text-xs
+      text-gray-500
+    "
+  >
+    Achievement Score
+  </p>
+
+  <h4
+    className="
+      font-black
+      text-purple-700
+    "
+  >
+
+    {user.achievement_score || 0}
+
+  </h4>
+
+</div>
                       <div
                         className="
                           bg-[#FFF9EC]

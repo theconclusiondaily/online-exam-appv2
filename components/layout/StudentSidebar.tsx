@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
 import TCDLogo from "@/components/brand/TCDLogo";
 import { supabase }
 from "@/lib/supabase/client";
+
 interface Props {
   mobile?: boolean;
 }
@@ -83,6 +84,8 @@ const [unreadCount, setUnreadCount] =
   useEffect(() => {
   loadUnreadCount();
 }, []);
+const [userName, setUserName] =
+  useState("");
 async function loadUnreadCount() {
 
   const {
@@ -92,7 +95,20 @@ async function loadUnreadCount() {
 
   const user =
     authData.user;
+if (user) {
 
+  const {
+    data: profile,
+  } = await supabase
+    .from("users")
+    .select("name")
+    .eq("id", user.id)
+    .single();
+
+  setUserName(
+    profile?.name || ""
+  );
+}
   if (!user) return;
 
   const { count } =
@@ -163,7 +179,85 @@ async function handleLogout() {
         <TCDLogo size={110} />
 
       </div>
+<div className="mb-6">
 
+  <Link
+    href="/dashboard/profile"
+    className="
+      flex
+      items-center
+      gap-3
+
+      p-4
+
+      rounded-2xl
+
+      bg-white
+
+      border
+      border-gray-100
+
+      shadow-sm
+
+      transition-all
+    "
+  >
+
+    <div
+      className="
+        w-10
+        h-10
+        rounded-full
+
+        bg-tcd-gold
+
+        text-tcd-blue
+
+        flex
+        items-center
+        justify-center
+
+        font-bold
+      "
+    >
+      {userName
+  ? userName
+      .charAt(0)
+      .toUpperCase()
+  : "U"}
+    </div>
+
+    <p className="font-semibold">
+  {userName.split(" ")[0]}
+</p>
+
+  </Link>
+
+  <button
+    onClick={handleLogout}
+    className="
+      w-full
+
+      mt-3
+
+      bg-red-500
+      hover:bg-red-600
+
+      text-white
+
+      py-3
+
+      rounded-xl
+
+      font-semibold
+
+      transition-all
+    "
+  >
+    Logout
+  </button>
+
+</div>
       {/* Navigation */}
 
       <div className="space-y-3 flex-1">
@@ -267,81 +361,7 @@ async function handleLogout() {
 
       {/* Footer */}
 
-      <div className="border-t border-gray-200 pt-6">
-
-        <Link
-        onClick={() => {
-  if (window.innerWidth < 1024) {
-    document
-      .querySelector("body")
-      ?.click();
-  }
-}}
-          href="/dashboard/profile"
-          className="
-  flex
-  items-center
-  gap-3
-
-  p-4
-
-  rounded-2xl
-
-  bg-white
-
-  border
-  border-gray-100
-
-  shadow-sm
-
-  transition-all
-"
-        >
-
-          <div
-            className="
-              w-10
-              h-10
-              rounded-full
-              bg-tcd-gold
-              text-tcd-blue
-              flex
-              items-center
-              justify-center
-              font-bold
-            "
-          >
-            R
-          </div>
-
-          <div>
-
-            <p className="font-semibold">
-              My Profile
-            </p>
-
-          </div>
-
-        </Link>
-
-        <button
-  onClick={handleLogout}
-          className="
-            w-full
-            mt-4
-            bg-red-500
-            hover:bg-red-600
-            text-white
-            py-3
-            rounded-xl
-            font-semibold
-            transition-all
-          "
-        >
-          Logout
-        </button>
-
-      </div>
+     
 
     </aside>
   );

@@ -82,14 +82,19 @@ return (
         <div className="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
 
           <Image
-            src="/logo.png"
-            alt="The Conclusion Daily"
-            width={90}
-            height={90}
-            priority
-          />
+  src="/logo.png"
+  alt="The Conclusion Daily"
+  width={90}
+  height={90}
+  className="
+    w-14
+    md:w-[90px]
+    h-auto
+  "
+  priority
+/>
 
-          <div className="flex gap-4">
+          <div className="flex gap-2 md:gap-4">
             <Link
               href="/login"
               className="
@@ -102,8 +107,10 @@ return (
 
   backdrop-blur-xl
 
-  px-8
-  py-4
+  px-3 md:px-8
+py-2 md:py-4
+
+text-sm md:text-base
 
   rounded-lg
 
@@ -131,8 +138,10 @@ return (
 
   text-black
 
-  px-10
-  py-4
+  px-4 md:px-10
+py-2 md:py-4
+
+text-sm md:text-base
 
   rounded-lg
 

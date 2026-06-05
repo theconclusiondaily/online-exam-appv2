@@ -130,8 +130,9 @@ export default function AchievementsPage() {
       )
 
       .select(`
-        percentage
-      `)
+  percentage,
+  accuracy
+`)
 
       .eq(
         "user_id",
@@ -185,22 +186,17 @@ export default function AchievementsPage() {
           90
       ).length || 0;
 
-   const avgAccuracy =
-  attempts?.length
-    ? Math.round(
-        attempts.reduce(
-          (sum, a) =>
-            sum + (a.percentage || 0),
-          0
-        ) / attempts.length
-      )
-    : 0;
+  const accuracyCount =
+  attempts?.filter(
+    (a) =>
+      a.accuracy >= 90
+  ).length || 0;
 
 setStats({
   exams: totalExams,
   perfect: perfectScores,
   high: highScores,
-  accuracy: avgAccuracy,
+  accuracy: accuracyCount,
 });
 
     setAchievements(

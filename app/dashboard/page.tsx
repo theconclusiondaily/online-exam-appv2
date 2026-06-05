@@ -133,7 +133,20 @@ const [
   achievements,
   setAchievements
 ] = useState<any[]>([]);
+const [
+  achievementScore,
+  setAchievementScore
+] = useState(0);
 
+const [
+  prestigeLevel,
+  setPrestigeLevel
+] = useState("Bronze");
+
+const [
+  achievementCount,
+  setAchievementCount
+] = useState(0);
 const nextMilestone =
   streakMilestones.find(
     m =>
@@ -581,6 +594,9 @@ const {
 setAchievements(
   achievementsData || []
 );
+setAchievementCount(
+  achievementsData?.length || 0
+);
 const {
   data: streakData,
   error: streakError,
@@ -633,12 +649,14 @@ setLoginStreak(
     const {
   data: profileData,
 } = await supabase
-        .from("users")
-        .select(`
-  institute_id,
-  role,
-  name
-`)
+  .from("users")
+  .select(`
+    institute_id,
+    role,
+    name,
+    achievement_score,
+    prestige_level
+  `)
 
         .eq(
           "email",
@@ -649,6 +667,13 @@ setLoginStreak(
 
       setProfile(
   profileData
+);
+setAchievementScore(
+  profileData?.achievement_score || 0
+);
+
+setPrestigeLevel(
+  profileData?.prestige_level || "Bronze"
 );
       // FETCH ATTEMPTS
 
@@ -1758,12 +1783,10 @@ const handleClaimReward =
                 "
               >
 
-                {
-                  topLeader?.email
-                    ?.split("@")[0] ||
+                
+                  {topLeader?.name || "Student"}
 
-                  "Top Performer"
-                }
+                 
 
               </p>
 
@@ -1961,6 +1984,137 @@ const handleClaimReward =
         }
       />
 
+    </div>
+
+  </div>
+
+</div>
+{/* PRESTIGE CARD */}
+
+<div
+  className="
+    bg-white
+    rounded-3xl
+    p-6
+    shadow-sm
+    border
+    border-gray-200
+    mb-4
+  "
+>
+
+  <div className="flex items-center gap-2 mb-5">
+
+    <div className="w-6 h-6">
+      {TCDIcons.mastery}
+    </div>
+
+    <h2 className="text-xl font-bold">
+      Your TCD Journey
+    </h2>
+
+  </div>
+
+  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+
+    {/* PRESTIGE */}
+
+    <div>
+      <p className="text-xs text-gray-500 mb-1">
+        Prestige
+      </p>
+
+      <div className="flex items-center gap-2">
+
+        <div className="w-5 h-5">
+          {TCDIcons.rank}
+        </div>
+
+        <p className="font-bold text-lg">
+          {prestigeLevel}
+        </p>
+
+      </div>
+    </div>
+
+    {/* SCORE */}
+
+    <div>
+      <p className="text-xs text-gray-500 mb-1">
+        Achievement Score
+      </p>
+
+      <div className="flex items-center gap-2">
+
+        <div className="w-5 h-5">
+          {TCDIcons.achievement}
+        </div>
+
+        <p className="font-bold text-lg">
+          {achievementScore}
+        </p>
+
+      </div>
+    </div>
+
+    {/* ACHIEVEMENTS */}
+
+    <div>
+      <p className="text-xs text-gray-500 mb-1">
+        Achievements
+      </p>
+
+      <div className="flex items-center gap-2">
+
+        <div className="w-5 h-5">
+          {TCDIcons.mastery}
+        </div>
+
+        <p className="font-bold text-lg">
+          {achievementCount}
+        </p>
+
+      </div>
+    </div>
+
+    {/* STREAK */}
+
+    <div>
+      <p className="text-xs text-gray-500 mb-1">
+        Study Streak
+      </p>
+
+      <div className="flex items-center gap-2">
+
+        <div className="w-5 h-5">
+          {TCDIcons.fire}
+        </div>
+
+        <p className="font-bold text-lg">
+          {streak?.current_streak || 0}
+        </p>
+
+      </div>
+    </div>
+
+    {/* TCD */}
+
+    <div>
+      <p className="text-xs text-gray-500 mb-1">
+        TCD Credits
+      </p>
+
+      <div className="flex items-center gap-2">
+
+        <div className="w-5 h-5">
+          {TCDIcons.coin}
+        </div>
+
+        <p className="font-bold text-lg">
+          {wallet?.current_balance || 0}
+        </p>
+
+      </div>
     </div>
 
   </div>

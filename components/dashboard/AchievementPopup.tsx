@@ -123,12 +123,12 @@ export default function AchievementPopup({
 
           <p
             className={`
-              text-xs
-              font-black
-              tracking-[4px]
-              uppercase
-
-              ${rarity.text}
+               className="
+    mt-4
+    text-3xl
+    font-black
+    text-tcd-blue
+  "
             `}
           >
             Achievement Unlocked
@@ -194,13 +194,13 @@ export default function AchievementPopup({
                 height={28}
               />
 
-              <p className="mt-2 text-sm text-white/80">
-                TCD Credits
-              </p>
+              <p className="text-gray-600">
+  TCD Credits
+</p>
 
-              <p className="font-black text-xl text-white">
-                +{achievement.reward_tcd}
-              </p>
+              <p className="font-black text-xl text-green-600">
+  +{achievement.reward_tcd}
+</p>
             </div>
 
             <div
@@ -223,13 +223,13 @@ export default function AchievementPopup({
                 height={28}
               />
 
-              <p className="mt-2 text-sm text-white/80">
-                Achievement
-              </p>
+              <p className="mt-2 text-sm text-gray-600">
+  Achievement
+</p>
 
-              <p className="font-black text-xl text-white">
-                Unlocked
-              </p>
+             <p className="font-black text-xl text-tcd-blue">
+  Unlocked
+</p>
             </div>
           </div>
 

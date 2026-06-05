@@ -5,13 +5,18 @@ import { supabase } from "@/lib/supabase/client";
 
 export default function useInactivityLogout() {
   useEffect(() => {
+    console.log(
+  "INACTIVITY HOOK LOADED"
+);
     const INACTIVITY_LIMIT =
       30 * 60 * 1000; // 30 minutes
 
     let timeout: NodeJS.Timeout;
 
   const logout = async () => {
-
+console.log(
+  "AUTO LOGOUT TRIGGERED"
+);
   if (
     window.location.pathname.includes(
       "/exam"
@@ -35,13 +40,14 @@ export default function useInactivityLogout() {
     };
 
     const events = [
-      "mousemove",
-      "mousedown",
-      "keydown",
-      "scroll",
-      "touchstart",
-      "click",
-    ];
+  "mousemove",
+  "mousedown",
+  "keydown",
+  "scroll",
+  "touchstart",
+  "touchmove",
+  "click",
+];
 
     events.forEach((event) =>
       window.addEventListener(

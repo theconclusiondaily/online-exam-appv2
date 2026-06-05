@@ -12,7 +12,7 @@ import {
 } from "next/navigation";
 
 import dynamic from "next/dynamic";
-
+import Draggable from "react-draggable";
 import { toast } from "sonner";
 
 import { supabase } from "@/lib/supabase/client";
@@ -85,10 +85,7 @@ const [cameraStream,
   const lastViolationRef =
     useRef(0);
 
-  const [
-  currentQuestionData,
-  setCurrentQuestionData
-] = useState<any>(null);
+  
 const [
   prefetchedQuestion,
   setPrefetchedQuestion
@@ -100,7 +97,10 @@ const [
   const [currentQuestion,
     setCurrentQuestion] =
     useState(0);
-
+const [
+  currentQuestionData,
+  setCurrentQuestionData
+] = useState<any>(null);
     
 useEffect(() => {
 
@@ -570,8 +570,6 @@ useEffect(() => {
 
   examStarted,
 
-  currentQuestion,
-
   violations,
 
   submitted,
@@ -981,10 +979,10 @@ console.log(
           Math.random() - 0.5
       ),
     };
-
-    setCurrentQuestionData(
+setCurrentQuestionData(
   shuffledQuestion
 );
+   
 
 console.log(
   "CURRENT QUESTION:",
@@ -1235,26 +1233,25 @@ if (
   questionResult.data
 ) {
 
-  const question =
-    questionResult.data;
+const question =
+  questionResult.data;
 
-  const shuffledQuestion = {
-    ...question,
+const shuffledQuestion = {
+  ...question,
 
-    shuffledOptions: [
-      question.option_a,
-      question.option_b,
-      question.option_c,
-      question.option_d,
-    ].sort(
-      () =>
-        Math.random() - 0.5
-    ),
-  };
+  shuffledOptions: [
+    question.option_a,
+    question.option_b,
+    question.option_c,
+    question.option_d,
+  ].sort(
+    () => Math.random() - 0.5
+  ),
+};
 
-  setCurrentQuestionData(
-    shuffledQuestion
-  );
+setCurrentQuestionData(
+  shuffledQuestion
+);
 
   setCurrentQuestion(0);
 }
@@ -1301,26 +1298,45 @@ localStorage.setItem(
     }
   );
 
- setAnswers(
+ const newValue =
+  answers[questionId] === answer
+    ? null
+    : answer;
+
+
+
+setAnswers(
   (prev: any) => ({
     ...prev,
 
-    [questionId]: answer,
-
-   
+    [questionId]: newValue,
   })
 );
-setAnsweredQuestions(
-  (prev) =>
-    prev.includes(
-      currentQuestion
-    )
-      ? prev
-      : [
-          ...prev,
-          currentQuestion,
-        ]
-);
+
+if (!newValue) {
+
+  setAnsweredQuestions(
+    prev =>
+      prev.filter(
+        q =>
+          q !== currentQuestion
+      )
+  );
+
+} else {
+
+  setAnsweredQuestions(
+    prev =>
+      prev.includes(
+        currentQuestion
+      )
+        ? prev
+        : [
+            ...prev,
+            currentQuestion,
+          ]
+  );
+}
   try {
     const response =
       await fetch(
@@ -1335,7 +1351,7 @@ setAnsweredQuestions(
             examId,
             questionId,
             selectedOption:
-              answer,
+              newValue,
             sessionToken,
           }),
         }
@@ -1528,7 +1544,10 @@ if (
   newRank < previousRank
 
 ) {
-
+console.log(
+  "ACTIVITY RESULT:",
+  result
+);
   await supabase
 
     .from("activity_feed")
@@ -1595,18 +1614,20 @@ await supabase
     title:
       `${studentName} completed an exam`,
 
-    description:
-      `Scored ${result.score}% in ${examInfo?.title}`,
+   
+      description:
+  `Scored ${result.percentage}% in ${examInfo?.title}`,
 
-    metadata: {
-
-      score: result.score,
-
-      exam_id: examId,
-
-      xp_earned: 50,
-
-    },
+   metadata: {
+  score: result.score,
+  percentage: result.percentage,
+  exam_id: examId,
+  xp_earned:
+    10 +
+    Math.floor(
+      result.percentage / 2
+    ),
+},
 
   });
     await supabase
@@ -1632,6 +1653,8 @@ await supabase
     "user_id",
     userId
   );
+
+  
 console.log(
   "RESULT SAVED"
 );
@@ -1657,9 +1680,7 @@ console.log(
     );
     
     setSubmitted(true);
-    setAlreadyAttempted(
-      true
-    );
+    
 if (
   streamRef.current
 ) {
@@ -1692,6 +1713,19 @@ console.log(
   "FULL RESULT:",
   result
 );
+sessionStorage.setItem(
+  `achievement-count-${result.attemptId}`,
+  String(
+    result.achievementCount || 0
+  )
+);
+
+sessionStorage.setItem(
+  `achievement-reward-${result.attemptId}`,
+  String(
+    result.achievementReward || 0
+  )
+);
     router.replace(
   `/exam-result/${result.attemptId}`
 );
@@ -1720,7 +1754,8 @@ console.log(
   }
 
  if (
-  alreadyAttempted
+  alreadyAttempted &&
+  !submitted
 ) {
 
   return (
@@ -1758,7 +1793,32 @@ console.log(
     </main>
   );
 }
+if (submitted) {
 
+  return (
+
+    <main className="min-h-screen flex items-center justify-center bg-gray-50">
+
+      <div className="text-center">
+
+        <h1 className="text-3xl font-black text-tcd-blue mb-4">
+
+          Exam Submitted Successfully
+
+        </h1>
+
+        <p className="text-gray-600">
+
+          Preparing your result...
+
+        </p>
+
+      </div>
+
+    </main>
+
+  );
+}
   if (
     !examStarted &&
     examInfo
@@ -1894,33 +1954,47 @@ console.log(
         </div>
 
       </div>
-<div
-  className="
-    fixed
+<Draggable>
 
-    top-[220px]
-    right-4
+  <div
+    className="
+      fixed
 
-    w-32
-    lg:w-40
+      top-[220px]
+      right-4
 
-    overflow-hidden
+      w-20
+      h-20
 
-    rounded-2xl
-    border border-white
-    shadow-xl
+      lg:w-40
+      lg:h-40
 
-    z-10
+      overflow-hidden
 
-    opacity-90
-  "
->
+      rounded-2xl
 
-  <StudentCameraStream
-    stream={cameraStream}
-  />
+      border
+      border-white
 
-</div>
+      shadow-2xl
+
+      bg-black
+
+      z-50
+
+      cursor-move
+
+      touch-none
+    "
+  >
+
+    <StudentCameraStream
+      stream={cameraStream}
+    />
+
+  </div>
+
+</Draggable>
 
       <div className="mt-2 mb-4 overflow-x-auto scrollbar-hide">
 
@@ -1940,7 +2014,7 @@ console.log(
   answers={answers}
   currentQuestion={currentQuestion}
   setCurrentQuestion={
-    fetchQuestionByIndex
+     setCurrentQuestion
   }
   visitedQuestions={
     visitedQuestions
@@ -1965,8 +2039,7 @@ console.log(
 
           <p className="text-xl leading-relaxed mb-10">
             {
-              currentQuestionData
-  ?.question
+              currentQuestionData?.question
             }
           </p>
 
@@ -1985,7 +2058,7 @@ console.log(
 
                     onClick={() =>
                       selectAnswer(
-                        currentQuestionData?.id,
+                        currentQuestionData.id,
                         option
                       )
                     }
@@ -1994,8 +2067,8 @@ console.log(
 
                       ${
                         answers[
-  currentQuestionData?.id
-] === option
+  currentQuestionData.id
+]=== option
 
                           ? "bg-tcd-blue text-white border-tcd-blue border-blue-600"
 
@@ -2019,42 +2092,45 @@ console.log(
       <div className="flex justify-between items-center mt-5">
 
         <button
-          onClick={() =>
-  fetchQuestionByIndex(
+ onClick={async () => {
+
+  const prevIndex =
     Math.max(
       currentQuestion - 1,
       0
-    )
-  )
-}
-          disabled={
-            currentQuestion === 0
-          }
+    );
 
-          className="
-  px-8
-  py-3
+  await fetchQuestionByIndex(
+    prevIndex
+  );
+}}
+  disabled={
+    currentQuestion === 0
+  }
+  className="
+    px-8
+    py-3
 
-  rounded-2xl
+    rounded-2xl
 
-  border
-  border-gray-300
+    border
+    border-gray-300
 
-  bg-white
+    bg-white
 
-  hover:bg-gray-100
+    hover:bg-gray-100
 
-  font-bold
+    font-bold
 
-  shadow-sm
+    shadow-sm
 
-  transition
+    transition
 
-  disabled:opacity-50
-"
-        >
-          Previous
-        </button>
+    disabled:opacity-50
+  "
+>
+  Previous
+</button>
   <button
   onClick={() => {
 
@@ -2101,41 +2177,21 @@ console.log(
   ) && (
 
     <button
-      onClick={
-  async () => {
+      onClick={async () => {
 
   const nextIndex =
     currentQuestion + 1;
-if (
-  nextIndex >=
-  totalQuestions
-) {
-  return;
-}
+
   if (
-    prefetchedQuestion
+    nextIndex >= totalQuestions
   ) {
-
-    setCurrentQuestionData(
-      prefetchedQuestion
-    );
-
-    setCurrentQuestion(
-      nextIndex
-    );
-
-    prefetchQuestion(
-      nextIndex + 1
-    );
-
-  } else {
-
-    await fetchQuestionByIndex(
-      nextIndex
-    );
+    return;
   }
-}
-}
+
+  await fetchQuestionByIndex(
+    nextIndex
+  );
+}}
 
       className="
         px-8

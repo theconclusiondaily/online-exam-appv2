@@ -99,7 +99,14 @@ console.log(
         console.log(error);
         return;
       }
-
+      console.log(
+  "LIVE EXAM:",
+  currentLiveExam
+);
+console.log(
+  "LEADERBOARD DATA:",
+  data
+);
       setLeaders(data || []);
 
       setLoading(false);
@@ -111,7 +118,9 @@ console.log(
     }
 
     loadLeaderboard();
-
+console.log(
+  "LEADERBOARD FUNCTION STARTED"
+);
     const interval =
       setInterval(() => {
         loadLeaderboard();
@@ -121,7 +130,9 @@ console.log(
       clearInterval(interval);
 
   }, []);
-
+console.log(
+  "FETCHING LEADERBOARD..."
+);
   if (loading) {
 
     return (
