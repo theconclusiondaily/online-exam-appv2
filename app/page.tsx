@@ -156,6 +156,13 @@ text-sm md:text-base
             >
               Sign Up
             </Link>
+
+            <Link
+  href="/demo"
+  className="border border-yellow-500 text-yellow-500 px-5 py-2 rounded-lg"
+>
+  Try Demo
+</Link>
           </div>
         </div>
       </nav>
