@@ -310,7 +310,7 @@ setStats({
 
         <p
           className="
-            text-gray-500
+            text-gray-700
             text-lg
             mb-4
           "
@@ -527,7 +527,7 @@ else if (
 
                     <p
                       className="
-                        text-gray-500
+                        text-gray-700
                         mb-3
                       "
                     >
@@ -658,7 +658,7 @@ else if (
 
                               ? "text-green-600"
 
-                              : "text-gray-500"
+                              : "text-gray-700"
                           }
                         `}
                       >
@@ -883,7 +883,7 @@ gap-4
 
             </div>
 
-            <p className="text-gray-500">
+            <p className="text-gray-700">
 
               Unlocked
 
@@ -934,7 +934,7 @@ gap-4
 
             </div>
 
-            <p className="text-gray-500">
+            <p className="text-gray-700">
 
               Total Achievements
 
@@ -985,7 +985,7 @@ gap-4
 
             </div>
 
-            <p className="text-gray-500">
+            <p className="text-gray-700">
 
               Completion
 

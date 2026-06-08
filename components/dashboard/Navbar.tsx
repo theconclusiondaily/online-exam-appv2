@@ -10,7 +10,7 @@ export default function Navbar() {
           Teacher Panel
         </h1>
 
-        <p className="text-gray-500 text-sm">
+        <p className="text-gray-700 text-sm">
           Welcome back
         </p>
       </div>

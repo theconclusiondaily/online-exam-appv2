@@ -785,7 +785,7 @@ await fetchExams();
 
             {questions.length === 0 && (
 
-              <div className="text-center text-gray-500 py-10">
+              <div className="text-center text-gray-700 py-10">
                 No questions found
               </div>
 

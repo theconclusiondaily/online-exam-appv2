@@ -184,7 +184,7 @@ export default function TeacherAnalyticsPage() {
 
           <div className="bg-white border rounded-3xl p-5">
 
-            <p className="text-gray-500 mb-2">
+            <p className="text-gray-700 mb-2">
 
               Total Students
 
@@ -200,7 +200,7 @@ export default function TeacherAnalyticsPage() {
 
           <div className="bg-white border rounded-3xl p-5">
 
-            <p className="text-gray-500 mb-2">
+            <p className="text-gray-700 mb-2">
 
               Exams Conducted
 
@@ -216,7 +216,7 @@ export default function TeacherAnalyticsPage() {
 
           <div className="bg-white border rounded-3xl p-5">
 
-            <p className="text-gray-500 mb-2">
+            <p className="text-gray-700 mb-2">
 
               Learning Journeys
 

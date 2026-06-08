@@ -65,7 +65,7 @@ export default function ProfileCard() {
 
           </h2>
 
-          <p className="text-gray-500">
+          <p className="text-gray-700">
 
             Level
             {" "}
@@ -91,7 +91,7 @@ export default function ProfileCard() {
 
         <div className="flex justify-between mb-2">
 
-          <span className="text-gray-500">
+          <span className="text-gray-700">
             XP Progress
           </span>
 

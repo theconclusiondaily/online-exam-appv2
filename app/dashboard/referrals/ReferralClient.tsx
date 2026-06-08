@@ -223,7 +223,7 @@ function shareTelegram() {
           <p
             className="
               text-sm
-              text-gray-500
+              text-gray-700
             "
           >
             Your Referral Code
@@ -333,7 +333,7 @@ function shareTelegram() {
             "
           >
 
-            <p className="text-gray-500">
+            <p className="text-gray-700">
               Total Referrals
             </p>
 
@@ -358,7 +358,7 @@ function shareTelegram() {
             "
           >
 
-            <p className="text-gray-500">
+            <p className="text-gray-700">
               Credits Earned
             </p>
 
@@ -380,7 +380,7 @@ function shareTelegram() {
   "
 >
 
-  <p className="text-gray-500">
+  <p className="text-gray-700">
     Referral Rank
   </p>
 
@@ -423,7 +423,7 @@ function shareTelegram() {
 
   {recentReferrals.length === 0 ? (
 
-    <p className="text-gray-500">
+    <p className="text-gray-700">
       No referrals yet.
     </p>
 
@@ -498,7 +498,7 @@ function shareTelegram() {
 
             <p
               className="
-                text-gray-500
+                text-gray-700
               "
             >
               No rewards yet.
@@ -538,7 +538,7 @@ function shareTelegram() {
                       <p
                         className="
                           text-sm
-                          text-gray-500
+                          text-gray-700
                         "
                       >
                         {

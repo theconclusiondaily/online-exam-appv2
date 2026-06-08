@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useState,
   ReactNode,
 } from "react";
 
@@ -21,9 +22,17 @@ export default function SessionGuard({
 
   const router =
     useRouter();
-
+const [
+  isReady,
+  setIsReady,
+] = useState(false);
   useEffect(() => {
+const timer =
+  setTimeout(() => {
 
+    setIsReady(true);
+
+  }, 3000);
     let interval:
       NodeJS.Timeout;
 
@@ -47,36 +56,37 @@ export default function SessionGuard({
     }
 
     async function checkSession() {
+if (!isReady) {
 
+  return;
+
+}
       try {
 
         const {
-          data: {
-            user,
-          },
-        } =
-          await supabase.auth.getUser();
+  data: { session },
+} =
+  await supabase.auth.getSession();
 
-        if (!user) {
+if (!session) {
 
-          router.replace(
-            "/login"
-          );
+  return;
 
-          return;
-        }
+}
 
         const localToken =
           localStorage.getItem(
             "tcd_session_token"
           );
 
-        if (!localToken) {
+      if (!localToken) {
 
-          await forceLogout();
+  console.warn(
+    "Session token missing"
+  );
 
-          return;
-        }
+  return;
+}
 
         const {
           data: activeSession,
@@ -89,20 +99,22 @@ export default function SessionGuard({
             "session_token"
           )
           .eq(
-            "user_id",
-            user.id
-          )
+  "user_id",
+  session.user.id
+)
           .single();
 
-        if (
-          error ||
-          !activeSession
-        ) {
+       if (
+  error ||
+  !activeSession
+) {
 
-          await forceLogout();
+  console.warn(
+    "Active session not found"
+  );
 
-          return;
-        }
+  return;
+}
 
         if (
           activeSession.session_token !==
@@ -157,16 +169,20 @@ export default function SessionGuard({
       }
     );
 
-    return () => {
+   return () => {
 
-      clearInterval(
-        interval
-      );
+  clearTimeout(
+    timer
+  );
 
-      authListener
-        .subscription
-        .unsubscribe();
-    };
+  clearInterval(
+    interval
+  );
+
+  authListener
+    .subscription
+    .unsubscribe();
+};
 
   }, [router]);
 

@@ -302,7 +302,7 @@ export default function TCDWalletPage() {
 
             <p
               className="
-                text-white/70
+                text-gray-700
 
                 max-w-2xl
               "
@@ -399,7 +399,7 @@ export default function TCDWalletPage() {
 
                 </h3>
 
-                <p className="text-gray-500 text-sm">
+                <p className="text-gray-700 text-sm">
 
                   Current Balance
 
@@ -497,7 +497,7 @@ export default function TCDWalletPage() {
 
                 </h3>
 
-                <p className="text-gray-500 text-sm">
+                <p className="text-gray-700 text-sm">
 
                   Lifetime Earned
 
@@ -595,7 +595,7 @@ export default function TCDWalletPage() {
 
                 </h3>
 
-                <p className="text-gray-500 text-sm">
+                <p className="text-gray-700 text-sm">
 
                   Achievements
 
@@ -726,7 +726,7 @@ export default function TCDWalletPage() {
 
                     <p
                       className="
-                        text-gray-500
+                        text-gray-700
 
                         mt-2
                       "
@@ -812,7 +812,7 @@ export default function TCDWalletPage() {
                                 <p
                                   className="
                                     text-xs
-                                    text-gray-500
+                                    text-gray-700
                                   "
                                 >
 
@@ -1002,7 +1002,7 @@ export default function TCDWalletPage() {
                               <p
                                 className="
                                   text-xs
-                                  text-gray-500
+                                  text-gray-700
 
                                   mt-1
                                 "
@@ -1034,7 +1034,7 @@ export default function TCDWalletPage() {
                               <p
                                 className="
                                   text-xs
-                                  text-gray-500
+                                  text-gray-700
                                 "
                               >
 

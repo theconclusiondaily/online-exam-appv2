@@ -55,7 +55,13 @@ const [endTime,
   const [instituteId,
     setInstituteId] =
     useState("");
+const [examScope,
+  setExamScope] =
+  useState("INSTITUTE");
 
+const [challengeType,
+  setChallengeType] =
+  useState("DAILY");
   useEffect(() => {
 
     async function checkAuth() {
@@ -116,7 +122,11 @@ const [endTime,
   title,
 
   description,
+exam_scope:
+  examScope,
 
+challenge_type:
+  challengeType,
   duration:
     Number(duration),
 
@@ -127,7 +137,12 @@ const [endTime,
     userId,
 
   institute_id:
-    instituteId,
+
+  examScope === "PUBLIC"
+
+    ? "da8cf1d6-9415-42f0-8336-c8586885cd6a"
+
+    : instituteId,
 
   status: "draft",
 
@@ -223,7 +238,336 @@ cancelled: false,
             }
             className="border p-4 rounded-xl w-full h-32"
           />
+<div>
 
+  <p className="font-semibold mb-3">
+    Exam Type
+  </p>
+
+  <div className="grid md:grid-cols-2 gap-4">
+
+    <button
+      type="button"
+      onClick={() =>
+        setExamScope(
+          "PUBLIC"
+        )
+      }
+      className={`
+        border-2
+        rounded-2xl
+        p-4
+
+        ${
+          examScope === "PUBLIC"
+            ? "border-tcd-gold bg-[#FFF8EA]"
+            : "border-gray-200"
+        }
+      `}
+    >
+
+      <div className="flex items-center gap-3">
+
+        <img
+          src="/icons/mastery-star.svg"
+          alt="Arena"
+          className="w-10 h-10"
+        />
+
+        <div className="text-left">
+
+          <p className="font-bold text-tcd-blue">
+            TCD Arena Exam
+          </p>
+
+          <p className="text-sm text-gray-700">
+            Public Competitive Challenge
+          </p>
+
+        </div>
+
+      </div>
+
+    </button>
+
+    <button
+      type="button"
+      onClick={() =>
+        setExamScope(
+          "INSTITUTE"
+        )
+      }
+      className={`
+        border-2
+        rounded-2xl
+        p-4
+
+        ${
+          examScope === "INSTITUTE"
+            ? "border-tcd-gold bg-[#FFF8EA]"
+            : "border-gray-200"
+        }
+      `}
+    >
+
+      <div className="flex items-center gap-3">
+
+        <img
+          src="/icons/banyan-tree.svg"
+          alt="Institute"
+          className="w-10 h-10"
+        />
+
+        <div className="text-left">
+
+          <p className="font-bold text-tcd-blue">
+            Institute Exam
+          </p>
+
+          <p className="text-sm text-gray-700">
+            Institute Restricted Exam
+          </p>
+
+        </div>
+
+      </div>
+
+    </button>
+
+  </div>
+
+</div>
+{examScope === "PUBLIC" && (
+
+  <div>
+
+    <p className="font-semibold mb-3">
+      Challenge Type
+    </p>
+
+    <div className="grid md:grid-cols-2 gap-4">
+
+      {/* Daily */}
+
+      <button
+        type="button"
+        onClick={() =>
+          setChallengeType("DAILY")
+        }
+        className={`
+          border-2 rounded-2xl p-4
+
+          ${
+            challengeType === "DAILY"
+              ? "border-tcd-gold bg-[#FFF8EA]"
+              : "border-gray-200"
+          }
+        `}
+      >
+
+        <div className="flex items-center gap-3">
+
+          <img
+            src="/icons/precision-target.svg"
+            alt="Daily Challenge"
+            className="w-10 h-10"
+          />
+
+          <div className="text-left">
+
+            <p className="font-bold text-tcd-blue">
+              Daily Challenge
+            </p>
+
+            <p className="text-sm text-gray-700">
+              Daily competitive challenge
+            </p>
+
+          </div>
+
+        </div>
+
+      </button>
+
+      {/* Weekly */}
+
+      <button
+        type="button"
+        onClick={() =>
+          setChallengeType("WEEKLY")
+        }
+        className={`
+          border-2 rounded-2xl p-4
+
+          ${
+            challengeType === "WEEKLY"
+              ? "border-tcd-gold bg-[#FFF8EA]"
+              : "border-gray-200"
+          }
+        `}
+      >
+
+        <div className="flex items-center gap-3">
+
+          <img
+            src="/icons/mastery-star.svg"
+            alt="Weekly Challenge"
+            className="w-10 h-10"
+          />
+
+          <div className="text-left">
+
+            <p className="font-bold text-tcd-blue">
+              Weekly Challenge
+            </p>
+
+            <p className="text-sm text-gray-700">
+              Weekly arena competition
+            </p>
+
+          </div>
+
+        </div>
+
+      </button>
+
+      {/* Monthly */}
+
+      <button
+        type="button"
+        onClick={() =>
+          setChallengeType("MONTHLY")
+        }
+        className={`
+          border-2 rounded-2xl p-4
+
+          ${
+            challengeType === "MONTHLY"
+              ? "border-tcd-gold bg-[#FFF8EA]"
+              : "border-gray-200"
+          }
+        `}
+      >
+
+        <div className="flex items-center gap-3">
+
+          <img
+            src="/icons/achievement-medal.svg"
+            alt="Monthly Challenge"
+            className="w-10 h-10"
+          />
+
+          <div className="text-left">
+
+            <p className="font-bold text-tcd-blue">
+              Monthly Challenge
+            </p>
+
+            <p className="text-sm text-gray-700">
+              Long-format competitive challenge
+            </p>
+
+          </div>
+
+        </div>
+
+      </button>
+
+      {/* Current Affairs */}
+
+      <button
+        type="button"
+        onClick={() =>
+          setChallengeType(
+            "CURRENT_AFFAIRS"
+          )
+        }
+        className={`
+          border-2 rounded-2xl p-4
+
+          ${
+            challengeType ===
+            "CURRENT_AFFAIRS"
+              ? "border-tcd-gold bg-[#FFF8EA]"
+              : "border-gray-200"
+          }
+        `}
+      >
+
+        <div className="flex items-center gap-3">
+
+          <img
+            src="/icons/learning-journey.svg"
+            alt="Current Affairs"
+            className="w-10 h-10"
+          />
+
+          <div className="text-left">
+
+            <p className="font-bold text-tcd-blue">
+              Current Affairs Challenge
+            </p>
+
+            <p className="text-sm text-gray-700">
+              News & current events challenge
+            </p>
+
+          </div>
+
+        </div>
+
+      </button>
+
+      {/* Scholarship */}
+
+      <button
+        type="button"
+        onClick={() =>
+          setChallengeType(
+            "SCHOLARSHIP"
+          )
+        }
+        className={`
+          border-2 rounded-2xl p-4
+
+          ${
+            challengeType ===
+            "SCHOLARSHIP"
+              ? "border-tcd-gold bg-[#FFF8EA]"
+              : "border-gray-200"
+          }
+        `}
+      >
+
+        <div className="flex items-center gap-3">
+
+          <img
+            src="/icons/rank.svg"
+            alt="Scholarship"
+            className="w-10 h-10"
+          />
+
+          <div className="text-left">
+
+            <p className="font-bold text-tcd-blue">
+              Scholarship Challenge
+            </p>
+
+            <p className="text-sm text-gray-700">
+              Scholarship-oriented competition
+            </p>
+
+          </div>
+
+        </div>
+
+      </button>
+
+    </div>
+
+  </div>
+
+)}
           <input
             type="number"
             placeholder="Duration (Minutes)"

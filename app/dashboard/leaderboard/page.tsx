@@ -523,7 +523,7 @@ export default function LeaderboardPage() {
                       <p
                         className="
                           text-xs
-                          text-gray-500
+                          text-gray-700
                         "
                       >
 
@@ -558,7 +558,7 @@ export default function LeaderboardPage() {
                       <p
                         className="
                           text-xs
-                          text-gray-500
+                          text-gray-700
                         "
                       >
 
@@ -608,7 +608,7 @@ export default function LeaderboardPage() {
     <p
       className="
         text-xs
-        text-gray-500
+        text-gray-700
       "
     >
       Score
@@ -744,7 +744,7 @@ export default function LeaderboardPage() {
                         <p
                           className="
                             text-sm
-                            text-gray-500
+                            text-gray-700
                           "
                         >
 
@@ -809,7 +809,7 @@ export default function LeaderboardPage() {
                         <p
                           className="
                             text-xs
-                            text-gray-500
+                            text-gray-700
                           "
                         >
 
@@ -843,7 +843,7 @@ export default function LeaderboardPage() {
   <p
     className="
       text-xs
-      text-gray-500
+      text-gray-700
     "
   >
     Achievement Score
@@ -875,7 +875,7 @@ export default function LeaderboardPage() {
                         <p
                           className="
                             text-xs
-                            text-gray-500
+                            text-gray-700
                           "
                         >
 

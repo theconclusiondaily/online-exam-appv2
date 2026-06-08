@@ -285,7 +285,7 @@ const completedStudents =
 
           </h2>
 
-          <p className="text-gray-500">
+          <p className="text-gray-700">
 
             Students will appear here during live exams
 
@@ -361,7 +361,7 @@ const completedStudents =
 
                   </h2>
 
-                  <p className="text-gray-500 mt-1">
+                  <p className="text-gray-700 mt-1">
 
                     User ID:
                     {" "}

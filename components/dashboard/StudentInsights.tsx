@@ -243,7 +243,7 @@ export default function StudentInsights({
 
         </h2>
 
-        <p className="text-gray-500 text-sm">
+        <p className="text-gray-700 text-sm">
 
           Compact overview of
           your competitive
@@ -361,7 +361,7 @@ export default function StudentInsights({
 
               <p
                 className="
-                  text-gray-500
+                  text-gray-700
                   text-sm
 
                   mb-1

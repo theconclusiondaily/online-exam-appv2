@@ -243,7 +243,7 @@ useEffect(() => {
             <p
               className="
                 text-sm
-                text-gray-500
+                text-gray-700
 
                 mt-1
               "
@@ -352,7 +352,7 @@ useEffect(() => {
 
             <p
               className="
-                text-gray-500
+                text-gray-700
 
                 mt-2
 
@@ -447,7 +447,7 @@ useEffect(() => {
                         <p
                           className="
                             text-xs
-                            text-gray-500
+                            text-gray-700
 
                             whitespace-nowrap
                           "

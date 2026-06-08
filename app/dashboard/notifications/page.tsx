@@ -180,7 +180,7 @@ export default function NotificationsPage() {
 
                   <p
                     className="
-                      text-gray-500
+                      text-gray-700
                     "
                   >
                     {notification.message}
@@ -189,7 +189,7 @@ export default function NotificationsPage() {
                   <p
                     className="
                       text-xs
-                      text-gray-400
+                      text-gray-300
                       mt-3
                     "
                   >

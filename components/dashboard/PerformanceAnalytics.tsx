@@ -290,7 +290,7 @@ export default function PerformanceAnalytics({
 
         </h2>
 
-        <p className="text-gray-500 text-sm">
+        <p className="text-gray-700 text-sm">
 
           Advanced analytics for
           your competitive growth.
@@ -395,7 +395,7 @@ export default function PerformanceAnalytics({
 
                   <p
                     className="
-                      text-gray-500
+                      text-gray-700
                       text-sm
 
                       mt-1

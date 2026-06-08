@@ -219,30 +219,42 @@ if (!existingProfile) {
   const {
     error: profileError,
   } = await supabase
-    .from("users")
-    .insert({
+  .from("users")
+  .insert({
 
-      id: user.id,
+    id: user.id,
 
-      email: user.email,
+    email: user.email,
 
-      role: "student",
+    role: "student",
 
-      name:
-        user.user_metadata?.name ??
-        "Student",
+    name:
+      user.user_metadata?.name ??
+      "Student",
 
-      mobile:
-        user.user_metadata?.mobile,
+    mobile:
+      user.user_metadata?.mobile,
 
-      dob:
-        user.user_metadata?.dob,
+    dob:
+      user.user_metadata?.dob,
 
-      referral_code:
-        generatedCode,
+    referral_code:
+      generatedCode,
 
-    });
+    institute_id:
+      "da8cf1d6-9415-42f0-8336-c8586885cd6a"
 
+  });
+await supabase
+  .from("user_institutes")
+  .upsert({
+
+    user_id: user.id,
+
+    institute_id:
+      "da8cf1d6-9415-42f0-8336-c8586885cd6a"
+
+  });
   if (profileError) {
 
     console.error(
@@ -500,11 +512,11 @@ lg:grid-cols-[1.2fr_0.8fr]
 The Conclusion Daily
           </h1>
 
-          <p className="text-gray-500 mt-2">
+          <p className="text-gray-700 mt-2">
 
           Hope • Faith • Excellence
           </p>
-<p className="text-gray-500 mt-2">
+<p className="text-gray-700 mt-2">
   Continue your journey of
 learning, achievement and
 growth.
@@ -541,7 +553,7 @@ border-[#D8E1F0]
 bg-[#F7F9FC]
 
 text-[#274472]
-placeholder:text-gray-500
+placeholder:text-gray-700
 
 transition-all
 
@@ -582,7 +594,7 @@ focus:ring-[#D4AF37]/30
       bg-[#F7F9FC]
 
       text-[#274472]
-      placeholder:text-gray-500
+      placeholder:text-gray-700
 
       focus:outline-none
       focus:border-[#D4AF37]
@@ -605,7 +617,7 @@ focus:ring-[#D4AF37]/30
 
       -translate-y-1/2
 
-      text-gray-500
+      text-gray-700
     "
   >
     {
@@ -712,7 +724,7 @@ transition-all
 
         <div className="mt-8 text-center">
 
-          <p className="text-gray-500">
+          <p className="text-gray-700">
 
             Don't have an account?
 

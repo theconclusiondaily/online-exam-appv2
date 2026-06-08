@@ -271,7 +271,7 @@ export default function AdminLeaderboardsPage() {
 
               <div className="bg-white border rounded-3xl p-6 shadow-sm">
 
-                <p className="text-gray-500 mb-2">
+                <p className="text-gray-700 mb-2">
 
                   Participants
 
@@ -287,7 +287,7 @@ export default function AdminLeaderboardsPage() {
 
               <div className="bg-white border rounded-3xl p-6 shadow-sm">
 
-                <p className="text-gray-500 mb-2">
+                <p className="text-gray-700 mb-2">
 
                   Average Score
 
@@ -390,7 +390,7 @@ export default function AdminLeaderboardsPage() {
 
                           </h2>
 
-                          <p className="text-gray-500 mt-1">
+                          <p className="text-gray-700 mt-1">
 
                             Score
 
@@ -407,7 +407,7 @@ export default function AdminLeaderboardsPage() {
 
                 {attempts.length === 0 && (
 
-                  <div className="bg-white border rounded-3xl p-6 text-center text-gray-500 shadow-sm">
+                  <div className="bg-white border rounded-3xl p-6 text-center text-gray-700 shadow-sm">
 
                     No learning journeys recorded yet
 

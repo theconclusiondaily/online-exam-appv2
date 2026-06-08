@@ -99,7 +99,7 @@ export default function AchievementCard({
           <p
             className="
               text-sm
-              text-gray-500
+              text-gray-700
             "
           >
 
@@ -134,7 +134,7 @@ export default function AchievementCard({
           className="
             mt-1
 
-            text-gray-500
+            text-gray-700
             text-sm
           "
         >
@@ -170,7 +170,7 @@ export default function AchievementCard({
 
               <p
                 className="
-                  text-gray-500
+                  text-gray-700
                   text-sm
                 "
               >
@@ -291,7 +291,7 @@ export default function AchievementCard({
       rarity.label ===
       "Common"
 
-        ? "text-gray-500"
+        ? "text-gray-700"
 
         : "text-white/80"
     }

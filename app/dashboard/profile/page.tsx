@@ -521,7 +521,7 @@ setStats({
 
             </h2>
 
-            <p className="text-gray-500 mt-2">
+            <p className="text-gray-700 mt-2">
 
               Conclusion Daily Learner
 
@@ -564,7 +564,7 @@ setStats({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 
                 <div>
-                  <p className="text-gray-500">
+                  <p className="text-gray-700">
                     Full Name
                   </p>
                   <p className="font-semibold">
@@ -576,7 +576,7 @@ setStats({
                 </div>
 
                 <div>
-                  <p className="text-gray-500">
+                  <p className="text-gray-700">
                     Email
                   </p>
                   <p className="font-semibold">
@@ -588,7 +588,7 @@ setStats({
                 </div>
 
                 <div>
-                  <p className="text-gray-500">
+                  <p className="text-gray-700">
                     Mobile
                   </p>
                   <p className="font-semibold">
@@ -600,7 +600,7 @@ setStats({
                 </div>
 
                 <div>
-                  <p className="text-gray-500">
+                  <p className="text-gray-700">
                     Date of Birth
                   </p>
                   <p className="font-semibold">
@@ -673,7 +673,7 @@ setStats({
     <span
       className="
         text-sm
-        text-gray-500
+        text-gray-700
       "
     >
       Progress to {nextPrestige}
@@ -736,7 +736,7 @@ setStats({
         className="w-10 h-10 mb-2"
       />
 
-      <p className="text-gray-500 text-sm">
+      <p className="text-gray-700 text-sm">
         Prestige
       </p>
 
@@ -761,7 +761,7 @@ setStats({
         className="w-10 h-10 mb-2"
       />
 
-      <p className="text-gray-500 text-sm">
+      <p className="text-gray-700 text-sm">
         Achievement Score
       </p>
 
@@ -786,7 +786,7 @@ setStats({
         className="w-10 h-10 mb-2"
       />
 
-      <p className="text-gray-500 text-sm">
+      <p className="text-gray-700 text-sm">
         Achievements
       </p>
 
@@ -811,7 +811,7 @@ setStats({
         className="w-10 h-10 mb-2"
       />
 
-      <p className="text-gray-500 text-sm">
+      <p className="text-gray-700 text-sm">
         XP / Level
       </p>
 
@@ -840,7 +840,7 @@ setStats({
         className="w-10 h-10 mb-2"
       />
 
-      <p className="text-gray-500 text-sm">
+      <p className="text-gray-700 text-sm">
         Study Streak
       </p>
 
@@ -868,7 +868,7 @@ setStats({
   alt="Exams"
   className="w-10 h-10 mb-3"
 /></div>
-            <p className="text-gray-500">
+            <p className="text-gray-700">
               Exams Attempted
             </p>
             <h3 className="text-2xl font-black text-tcd-blue mt-3">
@@ -884,7 +884,7 @@ setStats({
   alt="Accuracy"
   className="w-10 h-10 mb-3"
 /></div>
-            <p className="text-gray-500">
+            <p className="text-gray-700">
               Accuracy
             </p>
             <h3 className="text-2xl font-black text-tcd-gold mt-3">
@@ -898,7 +898,7 @@ setStats({
   alt="Highest Score"
   className="w-10 h-10 mb-3"
 /></div>
-            <p className="text-gray-500">
+            <p className="text-gray-700">
               Highest Score
             </p>
             <h3 className="text-2xl font-black text-green-600 mt-3">
@@ -914,7 +914,7 @@ setStats({
   alt="TCD Credits"
   className="w-10 h-10 mb-3"
 /></div>
-            <p className="text-gray-500">
+            <p className="text-gray-700">
               Lifetime TCD
             </p>
             <h3 className="text-2xl font-black text-tcd-blue mt-3">
@@ -937,7 +937,7 @@ setStats({
 />
     </div>
 
-    <p className="text-gray-500">
+    <p className="text-gray-700">
       Current Streak
     </p>
 
@@ -959,7 +959,7 @@ setStats({
 />
     </div>
 
-    <p className="text-gray-500">
+    <p className="text-gray-700">
       Longest Streak
     </p>
 
@@ -986,7 +986,7 @@ setStats({
   <h2 className="text-2xl font-black text-tcd-blue mb-4">
     Latest Achievements
   </h2>
-<p className="text-gray-500 mb-4">
+<p className="text-gray-700 mb-4">
   Your most recently unlocked milestones.
 </p>
   <div
@@ -1035,7 +1035,7 @@ setStats({
             <p
               className="
                 text-sm
-                text-gray-500
+                text-gray-700
                 mt-2
               "
             >
@@ -1054,9 +1054,19 @@ setStats({
 
 <div className="mt-10">
 
-  <h2 className="text-2xl font-black text-tcd-blue mb-4">
-    Certificates
+  <div className="flex items-center gap-3 mb-4">
+
+  <img
+    src="/icons/achievement-medal.svg"
+    alt="Certificates"
+    className="w-10 h-10"
+  />
+
+  <h2 className="text-2xl font-black text-tcd-blue">
+    My Certificates
   </h2>
+
+</div>
 
   <div className="bg-white rounded-[28px] p-5">
 
@@ -1064,17 +1074,64 @@ setStats({
       <p>No certificates earned yet.</p>
     ) : (
       certificates.map((cert) => (
-        <div
-          key={cert.id}
-          className="border-b py-3"
-        >
-          <div>
-            {cert.certificate_type}
-          </div>
+       <div
+  key={cert.id}
+  className="
+    bg-[#F8F9FB]
+    rounded-2xl
+    p-4
+    mb-3
+    border
+    border-gray-100
+  "
+>
+          <div className="flex justify-between items-center">
 
-          <div className="text-sm text-gray-500">
-            {cert.certificate_number}
-          </div>
+  <div>
+
+    <p className="font-black text-tcd-blue">
+
+      Certificate of
+      {` `}
+      {cert.certificate_type}
+
+    </p>
+
+    <p className="text-sm text-gray-700">
+
+      {cert.certificate_number}
+
+    </p>
+
+    <p className="text-sm text-gray-700 mt-1">
+
+      Issued:
+      {` `}
+      {new Date(
+        cert.issued_at
+      ).toLocaleDateString("en-IN")}
+
+    </p>
+
+  </div>
+
+  <Link
+    href={`/certificate/${cert.id}`}
+    className="
+      bg-tcd-blue
+      text-white
+      px-4
+      py-2
+      rounded-xl
+      font-semibold
+    "
+  >
+
+    View
+
+  </Link>
+
+</div>
         </div>
       ))
     )}

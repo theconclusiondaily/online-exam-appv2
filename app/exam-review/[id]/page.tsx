@@ -355,7 +355,7 @@ setQuestions(
               No Review Data Found
             </h2>
 
-            <p className="text-gray-500">
+            <p className="text-gray-700">
               No answers were found
               for this exam.
             </p>

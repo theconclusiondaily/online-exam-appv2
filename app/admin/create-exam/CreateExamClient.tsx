@@ -48,7 +48,10 @@ const editId =
 const [duration,
   setDuration] =
   useState("30");
-
+const [examScope, setExamScope] =
+  useState<"INSTITUTE" | "PUBLIC">(
+    "INSTITUTE"
+  );
   const [startTime,
     setStartTime] =
     useState("");
@@ -181,6 +184,11 @@ setDuration(
   String(
     data.duration || 30
   )
+  
+);
+
+setExamScope(
+  data.exam_scope || "INSTITUTE"
 );
 
 if (data.start_time) {
@@ -296,10 +304,13 @@ if (exam?.published) {
   title,
   description,
 
+  exam_scope:
+    examScope,
+
   reward_pool:
     Number(rewardPool),
 
-  institute_id:
+    institute_id:
     selectedInstitute,
 
   duration:
@@ -335,18 +346,17 @@ end_time:
   institute_id:
     selectedInstitute,
 
+  exam_scope:
+    examScope,
+
   duration:
     Number(duration),
 
- start_time:
-  new Date(
-    startTime
-  ).toISOString(),
+  start_time:
+    new Date(startTime).toISOString(),
 
-end_time:
-  new Date(
-    endTime
-  ).toISOString(),
+  end_time:
+    new Date(endTime).toISOString(),
 
   published: false,
 
@@ -570,6 +580,66 @@ router.push("/admin");
               </select>
 
             </div>
+
+            <div>
+
+  <p className="font-semibold mb-3">
+    Exam Scope
+  </p>
+
+  <div className="grid grid-cols-2 gap-3">
+
+    <button
+      type="button"
+      onClick={() =>
+        setExamScope("INSTITUTE")
+      }
+      className={`border rounded-2xl p-4 flex items-center gap-3 ${
+        examScope === "INSTITUTE"
+          ? "border-tcd-gold bg-tcd-gold/10"
+          : ""
+      }`}
+    >
+
+      <img
+        src="/icons/shield.svg"
+        alt="Institute"
+        className="w-6 h-6"
+      />
+
+      <span>
+        Institute Exam
+      </span>
+
+    </button>
+
+    <button
+      type="button"
+      onClick={() =>
+        setExamScope("PUBLIC")
+      }
+      className={`border rounded-2xl p-4 flex items-center gap-3 ${
+        examScope === "PUBLIC"
+          ? "border-tcd-gold bg-tcd-gold/10"
+          : ""
+      }`}
+    >
+
+      <img
+        src="/icons/achievement-medal.svg"
+        alt="Public"
+        className="w-6 h-6"
+      />
+
+      <span>
+        TCD Arena
+      </span>
+
+    </button>
+
+  </div>
+
+</div>
             {/* DURATION */}
 
 <div>

@@ -112,7 +112,7 @@ const [
 
         <p
           className="
-            text-gray-500
+            text-gray-700
 
             mb-6
           "
@@ -152,7 +152,7 @@ const [
       bg-[#F7F9FC]
 
       text-[#274472]
-      placeholder:text-gray-500
+      placeholder:text-gray-700
 
       focus:outline-none
       focus:border-[#D4AF37]
@@ -176,7 +176,7 @@ const [
 
       -translate-y-1/2
 
-      text-gray-500
+      text-gray-700
     "
   >
 

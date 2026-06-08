@@ -167,7 +167,7 @@ export default function ExamIntroPage() {
           }}
           className="
             text-center
-            text-white/70
+            text-gray-700
             text-lg
             md:text-2xl
             mt-6

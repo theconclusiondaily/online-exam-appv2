@@ -543,7 +543,30 @@ await updateWeeklyChallenges(
     }
   );
 }
+const certificateNumber =
+  `TCD-${Date.now()}`;
 
+await supabase
+  .from("certificates")
+  .insert({
+
+    user_id:
+      user.id,
+
+    exam_id:
+      examId,
+
+    certificate_type:
+      "PARTICIPATION",
+
+    certificate_number:
+      certificateNumber,
+
+    issued_at:
+      new Date()
+        .toISOString(),
+
+  });
 const xpEarned =
   10 +
   Math.floor(

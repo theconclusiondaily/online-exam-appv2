@@ -92,7 +92,7 @@ py-2
       ${
         pathname.startsWith(item.href)
           ? "text-tcd-blue"
-          : "text-gray-500"
+          : "text-gray-700"
       }
     `}
   >

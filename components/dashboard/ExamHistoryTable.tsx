@@ -53,7 +53,7 @@ export default function ExamHistoryTable({
 
         </h2>
 
-        <p className="text-gray-500 text-sm">
+        <p className="text-gray-700 text-sm">
 
           Review your exam
           performance, rankings
@@ -105,7 +105,7 @@ export default function ExamHistoryTable({
 
           </h3>
 
-          <p className="text-gray-500">
+          <p className="text-gray-700">
 
             Attempt your first
             exam to begin building
@@ -240,7 +240,7 @@ export default function ExamHistoryTable({
 
                           <p
                             className="
-                              text-gray-500
+                              text-gray-700
                               text-sm
                             "
                           >
@@ -351,7 +351,7 @@ export default function ExamHistoryTable({
                           <p
                             className="
                               text-xs
-                              text-gray-500
+                              text-gray-700
 
                               mb-1
                             "
@@ -394,7 +394,7 @@ export default function ExamHistoryTable({
                           <p
                             className="
                               text-xs
-                              text-gray-500
+                              text-gray-700
 
                               mb-1
                             "
@@ -439,7 +439,7 @@ export default function ExamHistoryTable({
                           <p
                             className="
                               text-xs
-                              text-gray-500
+                              text-gray-700
 
                               mb-1
                             "

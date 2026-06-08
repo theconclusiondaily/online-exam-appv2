@@ -1,5 +1,12 @@
 @import "tailwindcss";
+html {
+  color-scheme: light;
+  
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 
+  text-rendering: optimizeLegibility;
+}
 :root {
 
   /* Conclusion Daily Brand */
@@ -240,5 +247,28 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
+}
+@media print {
+
+  @page {
+    size: A3 portrait;
+    margin: 8mm;
+  }
+* {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  button {
+    display: none !important;
+  }
+
 }
 

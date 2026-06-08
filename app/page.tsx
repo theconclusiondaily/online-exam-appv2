@@ -403,7 +403,7 @@ Achieve Greatness.
       width={24}
       height={24}
     />
-    <span className="text-gray-200 font-medium">
+    <span className="text-gray-700 font-medium">
       National Rankings
     </span>
   </div>
@@ -415,7 +415,7 @@ Achieve Greatness.
       width={24}
       height={24}
     />
-    <span className="text-gray-200 font-medium">
+    <span className="text-gray-700 font-medium">
       Live Exams
     </span>
   </div>
@@ -427,7 +427,7 @@ Achieve Greatness.
       width={24}
       height={24}
     />
-    <span className="text-gray-200 font-medium">
+    <span className="text-gray-700 font-medium">
       TCD Credits
     </span>
   </div>
@@ -439,7 +439,7 @@ Achieve Greatness.
       width={24}
       height={24}
     />
-    <span className="text-gray-200 font-medium">
+    <span className="text-gray-700 font-medium">
       Achievements
     </span>
   </div>
@@ -483,7 +483,7 @@ Achieve Greatness.
             {feature.title}
           </h3>
 
-          <p className="mt-2 text-sm text-gray-400">
+          <p className="mt-2 text-sm text-gray-300">
             {feature.description}
           </p>
 
@@ -581,7 +581,7 @@ Achieve Greatness.
               height={50}
             />
 
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-700 text-sm">
               © 2026 The Conclusion Daily. All rights reserved.
             </p>
           </div>

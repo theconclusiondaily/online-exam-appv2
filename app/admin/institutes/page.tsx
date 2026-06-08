@@ -24,6 +24,8 @@ export default function InstitutesPage() {
     setCity] =
     useState("");
 
+    const [joinCode, setJoinCode] = useState("");
+
   async function fetchInstitutes() {
 
     const {
@@ -71,10 +73,7 @@ export default function InstitutesPage() {
 
   async function createInstitute() {
 
-    if (
-      !name ||
-      !city
-    ) {
+    if (!name || !city || !joinCode){
 
       alert(
         "Fill all fields"
@@ -90,17 +89,13 @@ export default function InstitutesPage() {
 
       .from("institutes")
 
-      .insert([
-        {
-          name:
-            name.trim(),
-
-          city:
-            city.trim(),
-
-          active: true,
-        },
-      ])
+     .insert([
+  {
+    name: name.trim(),
+    city: city.trim(),
+    join_code: joinCode.trim().toUpperCase(),
+  },
+])
 
       .select();
 
@@ -128,8 +123,8 @@ export default function InstitutesPage() {
     );
 
     setName("");
-
-    setCity("");
+setCity("");
+setJoinCode("");
 
     await fetchInstitutes();
   }
@@ -196,7 +191,18 @@ export default function InstitutesPage() {
                 }
                 className="w-full border rounded-2xl p-4"
               />
-
+<input
+  type="text"
+  placeholder="Join Code (ABC2026)"
+  value={joinCode}
+  onChange={(e) =>
+    setJoinCode(
+      e.target.value.toUpperCase()
+    )
+  }
+  
+  className="w-full border rounded-2xl p-4"
+/>
               <button
                 onClick={
                   createInstitute
@@ -250,32 +256,14 @@ export default function InstitutesPage() {
 
                       </h3>
 
-                      <div
-                        className={`
-                          inline-block px-4 py-2 rounded-xl font-bold text-sm mb-3
-
-                          ${
-                            institute.active
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
-                          }
-                        `}
-                      >
-
-                        {
-                          institute.active
-                            ? "ACTIVE"
-                            : "DISABLED"
-                        }
-
-                      </div>
-
-                      <p className="text-gray-600 mb-2">
+                                            <p className="text-gray-600 mb-2">
 
                         {institute.city}
 
                       </p>
-
+ <p className="text-sm font-semibold text-blue-600 mb-2">
+    Join Code: {institute.join_code}
+  </p>
                       <div className="flex flex-wrap gap-2 text-sm text-gray-600">
 
                         <div>
@@ -323,49 +311,7 @@ export default function InstitutesPage() {
 
                     <div>
 
-                      <button
-
-                        onClick={async () => {
-
-                          await supabase
-
-                            .from("institutes")
-
-                            .update({
-
-                              active:
-                                !institute.active,
-
-                            })
-
-                            .eq(
-                              "id",
-                              institute.id
-                            );
-
-                          fetchInstitutes();
-                        }}
-
-                        className={`
-                          px-4 py-3 rounded-xl text-white font-bold
-
-                          ${
-                            institute.active
-                              ? "bg-red-500"
-                              : "bg-green-600"
-                          }
-                        `}
-                      >
-
-                        {
-                          institute.active
-                            ? "Disable"
-                            : "Enable"
-                        }
-
-                      </button>
-
-                    </div>
+                                         </div>
 
                   </div>
 
@@ -374,7 +320,7 @@ export default function InstitutesPage() {
 
               {institutes.length === 0 && (
 
-                <div className="text-center text-gray-500 py-10">
+                <div className="text-center text-gray-700 py-10">
 
                   No institutes yet
 

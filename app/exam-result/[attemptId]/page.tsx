@@ -62,10 +62,7 @@ const [
   achievementReward,
   setAchievementReward
 ] = useState(0);
-const [
-  showAchievementPopup,
-  setShowAchievementPopup
-] = useState(false);
+
 
   useEffect(() => {
     async function loadResult() {
@@ -177,13 +174,9 @@ if (
   achievements.length > 0
 ) {
 
-  setUnlockedAchievements(
-    achievements
-  );
-
-  setShowAchievementPopup(
-    true
-  );
+   setUnlockedAchievements(
+  achievements || []
+);
 }
 
         const {
@@ -634,136 +627,9 @@ console.log(
  return (
   <main className="min-h-screen bg-gray-50 p-5">
     <div className="max-w-5xl mx-auto">
-{
-  showAchievementPopup && (
 
-    <div
-      className="
-        fixed
-        inset-0
-        bg-black/50
-        flex
-        items-center
-        justify-center
-        z-50
-      "
-    >
 
-      <div
-        className="
-          bg-white
-          p-5
-          rounded-3xl
-          shadow-xl
-          max-w-md
-          w-full
-        "
-      >
-
-        <div className="text-center">
-
-          <div className="text-2xl mb-4">
-            🏆
-          </div>
-
-          <h2 className="text-3xl font-bold mb-4">
-
-            Achievement Unlocked
-
-          </h2>
-
-          {unlockedAchievements.map(
-            (item) => (
-
-              <div
-                key={item.id}
-                className="
-                  border
-                  rounded-xl
-                  p-4
-                  mb-3
-                "
-              >
-
-                <div className="font-bold">
-
-                  {
-                    item
-                    .achievements
-                    ?.title
-                  }
-
-                </div>
-
-                <div className="text-green-600 font-bold">
-
-                  +
-                  {
-                    item
-                    .achievements
-                    ?.reward_tcd
-                  }
-                  {" "}
-                  TCD
-
-                </div>
-
-              </div>
-            )
-          )}
-
-          <button
-            onClick={async () => {
-
-              await supabase
-
-                .from(
-                  "user_achievements"
-                )
-
-                .update({
-                  seen: true,
-                })
-
-                .in(
-                  "id",
-                  unlockedAchievements.map(
-                    (
-                      a
-                    ) => a.id
-                  )
-                );
-
-              setShowAchievementPopup(
-  false
-);
-
-setUnlockedAchievements(
-  []
-);
-            }}
-            className="
-              mt-4
-              bg-blue-600
-              text-white
-              px-6
-              py-3
-              rounded-xl
-            "
-          >
-
-            Awesome!
-
-          </button>
-
-        </div>
-
-      </div>
-
-    </div>
-  )
-}
-      {/* Header */}
+    {/* Header */}
 
       <div className="text-center mb-10">
 
@@ -775,7 +641,7 @@ setUnlockedAchievements(
           Exam Result
         </h1>
 
-        <p className="text-gray-500 text-lg">
+        <p className="text-gray-700 text-lg">
           Your performance summary
         </p>
 
@@ -891,7 +757,7 @@ setUnlockedAchievements(
         {achievementReward}
       </h3>
 
-      <p className="text-gray-500">
+      <p className="text-gray-700">
         Credits Earned
       </p>
 
@@ -908,7 +774,7 @@ setUnlockedAchievements(
         {achievementCount}
       </h3>
 
-      <p className="text-gray-500">
+      <p className="text-gray-700">
         Achievements
       </p>
 
@@ -925,7 +791,7 @@ setUnlockedAchievements(
         {rank || "-"}
       </h3>
 
-      <p className="text-gray-500">
+      <p className="text-gray-700">
         Current Rank
       </p>
 
@@ -976,7 +842,7 @@ setUnlockedAchievements(
 
         <div className="bg-green-50 rounded-2xl p-6 text-center shadow-sm">
 
-          <p className="text-gray-500">
+          <p className="text-gray-700">
             Correct
           </p>
 
@@ -988,7 +854,7 @@ setUnlockedAchievements(
 
         <div className="bg-red-50 rounded-2xl p-6 text-center shadow-sm">
 
-          <p className="text-gray-500">
+          <p className="text-gray-700">
             Wrong
           </p>
 
@@ -1000,7 +866,7 @@ setUnlockedAchievements(
 
         <div className="bg-yellow-50 rounded-2xl p-6 text-center shadow-sm">
 
-          <p className="text-gray-500">
+          <p className="text-gray-700">
             Accuracy
           </p>
 
@@ -1012,7 +878,7 @@ setUnlockedAchievements(
 
         <div className="bg-purple-50 rounded-2xl p-6 text-center shadow-sm">
 
-          <p className="text-gray-500">
+          <p className="text-gray-700">
             Violations
           </p>
 
@@ -1037,7 +903,7 @@ p-4">
 
     <div className="text-center">
 
-      <p className="text-gray-500 mb-2">
+      <p className="text-gray-700 mb-2">
 
         Current Rank
 
@@ -1050,10 +916,72 @@ p-4">
       </h3>
 
     </div>
+{
+  unlockedAchievements.length > 0 && (
 
+    <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm mt-6">
+
+      <h2 className="text-2xl font-black text-tcd-blue mb-4">
+        🎉 New Achievements Unlocked
+      </h2>
+
+      <div className="space-y-4">
+
+        {unlockedAchievements.map(
+          (achievement) => (
+
+            <div
+              key={achievement.id}
+              className="
+                flex
+                items-center
+                gap-4
+                bg-gradient-to-r
+                from-yellow-50
+                to-white
+                border
+                border-yellow-200
+                rounded-2xl
+                p-4
+              "
+            >
+
+              <img
+                src="/icons/achievement-medal.svg"
+                alt="Achievement"
+                className="w-12 h-12"
+              />
+
+              <div>
+
+                <h3 className="font-black text-tcd-blue">
+                  {achievement.title}
+                </h3>
+
+                <p className="text-sm text-gray-600">
+                  {achievement.description}
+                </p>
+
+                <p className="font-bold text-yellow-600 mt-1">
+                  +{achievement.reward_tcd} TCD Credits
+                </p>
+
+              </div>
+
+            </div>
+
+          )
+        )}
+
+      </div>
+
+    </div>
+
+  )
+}
     <div className="text-center">
 
-      <p className="text-gray-500 mb-2">
+      <p className="text-gray-700 mb-2">
 
         Percentile
 
@@ -1089,7 +1017,7 @@ p-4">
 
       </h3>
 
-      <p className="text-gray-500">
+      <p className="text-gray-700">
 
         Congratulations! You currently hold the highest score in this exam.
 
@@ -1103,7 +1031,7 @@ p-4">
 
       <div className="text-center">
 
-        <p className="text-gray-500">
+        <p className="text-gray-700">
 
           Score Gap
 
@@ -1115,7 +1043,7 @@ p-4">
 
         </h3>
 
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-700">
 
           marks behind topper
 
@@ -1125,7 +1053,7 @@ p-4">
 
       <div className="text-center">
 
-        <p className="text-gray-500">
+        <p className="text-gray-700">
 
           Topper Accuracy
 
@@ -1141,7 +1069,7 @@ p-4">
 
       <div className="text-center">
 
-        <p className="text-gray-500">
+        <p className="text-gray-700">
 
           Time Difference
 
@@ -1179,7 +1107,7 @@ p-4">
 
     <div className="flex justify-between border-b pb-3">
 
-      <span className="text-gray-500">
+      <span className="text-gray-700">
         Total Questions
       </span>
 
@@ -1191,7 +1119,7 @@ p-4">
 
     <div className="flex justify-between border-b pb-3">
 
-      <span className="text-gray-500">
+      <span className="text-gray-700">
         Submitted At
       </span>
 
@@ -1207,7 +1135,7 @@ p-4">
 
     <div className="flex justify-between border-b pb-3">
 
-      <span className="text-gray-500">
+      <span className="text-gray-700">
         Time Taken
       </span>
 
@@ -1219,7 +1147,7 @@ p-4">
 
     <div className="flex justify-between">
 
-      <span className="text-gray-500">
+      <span className="text-gray-700">
         Status
       </span>
 

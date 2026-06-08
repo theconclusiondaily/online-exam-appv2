@@ -210,7 +210,7 @@ export default function ActiveOpportunitiesPage() {
 
             </h2>
 
-            <p className="text-gray-500">
+            <p className="text-gray-700">
 
               Preparing live exams...
 
@@ -417,7 +417,7 @@ export default function ActiveOpportunitiesPage() {
 
               </div>
 
-              <p className="text-white/70">
+              <p className="text-gray-700">
 
                 Live Opportunities
 
@@ -457,7 +457,7 @@ export default function ActiveOpportunitiesPage() {
 
               </div>
 
-              <p className="text-white/70">
+              <p className="text-gray-700">
 
                 Competitive Growth
 
@@ -497,7 +497,7 @@ export default function ActiveOpportunitiesPage() {
 
               </div>
 
-              <p className="text-white/70">
+              <p className="text-gray-700">
 
                 Reward Ecosystem
 
@@ -589,7 +589,7 @@ export default function ActiveOpportunitiesPage() {
 
             </h2>
 
-            <p className="text-gray-500 text-lg">
+            <p className="text-gray-700 text-lg">
 
               Participate in live
               exams, challenge

@@ -67,7 +67,7 @@ export default function LoginStreakCard({
           <p
             className="
               text-sm
-              text-gray-500
+              text-gray-700
             "
           >
             Every login is a step toward excellence
@@ -95,7 +95,7 @@ export default function LoginStreakCard({
         <div
           className="
             mt-2
-            text-gray-500
+            text-gray-700
           "
         >
           Current Login Streak

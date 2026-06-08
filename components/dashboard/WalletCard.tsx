@@ -69,7 +69,7 @@ export default function WalletCard({
           <p
             className="
               text-sm
-              text-gray-500
+              text-gray-700
             "
           >
             Your earned credits
@@ -97,7 +97,7 @@ export default function WalletCard({
         <div
           className="
             mt-2
-            text-gray-500
+            text-gray-700
           "
         >
           Current Balance

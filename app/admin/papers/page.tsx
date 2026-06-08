@@ -362,7 +362,7 @@ export default function PapersPage() {
                     mins
                   </p>
 
-                  <p className="text-gray-500">
+                  <p className="text-gray-700">
                     Duration
                   </p>
 
@@ -370,7 +370,7 @@ export default function PapersPage() {
                     {paper.total_questions}
                   </p>
 
-                  <p className="text-gray-500">
+                  <p className="text-gray-700">
                     Questions
                   </p>
 

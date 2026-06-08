@@ -413,7 +413,7 @@ if (
 
           <div className="bg-white rounded-2xl shadow-sm p-6 border">
 
-            <p className="text-gray-500 text-sm mb-2">
+            <p className="text-gray-700 text-sm mb-2">
 
               Total Users
 
@@ -429,7 +429,7 @@ if (
 
           <div className="bg-white rounded-2xl shadow-sm p-6 border">
 
-            <p className="text-gray-500 text-sm mb-2">
+            <p className="text-gray-700 text-sm mb-2">
 
               Total Exams
 
@@ -445,7 +445,7 @@ if (
 
           <div className="bg-white rounded-2xl shadow-sm p-6 border">
 
-            <p className="text-gray-500 text-sm mb-2">
+            <p className="text-gray-700 text-sm mb-2">
 
               Total Questions
 
@@ -461,7 +461,7 @@ if (
 
           <div className="bg-white rounded-2xl shadow-sm p-6 border">
 
-            <p className="text-gray-500 text-sm mb-2">
+            <p className="text-gray-700 text-sm mb-2">
 
              Learning Journeys
 
@@ -477,7 +477,7 @@ if (
 
           <div className="bg-white rounded-2xl shadow-sm p-6 border">
 
-            <p className="text-gray-500 text-sm mb-2">
+            <p className="text-gray-700 text-sm mb-2">
 
               Live Exams
 
@@ -568,7 +568,7 @@ if (
 
             </p>
 
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-gray-700 mt-2">
 
               Institute:
               {" "}
@@ -712,7 +712,7 @@ if (
 
     {recentExams.length === 0 && (
 
-      <div className="text-center text-gray-500 py-10">
+      <div className="text-center text-gray-700 py-10">
 
         No exams found
 

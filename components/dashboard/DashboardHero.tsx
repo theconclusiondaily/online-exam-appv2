@@ -183,7 +183,7 @@ const xpProgress =
 
       text-sm
 
-      text-white/70
+      text-gray-200
 
       mb-2
     "
@@ -245,7 +245,7 @@ const xpProgress =
 
       text-sm
 
-      text-white/70
+      text-gray-200
     "
   >
 
@@ -469,7 +469,7 @@ function HeroMetric({
 
         <p
           className="
-            text-white/70
+            text-gray-200
 
             text-sm
 

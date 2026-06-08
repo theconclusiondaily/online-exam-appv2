@@ -65,6 +65,10 @@ const [
   profile,
   setProfile
 ] = useState<any>(null);
+const [
+  institutes,
+  setInstitutes
+] = useState<any[]>([]);
   const [attempts,
     setAttempts] =
     useState<any[]>([]);
@@ -668,6 +672,31 @@ setLoginStreak(
       setProfile(
   profileData
 );
+const {
+  data: memberships,
+} = await supabase
+  .from("user_institutes")
+  .select(`
+    institute_id,
+    institutes (
+      id,
+      name,
+      city
+    )
+  `)
+  .eq(
+    "user_id",
+    user.id
+  );
+
+setInstitutes(
+  memberships || []
+);
+
+const instituteIds =
+  memberships?.map(
+    (m) => m.institute_id
+  ) || [];
 setAchievementScore(
   profileData?.achievement_score || 0
 );
@@ -1156,95 +1185,98 @@ setRanks(rankMap);
 
 
       }
-
-
       if (!profileData?.institute_id) {
-
   setLiveExams([]);
   setUpcomingExams([]);
-
-} else {
+setLoading(false);
+} 
+else {
       // CURRENT TIME
 
     
 
       // LIVE EXAMS
 
-      const now =
-  new Date()
-    .toISOString();
+  const now =
+  new Date().toISOString();
 
 const {
-  data: liveData,
+  data: allLiveExams,
 } = await supabase
-
   .from("exams")
-
   .select("*")
+  .eq("published", true)
+  .lte("start_time", now)
+  .gte("end_time", now)
+  .order("start_time", {
+    ascending: true,
+  });
 
-  .eq(
-    "institute_id",
-    profileData?.institute_id
-  )
-
-  .eq(
-    "published",
-    true
-  )
-
-  .lte(
-    "start_time",
-    now
-  )
-
-  .gte(
-    "end_time",
-    now
-  )
-
-  .order(
-    "start_time",
-    {
-      ascending: true,
-    }
+const filteredLiveExams =
+  (allLiveExams || []).filter(
+    (exam) =>
+      exam.exam_scope === "PUBLIC" ||
+      instituteIds.includes(
+        exam.institute_id
+      )
+  );
+const arenaLiveExams =
+  filteredLiveExams.filter(
+    (exam: any) =>
+      exam.exam_scope ===
+      "PUBLIC"
   );
 
-
-      if (liveData) {
-
-        setLiveExams(
-          liveData
-        );
-      }
+const instituteLiveExams =
+  filteredLiveExams.filter(
+    (exam: any) =>
+      exam.exam_scope ===
+      "INSTITUTE"
+  );
+setLiveExams(
+  filteredLiveExams
+);
 
       // UPCOMING EXAMS
 
       const {
-        data: upcomingData,
-      } = await supabase
-        .from("exams")
-        .select("*")
-        .eq(
-          "institute_id",
-          profileData?.institute_id
-        )
-        .gt(
-          "start_time",
-          now
-        )
-        .order("start_time", {
-          ascending: true,
-        });
+  data: allUpcomingExams,
+} = await supabase
+  .from("exams")
+  .select("*")
+  .eq("published", true)
+  .gt("start_time", now)
+  .order("start_time", {
+    ascending: true,
+  });
 
-      if (upcomingData) {
+const filteredUpcomingExams =
+  (allUpcomingExams || []).filter(
+    (exam) =>
+      exam.exam_scope === "PUBLIC" ||
+      instituteIds.includes(
+        exam.institute_id
+      )
+  );
+const arenaUpcomingExams =
+  filteredUpcomingExams.filter(
+    (exam: any) =>
+      exam.exam_scope ===
+      "PUBLIC"
+  );
 
-        setUpcomingExams(
-          upcomingData
-        );
-      }
-    }
+const instituteUpcomingExams =
+  filteredUpcomingExams.filter(
+    (exam: any) =>
+      exam.exam_scope ===
+      "INSTITUTE"
+  );
+setUpcomingExams(
+  filteredUpcomingExams
+);
       setLoading(false);
     }
+  }
  useEffect(() => {
 
   async function init() {
@@ -1610,7 +1642,7 @@ const handleClaimReward =
 
       text-xs
 
-      text-white/70
+      text-gray-700
 
       mb-2
     "
@@ -1703,7 +1735,7 @@ const handleClaimReward =
 
         <p
           className="
-            text-white/70
+            text-gray-700
 
             text-sm
           "
@@ -2020,7 +2052,7 @@ const handleClaimReward =
     {/* PRESTIGE */}
 
     <div>
-      <p className="text-xs text-gray-500 mb-1">
+      <p className="text-xs text-gray-700 mb-1">
         Prestige
       </p>
 
@@ -2040,7 +2072,7 @@ const handleClaimReward =
     {/* SCORE */}
 
     <div>
-      <p className="text-xs text-gray-500 mb-1">
+      <p className="text-xs text-gray-700 mb-1">
         Achievement Score
       </p>
 
@@ -2060,7 +2092,7 @@ const handleClaimReward =
     {/* ACHIEVEMENTS */}
 
     <div>
-      <p className="text-xs text-gray-500 mb-1">
+      <p className="text-xs text-gray-700 mb-1">
         Achievements
       </p>
 
@@ -2080,7 +2112,7 @@ const handleClaimReward =
     {/* STREAK */}
 
     <div>
-      <p className="text-xs text-gray-500 mb-1">
+      <p className="text-xs text-gray-700 mb-1">
         Study Streak
       </p>
 
@@ -2100,7 +2132,7 @@ const handleClaimReward =
     {/* TCD */}
 
     <div>
-      <p className="text-xs text-gray-500 mb-1">
+      <p className="text-xs text-gray-700 mb-1">
         TCD Credits
       </p>
 
@@ -2120,6 +2152,164 @@ const handleClaimReward =
   </div>
 
 </div>
+  <div className="bg-white rounded-3xl border border-gray-100 shadow-lg p-6 mb-6">
+
+  <div className="flex items-center gap-3 mb-5">
+
+    <img
+      src="/icons/banyan-tree.svg"
+      alt="Institutes"
+      className="w-10 h-10"
+    />
+
+    <h2 className="text-2xl font-black text-tcd-blue">
+      My Institutes
+    </h2>
+
+  </div>
+
+  <div className="space-y-3">
+
+    {institutes.map(
+      (membership: any) => (
+
+        <div
+          key={
+            membership.institute_id
+          }
+          className="
+            flex
+            items-center
+            justify-between
+            bg-gray-50
+            rounded-2xl
+            px-4
+            py-3
+          "
+        >
+
+          <div>
+
+            <p className="font-bold text-tcd-blue">
+
+              {
+                membership
+                  ?.institutes
+                  ?.name
+              }
+
+            </p>
+
+            <p className="text-sm text-gray-700">
+
+              {
+                membership
+                  ?.institutes
+                  ?.city
+              }
+
+            </p>
+
+          </div>
+
+        </div>
+
+      )
+    )}
+
+  </div>
+
+</div>
+{
+  profile?.institute_id ===
+  "da8cf1d6-9415-42f0-8336-c8586885cd6a" && (
+
+    <div
+      className="
+        bg-white
+        rounded-3xl
+        border
+        border-gray-100
+        shadow-lg
+        p-6
+        mb-4
+      "
+    >
+      <div className="flex items-start gap-4">
+
+        <img
+          src="/icons/banyan-tree.svg"
+          alt="Institute"
+          className="w-14 h-14"
+        />
+
+        <div className="flex-1">
+
+          <h3
+            className="
+              text-lg
+              font-black
+              text-tcd-blue
+            "
+          >
+            Join Institute
+          </h3>
+
+          <p
+            className="
+              text-sm
+              text-gray-700
+              mt-2
+            "
+          >
+            Unlock institute-specific
+            mock tests, assessments
+            and coaching exams.
+          </p>
+
+          <button
+            onClick={() =>
+              router.push(
+                "/dashboard/join-institute"
+              )
+            }
+            className="
+              mt-4
+              px-5
+              py-2
+              rounded-xl
+              bg-gradient-to-r
+              from-[#D4AF37]
+              to-[#F2D27A]
+              text-tcd-blue
+              font-bold
+              shadow-md
+              hover:scale-[1.02]
+              transition-all
+            "
+          >
+            Join Now
+          </button>
+
+          <p
+            className="
+              text-xs
+              text-gray-300
+              mt-3
+            "
+          >
+            Your XP, Prestige,
+            Achievements and Rankings
+            remain with your TCD profile.
+          </p>
+
+        </div>
+
+      </div>
+    </div>
+
+  )
+}
 {/* LIVE EXAMS */}
 
 <LiveExamsSection

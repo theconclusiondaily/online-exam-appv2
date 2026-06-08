@@ -67,7 +67,7 @@ export default function DailyRewardCard({
           <p
             className="
               text-sm
-              text-gray-500
+              text-gray-700
             "
           >
             Claim your daily TCD bonus
@@ -95,7 +95,7 @@ export default function DailyRewardCard({
         <div
           className="
             mt-2
-            text-gray-500
+            text-gray-700
           "
         >
           Daily TCD Credits

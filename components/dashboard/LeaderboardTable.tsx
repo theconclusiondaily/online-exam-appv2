@@ -187,7 +187,7 @@ console.log(
 
   </div>
 
-  <p className="text-sm text-gray-400 mt-2">
+  <p className="text-sm text-gray-300 mt-2">
     Updated:
     {" "}
     {lastUpdated}
@@ -215,7 +215,7 @@ console.log(
 
         <div className="bg-green-50 rounded-2xl p-4">
 
-          <h3 className="text-sm text-gray-500 mb-1">
+          <h3 className="text-sm text-gray-700 mb-1">
             Highest Score
           </h3>
 

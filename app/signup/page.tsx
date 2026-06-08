@@ -138,6 +138,8 @@ if (!captchaToken) {
 
     setPassword("");
 
+    await supabase.auth.signOut();
+    
     router.replace(
       "/login"
     );
@@ -228,7 +230,7 @@ if (!captchaToken) {
 
           <p
             className="
-              text-gray-500
+              text-gray-700
               mt-3
             "
           >
@@ -264,7 +266,7 @@ border-[#D8E1F0]
 bg-[#F7F9FC]
 
 text-[#274472]
-placeholder:text-gray-500
+placeholder:text-gray-700
 
 transition-all
 
@@ -297,7 +299,7 @@ border-[#D8E1F0]
 bg-[#F7F9FC]
 
 text-[#274472]
-placeholder:text-gray-500
+placeholder:text-gray-700
 
 transition-all
 
@@ -330,7 +332,7 @@ border-[#D8E1F0]
 bg-[#F7F9FC]
 
 text-[#274472]
-placeholder:text-gray-500
+placeholder:text-gray-700
 
 transition-all
 
@@ -357,7 +359,7 @@ focus:ring-[#D4AF37]/30
     border-[#D8E1F0]
     bg-[#F7F9FC]
     text-[#274472]
-    placeholder:text-gray-500
+    placeholder:text-gray-700
     focus:outline-none
     focus:border-[#D4AF37]
     focus:ring-2
@@ -425,7 +427,7 @@ value={password}
       bg-[#F7F9FC]
 
       text-[#274472]
-      placeholder:text-gray-500
+      placeholder:text-gray-700
 
       focus:outline-none
       focus:border-[#D4AF37]
@@ -448,7 +450,7 @@ value={password}
 
       -translate-y-1/2
 
-      text-gray-500
+      text-gray-700
     "
   >
     {
@@ -510,7 +512,7 @@ value={password}
               pt-4
               text-center
               text-sm
-              text-gray-500
+              text-gray-700
             "
           >
             Already have an account?

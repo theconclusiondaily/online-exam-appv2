@@ -443,7 +443,7 @@ const [liveUpdate,
 
                     <div className="mt-4">
 
-  <p className="text-sm text-gray-500">
+  <p className="text-sm text-gray-700">
 
     Score
 
@@ -495,7 +495,7 @@ const [liveUpdate,
 
           {attempts.length === 0 && (
 
-            <div className="bg-white border rounded-2xl p-6 text-center text-gray-500">
+            <div className="bg-white border rounded-2xl p-6 text-center text-gray-700">
 
               No participants yet
 

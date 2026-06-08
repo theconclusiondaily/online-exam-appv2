@@ -288,6 +288,17 @@ useEffect(() => {
   )
 
   .single();
+  const {
+  data: memberships,
+} = await supabase
+  .from("user_institutes")
+  .select("institute_id")
+  .eq("user_id", user.id);
+
+const instituteIds =
+  memberships?.map(
+    (m) => m.institute_id
+  ) || [];
   if (!profileData?.institute_id) {
 
   toast.error(
@@ -407,13 +418,16 @@ if (existingAttempt) {
   }
 }
       const {
-        data: examData,
-      } = await fetchExam(
-        examId
-      );
+  data: examData,
+} = await fetchExam(
+  examId
+);
+
 if (
-  examData?.institute_id !==
-  profileData.institute_id
+  examData?.exam_scope !== "PUBLIC" &&
+  !instituteIds.includes(
+    examData?.institute_id
+  )
 ) {
 
   toast.error(

@@ -186,7 +186,7 @@ export default function MasteryRankCard({
 
         <div>
 
-          <p className="text-white/70 mb-2">
+          <p className="text-gray-700 mb-2">
 
             Current Rank
 
@@ -276,7 +276,7 @@ flex-1
           "
         >
 
-          <p className="text-white/70 mb-2">
+          <p className="text-gray-700 mb-2">
 
             Mastery Score
 
@@ -309,7 +309,7 @@ flex-1
           "
         >
 
-          <p className="text-white/70 mb-2">
+          <p className="text-gray-700 mb-2">
 
             Exams Completed
 
@@ -342,7 +342,7 @@ flex-1
           "
         >
 
-          <p className="text-white/70 mb-2">
+          <p className="text-gray-700 mb-2">
 
             Achievements
 
