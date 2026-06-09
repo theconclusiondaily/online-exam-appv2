@@ -480,39 +480,82 @@ Achieve Greatness.
 
      {/* FEATURES */}
 
-<section className="py-12">
+<section className="py-20 bg-[#071018]">
 
-  <div className="max-w-6xl mx-auto px-6">
+  <div className="max-w-7xl mx-auto px-6">
 
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="text-center mb-14">
+
+      <h2 className="text-4xl md:text-5xl font-black text-white">
+        Why Students Choose TCD
+      </h2>
+
+      <p className="mt-4 text-lg text-gray-300 max-w-3xl mx-auto">
+        Everything you need to learn, compete, grow and achieve greatness —
+        all inside one powerful ecosystem.
+      </p>
+
+    </div>
+
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
       {features.map((feature) => (
 
         <div
           key={feature.title}
           className="
-            bg-white/5
+            bg-[#0D1B2A]
             border
-            border-white/10
-            rounded-2xl
-            p-5
-            backdrop-blur
+            border-[#1B2E45]
+
+            rounded-3xl
+
+            p-6
+
+            hover:border-[#D4AF37]
+            hover:-translate-y-2
+
+            transition-all
+            duration-300
           "
         >
 
-          <Image
-            src={feature.icon}
-            alt={feature.title}
-            width={48}
-            height={48}
-          />
+          <div
+            className="
+              w-16
+              h-16
 
-          <h3 className="mt-4 text-lg font-bold text-gold">
+              rounded-2xl
+
+              bg-[#10243A]
+
+              flex
+              items-center
+              justify-center
+
+              mb-5
+            "
+          >
+
+            <Image
+              src={feature.icon}
+              alt={feature.title}
+              width={40}
+              height={40}
+            />
+
+          </div>
+
+          <h3 className="text-xl font-bold text-[#D4AF37]">
+
             {feature.title}
+
           </h3>
 
-          <p className="mt-2 text-sm text-gray-300">
+          <p className="mt-3 text-gray-300 leading-relaxed">
+
             {feature.description}
+
           </p>
 
         </div>
@@ -531,41 +574,117 @@ Achieve Greatness.
 
       {/* ACHIEVEMENTS */}
 
-      <section className="py-16 bg-[#071018]">
+<section className="py-24 bg-[#020812]">
 
-        <div className="max-w-3xl mx-auto px-6">
+  <div className="max-w-7xl mx-auto px-6">
 
-          <h2 className="text-center text-3xl font-bold text-white mb-14">
-            Achievements & Badges
-          </h2>
+    <div className="text-center mb-16">
 
-          <div className="grid grid-cols-1 md:grid-cols-8 gap-8">
+      <h2 className="text-4xl md:text-5xl font-black text-white">
 
-            {[
-              "/icons/tcd-crown.svg",
-              "/icons/tcd-medal.svg",
-              "/icons/tcd-star.svg",
-              "/icons/tcd-shield.svg",
-              "/icons/tcd-target.svg",
-              "/icons/tcd-flame.svg",
-              "/icons/tcd-mountain.svg",
-              "/icons/mastery-star.svg",
-            ].map((icon) => (
-              <div
-                key={icon}
-                className="bg-white/5 rounded-2xl p-4 flex justify-center border border-white/10"
-              >
-                <Image
-                  src={icon}
-                  alt=""
-                  width={45}
-                  height={45}
-                />
-              </div>
-            ))}
-          </div>
+        Achievements & Badges
+
+      </h2>
+
+      <p className="mt-4 text-lg text-gray-300">
+
+        Earn prestigious badges and showcase your mastery.
+
+      </p>
+
+    </div>
+
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+
+      {[
+        {
+          icon: "/icons/tcd-crown.svg",
+          title: "Crown",
+        },
+        {
+          icon: "/icons/tcd-medal.svg",
+          title: "Medal",
+        },
+        {
+          icon: "/icons/tcd-star.svg",
+          title: "Star",
+        },
+        {
+          icon: "/icons/tcd-shield.svg",
+          title: "Shield",
+        },
+        {
+          icon: "/icons/tcd-target.svg",
+          title: "Target",
+        },
+        {
+          icon: "/icons/tcd-flame.svg",
+          title: "Flame",
+        },
+        {
+          icon: "/icons/tcd-mountain.svg",
+          title: "Mountain",
+        },
+        {
+          icon: "/icons/mastery-star.svg",
+          title: "Mastery",
+        },
+      ].map((badge) => (
+
+        <div
+          key={badge.title}
+          className="
+            bg-[#0D1B2A]
+
+            border
+            border-[#1B2E45]
+
+            rounded-3xl
+
+            p-8
+
+            flex
+            flex-col
+            items-center
+
+            hover:border-[#D4AF37]
+            hover:-translate-y-2
+
+            transition-all
+            duration-300
+          "
+        >
+
+          <Image
+            src={badge.icon}
+            alt={badge.title}
+            width={60}
+            height={60}
+          />
+
+          <h3
+            className="
+              mt-5
+
+              text-lg
+
+              font-bold
+
+              text-[#D4AF37]
+            "
+          >
+            {badge.title}
+          </h3>
+
         </div>
-      </section>
+
+      ))}
+
+    </div>
+
+  </div>
+
+</section>
 
     
       {/* CTA */}
