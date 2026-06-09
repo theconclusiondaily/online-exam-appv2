@@ -54,6 +54,13 @@ const QuestionPalette = dynamic(
     ssr: false,
   }
 );
+const [
+  pendingSave,
+  setPendingSave
+] = useState<{
+  questionId: string;
+  selectedOption: string | null;
+} | null>(null);
 
 export default function ExamPage() {
 
@@ -1364,7 +1371,10 @@ setAnswers(
     [questionId]: newValue,
   })
 );
-
+setPendingSave({
+  questionId,
+  selectedOption: newValue,
+});
 if (!newValue) {
 
   setAnsweredQuestions(
@@ -1389,59 +1399,70 @@ if (!newValue) {
           ]
   );
 }
-  try {
-    const response =
-      await fetch(
-        "/api/exam/save-answer",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            examId,
-            questionId,
-            selectedOption:
-              newValue,
-            sessionToken,
-          }),
-        }
-      );
-
-    const result =
-      await response.json();
-
-    console.log(
-      "SAVE ANSWER RESULT:",
-      result
-    );
-
-    if (!response.ok) {
-      console.error(
-        "SAVE ANSWER FAILED:",
-        result
-      );
-
-      toast.error(
-        result.error ||
-        "Failed to save answer"
-      );
-
-      return;
-    }
-
-  } catch (error) {
-    console.error(
-      "SAVE ANSWER ERROR:",
-      error
-    );
-  }
-
-
+  
   return;
 }
-  
+ useEffect(() => {
+
+  if (
+    !pendingSave ||
+    !sessionToken
+  ) {
+    return;
+  }
+
+  const timeout =
+    setTimeout(
+      async () => {
+
+        try {
+
+          await fetch(
+            "/api/exam/save-answer",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body: JSON.stringify({
+                examId,
+
+                questionId:
+                  pendingSave.questionId,
+
+                selectedOption:
+                  pendingSave.selectedOption,
+
+                sessionToken,
+              }),
+            }
+          );
+
+        } catch (error) {
+
+          console.error(
+            "Autosave failed",
+            error
+          );
+        }
+
+      },
+      1000
+    );
+
+  return () =>
+    clearTimeout(
+      timeout
+    );
+
+}, [
+  pendingSave,
+  sessionToken,
+  examId,
+]); 
 
   async function submitExam() {
 
@@ -2240,9 +2261,30 @@ if (submitted) {
     return;
   }
 
+  if (
+  prefetchedQuestion &&
+  nextIndex === currentQuestion + 1
+) {
+
+  setCurrentQuestionData(
+    prefetchedQuestion
+  );
+
+  setCurrentQuestion(
+    nextIndex
+  );
+
+  prefetchQuestion(
+    nextIndex + 1
+  );
+
+} else {
+
   await fetchQuestionByIndex(
     nextIndex
   );
+
+}
 }}
 
       className="
