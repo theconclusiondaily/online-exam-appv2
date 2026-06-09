@@ -54,6 +54,13 @@ const QuestionPalette = dynamic(
     ssr: false,
   }
 );
+
+
+export default function ExamPage() {
+
+  const params = useParams();
+
+  const router = useRouter();
 const [
   pendingSave,
   setPendingSave
@@ -61,13 +68,6 @@ const [
   questionId: string;
   selectedOption: string | null;
 } | null>(null);
-
-export default function ExamPage() {
-
-  const params = useParams();
-
-  const router = useRouter();
-
   const examId = Array.isArray(
     params.id
   )
