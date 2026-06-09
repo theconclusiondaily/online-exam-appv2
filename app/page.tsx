@@ -71,10 +71,11 @@ useEffect(() => {
 
 return (
   <main
-    className="
-      animate-[landingFade_1s_ease-out]
-    "
-  >
+  className="
+    animate-[landingFade_1s_ease-out]
+    overflow-x-hidden
+  "
+>
 
       {/* NAVBAR */}
 
@@ -160,13 +161,24 @@ text-sm md:text-base
             <Link
   href="/demo"
   className="
-    px-6 py-3
+    px-3 md:px-6
+    py-2 md:py-3
+
+    text-xs md:text-base
+
     rounded-xl
+
     border-2 border-tcd-gold
+
     text-tcd-gold
+
     font-bold
+
+    whitespace-nowrap
+
     hover:bg-tcd-gold
     hover:text-tcd-blue
+
     transition-all
   "
 >
@@ -419,7 +431,7 @@ Achieve Greatness.
       width={24}
       height={24}
     />
-    <span className="text-gray-700 font-medium">
+    <span className="text-white font-medium">
       National Rankings
     </span>
   </div>
@@ -431,7 +443,7 @@ Achieve Greatness.
       width={24}
       height={24}
     />
-    <span className="text-gray-700 font-medium">
+    <span className="text-white font-medium">
       Live Exams
     </span>
   </div>
@@ -443,7 +455,7 @@ Achieve Greatness.
       width={24}
       height={24}
     />
-    <span className="text-gray-700 font-medium">
+    <span className="text-white font-medium">
       TCD Credits
     </span>
   </div>
@@ -455,7 +467,7 @@ Achieve Greatness.
       width={24}
       height={24}
     />
-    <span className="text-gray-700 font-medium">
+    <span className="text-white font-medium">
       Achievements
     </span>
   </div>
@@ -523,7 +535,7 @@ Achieve Greatness.
 
         <div className="max-w-3xl mx-auto px-6">
 
-          <h2 className="text-center text-3xl font-bold mb-14">
+          <h2 className="text-center text-3xl font-bold text-white mb-14">
             Achievements & Badges
           </h2>
 
@@ -558,11 +570,11 @@ Achieve Greatness.
     
       {/* CTA */}
 
-      <section className="py-20">
+      <section className="py-20 bg-[#071018]">
 
         <div className="max-w-5xl mx-auto px-6 text-center">
 
-          <h2 className="text-3xl md:text-5xl font-bold">
+         <h2 className="text-3xl md:text-5xl font-bold text-white">
             Ready to Become
             <br />
             a Top Ranker?
@@ -591,11 +603,12 @@ Achieve Greatness.
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
 
             <Image
-              src="/logo.png"
-              alt="TCD"
-              width={180}
-              height={50}
-            />
+  src="/logo.png"
+  alt="TCD"
+  width={90}
+  height={90}
+  className="h-auto"
+/>
 
             <p className="text-gray-700 text-sm">
               © 2026 The Conclusion Daily. All rights reserved.
