@@ -78,6 +78,38 @@ const instituteExams =
       exam.exam_scope ===
       "INSTITUTE"
   );
+  const now = new Date();
+
+const upcomingExams =
+  liveExams.filter(
+    (exam) =>
+      exam.start_time &&
+      new Date(
+        exam.start_time
+      ) > now
+  );
+
+const activeExams =
+  liveExams.filter(
+    (exam) =>
+      (!exam.start_time ||
+        new Date(
+          exam.start_time
+        ) <= now) &&
+      (!exam.end_time ||
+        new Date(
+          exam.end_time
+        ) >= now)
+  );
+
+const completedExams =
+  liveExams.filter(
+    (exam) =>
+      exam.end_time &&
+      new Date(
+        exam.end_time
+      ) < now
+  );
   console.log(
   "Arena Exams",
   arenaExams
@@ -140,22 +172,92 @@ const renderArenaSection = (
 
               <div className="flex justify-between items-start mb-2">
 
-                <span
-                  className="
-                    bg-green-100
-                    text-green-700
+                <div className="flex gap-2 flex-wrap">
 
-                    px-3
-                    py-1
+  <span
+    className="
+      bg-green-100
+      text-green-700
 
-                    rounded-full
+      px-3
+      py-1
 
-                    text-sm
-                    font-semibold
-                  "
-                >
-                🔴 LIVE NOW
-                </span>
+      rounded-full
+
+      text-sm
+      font-semibold
+    "
+  >
+    {
+  exam.end_time &&
+  new Date(exam.end_time) < now
+    ? "COMPLETED"
+    : exam.start_time &&
+      new Date(exam.start_time) > now
+    ? "UPCOMING"
+    : "LIVE"
+}
+  </span>
+
+  {exam.exam_scope === "PUBLIC" && (
+    <span
+      className="
+        bg-blue-50
+        text-tcd-blue
+
+        px-3
+        py-1
+
+        rounded-full
+
+        text-sm
+        font-semibold
+
+        flex
+        items-center
+        gap-2
+      "
+    >
+      <img
+        src="/icons/mastery-star.svg"
+        alt="Global"
+        className="w-4 h-4"
+      />
+
+      TCD GLOBAL
+    </span>
+  )}
+
+  {exam.exam_scope === "INSTITUTE" && (
+    <span
+      className="
+        bg-[#FFF8EA]
+        text-tcd-blue
+
+        px-3
+        py-1
+
+        rounded-full
+
+        text-sm
+        font-semibold
+
+        flex
+        items-center
+        gap-2
+      "
+    >
+      <img
+        src="/icons/banyan-tree.svg"
+        alt="Institute"
+        className="w-4 h-4"
+      />
+
+      INSTITUTE
+    </span>
+  )}
+
+</div>
 
                 <div
                   className="
@@ -238,8 +340,13 @@ const renderArenaSection = (
 
               {/* CTA */}
 
-              <Link
-  href={`/exam/${exam.id}/intro`}
+
+  <Link
+  href={
+    exam.id === "demo-exam"
+      ? "/demo-exam"
+      : `/exam/${exam.id}/intro`
+  }
   className="
     block
     w-full
@@ -293,7 +400,90 @@ const renderArenaSection = (
 >
   TCD Exam Arena
 </h2>
+<div className="flex gap-3 mt-4 flex-wrap">
 
+  <div
+    className="
+      flex
+      items-center
+      gap-2
+
+      bg-blue-50
+
+      px-4
+      py-2
+
+      rounded-full
+    "
+  >
+    <img
+      src="/icons/precision-target.svg"
+      alt="Upcoming"
+      className="w-4 h-4"
+    />
+
+    <span className="font-semibold text-tcd-blue">
+      Upcoming:
+      {" "}
+      {upcomingExams.length}
+    </span>
+  </div>
+
+  <div
+    className="
+      flex
+      items-center
+      gap-2
+
+      bg-green-50
+
+      px-4
+      py-2
+
+      rounded-full
+    "
+  >
+    <img
+      src="/icons/mastery-star.svg"
+      alt="Live"
+      className="w-4 h-4"
+    />
+
+    <span className="font-semibold text-green-700">
+      Live:
+      {" "}
+      {activeExams.length}
+    </span>
+  </div>
+
+  <div
+    className="
+      flex
+      items-center
+      gap-2
+
+      bg-gray-100
+
+      px-4
+      py-2
+
+      rounded-full
+    "
+  >
+    <img
+      src="/icons/achievement-medal.svg"
+      alt="Completed"
+      className="w-4 h-4"
+    />
+
+    <span className="font-semibold text-gray-700">
+      Completed:
+      {" "}
+      {completedExams.length}
+    </span>
+  </div>
+
+</div>
         <p className="text-gray-700 mt-1">
           Compete in public challenges and institute exams to earn XP, achievements, prestige and TCD credits.
         </p>
@@ -463,22 +653,92 @@ const renderArenaSection = (
 
               <div className="flex justify-between items-start mb-2">
 
-                <span
-                  className="
-                    bg-green-100
-                    text-green-700
+               <div className="flex gap-2 flex-wrap">
 
-                    px-3
-                    py-1
+  <span
+    className="
+      bg-green-100
+      text-green-700
 
-                    rounded-full
+      px-3
+      py-1
 
-                    text-sm
-                    font-semibold
-                  "
-                >
-                🔴 LIVE NOW
-                </span>
+      rounded-full
+
+      text-sm
+      font-semibold
+    "
+  >
+    {
+  exam.end_time &&
+  new Date(exam.end_time) < now
+    ? "COMPLETED"
+    : exam.start_time &&
+      new Date(exam.start_time) > now
+    ? "UPCOMING"
+    : "LIVE"
+}
+  </span>
+
+  {exam.exam_scope === "PUBLIC" && (
+    <span
+      className="
+        bg-blue-50
+        text-tcd-blue
+
+        px-3
+        py-1
+
+        rounded-full
+
+        text-sm
+        font-semibold
+
+        flex
+        items-center
+        gap-2
+      "
+    >
+      <img
+        src="/icons/mastery-star.svg"
+        alt="Global"
+        className="w-4 h-4"
+      />
+
+      TCD GLOBAL
+    </span>
+  )}
+
+  {exam.exam_scope === "INSTITUTE" && (
+    <span
+      className="
+        bg-[#FFF8EA]
+        text-tcd-blue
+
+        px-3
+        py-1
+
+        rounded-full
+
+        text-sm
+        font-semibold
+
+        flex
+        items-center
+        gap-2
+      "
+    >
+      <img
+        src="/icons/banyan-tree.svg"
+        alt="Institute"
+        className="w-4 h-4"
+      />
+
+      INSTITUTE
+    </span>
+  )}
+
+</div>
 
                 <div
                   className="
@@ -561,8 +821,12 @@ const renderArenaSection = (
 
               {/* CTA */}
 
-              <Link
-  href={`/exam/${exam.id}/intro`}
+             <Link
+  href={
+    exam.id === "demo-exam"
+      ? "/demo-exam"
+      : `/exam/${exam.id}/intro`
+  }
   className="
     block
     w-full

@@ -390,7 +390,9 @@ if (!existingReferral) {
     console.log(
       profile
     );
-
+localStorage.removeItem(
+  "tcd_demo"
+);
     // ROLE REDIRECT
 
     if (

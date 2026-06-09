@@ -49,6 +49,12 @@ from "@/components/dashboard/AchievementPopup";
 import {
   getExamStatus
 } from "@/lib/getExamStatus";
+import {
+  demoDashboard,
+  demoAchievements,
+  demoActivities,
+  demoAttempts,
+} from "@/lib/demo/demoDashboard";
 export default function DashboardPage() {
 useInactivityLogout();
   const router =
@@ -262,9 +268,132 @@ const levelTitle =
 
 
 
-    const {
+   const {
   data: { user },
 } = await supabase.auth.getUser();
+
+
+
+const isDemo =
+  !user &&
+  localStorage.getItem(
+    "tcd_demo"
+  ) === "true";
+
+if (!user && !isDemo) {
+
+  router.push("/login");
+
+  return;
+}
+
+
+if (isDemo) {
+
+  setProfile({
+    name: demoDashboard.user.name,
+  });
+
+  setWallet(
+    demoDashboard.wallet
+  );
+
+  setUserLevel(
+    demoDashboard.level
+  );
+
+  setUserXP(
+    demoDashboard.xp
+  );
+
+  setStreak(
+    demoDashboard.streak
+  );
+
+  setLoginStreak(
+    demoDashboard.loginStreak
+  );
+
+  setAchievementCount(
+    demoDashboard.achievements
+  );
+
+  setStats(
+    demoDashboard.stats
+  );
+
+  setAchievementScore(185);
+
+  setPrestigeLevel(
+    demoDashboard.prestige
+  );
+
+  setTopLeader({
+    name: "Aarav Sharma",
+    xp: 12450,
+  });
+
+  setInstitutes([
+    {
+      institute_id: "demo",
+      institutes: {
+        name: "TCD Demo Institute",
+        city: "Hyderabad",
+      },
+    },
+  ]);
+
+  setAchievements(
+    demoAchievements
+  );
+
+  setActivities(
+    demoActivities
+  );
+
+  setAttempts(
+    demoAttempts
+  );
+
+  setExamTitles({
+    "demo-exam": {
+      title:
+        "TCD Demo Practice Test",
+    },
+  });
+
+  setRanks({
+    "demo-exam": 124,
+  });
+
+ setLiveExams([
+  {
+    id: "demo-exam",
+
+    title: "TCD Demo Practice Test",
+
+    description:
+      "Experience the complete TCD exam platform before creating your account.",
+
+    duration: 30,
+
+    reward_pool: 500,
+
+    exam_scope: "PUBLIC",
+
+    challenge_type: "DAILY",
+
+    end_time:
+      new Date(
+        Date.now() + 86400000
+      ).toISOString(),
+  },
+]);
+
+  setLoading(false);
+
+  return;
+}
 
       // NOT LOGGED IN
 
@@ -283,6 +412,7 @@ await supabase.rpc(
     p_user_id: user.id,
   }
 );
+
 const {
   data: unlockedAchievements,
 } = await supabase
@@ -1276,6 +1406,7 @@ setUpcomingExams(
 );
       setLoading(false);
     }
+    
   }
  useEffect(() => {
 

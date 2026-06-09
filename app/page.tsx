@@ -159,9 +159,18 @@ text-sm md:text-base
 
             <Link
   href="/demo"
-  className="border border-yellow-500 text-yellow-500 px-5 py-2 rounded-lg"
+  className="
+    px-6 py-3
+    rounded-xl
+    border-2 border-tcd-gold
+    text-tcd-gold
+    font-bold
+    hover:bg-tcd-gold
+    hover:text-tcd-blue
+    transition-all
+  "
 >
-  Try Demo
+  Try Free Demo
 </Link>
           </div>
         </div>

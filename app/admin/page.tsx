@@ -13,7 +13,8 @@ import Link from "next/link";
 
 import { supabase }
 from "@/lib/supabase/client";
-
+import { TCDIcons }
+from "@/components/ui/tcd-icons";
 export default function AdminPage() {
 
   const router = useRouter();
@@ -254,170 +255,472 @@ if (
 
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4">
 
-          <h1 className="text-2xl font-bold">
+          <div
+  className="
+    relative
+    overflow-hidden
 
-            Admin Dashboard
+    bg-gradient-to-br
+    from-tcd-blue
+    via-[#35548C]
+    to-[#203B63]
 
-          </h1>
+    rounded-[32px]
 
-          <button
-            onClick={logout}
-            className="bg-red-500 text-white px-4 py-2 rounded-xl"
-          >
+    p-8
 
-            Logout
+    mb-6
 
-          </button>
+    text-white
+
+    shadow-2xl
+  "
+>
+
+  <img
+    src="/logo.png"
+    alt="TCD"
+    className="
+      absolute
+      right-[-40px]
+      top-[-40px]
+
+      w-72
+      h-72
+
+      opacity-10
+    "
+  />
+
+  <div
+    className="
+      flex
+      items-center
+      justify-between
+      relative
+      z-10
+    "
+  >
+
+    <div>
+
+      <p
+        className="
+          text-tcd-gold
+          font-bold
+          uppercase
+          tracking-wider
+          mb-2
+        "
+      >
+        The Conclusion Daily
+      </p>
+
+      <h1
+        className="
+          text-4xl
+          font-black
+        "
+      >
+        Admin Command Center
+      </h1>
+
+      <p className="text-white/80 mt-2">
+
+        Manage exams, institutes,
+        teachers and platform growth.
+
+      </p>
+
+    </div>
+
+    
+
+  </div>
+
+</div>
+<button
+      onClick={logout}
+      className="
+        bg-red-500
+        hover:bg-red-600
+
+        text-white
+
+        px-5
+        py-3
+
+        rounded-2xl
+
+        font-bold
+      "
+    >
+      Logout
+    </button>
+         
 
         </div>
 
         {/* NAVIGATION */}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
+        <div
+  className="
+    grid
+    grid-cols-1
+    md:grid-cols-2
+    lg:grid-cols-4
 
-          <Link
-            href="/admin/questions"
-            className="border rounded-3xl p-6 bg-white shadow-sm hover:shadow-md transition"
-          >
+    gap-4
 
-            <h2 className="text-2xl font-bold mb-2">
-
-              Question Builder
-
-            </h2>
-
-            <p className="text-gray-600">
-
-              Create and manage exam questions
-
-            </p>
-
-          </Link>
-
-          <Link
-            href="/admin/institutes"
-            className="border rounded-3xl p-6 bg-white shadow-sm hover:shadow-md transition"
-          >
-
-            <h2 className="text-2xl font-bold mb-2">
-
-              Institutes
-
-            </h2>
-
-            <p className="text-gray-600">
-
-              Manage campuses and institutes
-
-            </p>
-
-          </Link>
-
-          <Link
-            href="/admin/analytics"
-            className="border rounded-3xl p-6 bg-white shadow-sm hover:shadow-md transition"
-          >
-
-            <h2 className="text-2xl font-bold mb-2">
-
-              Analytics
-
-            </h2>
-
-            <p className="text-gray-600">
-
-              Institute performance analytics
-
-            </p>
-
-          </Link>
-
-          <Link
-            href="/admin/users"
-            className="border rounded-3xl p-6 bg-white shadow-sm hover:shadow-md transition"
-          >
-
-            <h2 className="text-2xl font-bold mb-2">
-
-              Users
-
-            </h2>
-
-            <p className="text-gray-600">
-
-              Manage students and institutes
-
-            </p>
-
-          </Link>
-          <Link
-  href="/admin/teachers"
-  className="border rounded-3xl p-6 bg-white shadow-sm hover:shadow-md transition"
+    mb-10
+  "
 >
 
-  <h2 className="text-2xl font-bold mb-2">
+  {/* Question Builder */}
 
-    Teachers
+  <Link
+    href="/admin/questions"
+    className="
+      bg-white
+      rounded-[28px]
 
-  </h2>
+      border
+      border-tcd-gold/10
 
-  <p className="text-gray-600">
+      shadow-lg
 
-    Manage institute teachers
+      hover:shadow-2xl
+      hover:-translate-y-2
 
-  </p>
+      transition-all
+      duration-300
 
-</Link>
-            <Link
-  href="/admin/create-exam"
-  className="border rounded-3xl p-6 bg-white shadow-sm hover:shadow-md transition"
->
+      p-6
+    "
+  >
 
-  <h2 className="text-2xl font-bold mb-2">
+    <div className="mb-4">
 
-    Create Exam
+      {TCDIcons.target}
 
-  </h2>
+    </div>
 
-  <p className="text-gray-600">
+    <h2
+      className="
+        text-2xl
+        font-black
 
-    Create and manage exams
+        text-tcd-blue
 
-  </p>
+        mb-2
+      "
+    >
+      Question Builder
+    </h2>
 
-</Link>
+    <p className="text-gray-600">
 
-<Link
-  href="/admin/leaderboards"
-  className="border rounded-3xl p-6 bg-white shadow-sm hover:shadow-md transition"
->
+      Create and manage exam questions
 
-  <h2 className="text-2xl font-bold mb-2">
+    </p>
 
-    Leaderboards
+  </Link>
 
-  </h2>
+  {/* Institutes */}
 
-  <p className="text-gray-600">
+  <Link
+    href="/admin/institutes"
+    className="
+      bg-white
+      rounded-[28px]
+      border
+      border-tcd-gold/10
+      shadow-lg
+      hover:shadow-2xl
+      hover:-translate-y-2
+      transition-all
+      duration-300
+      p-6
+    "
+  >
 
-    View rankings and performance
+    <div className="mb-4">
 
-  </p>
+      {TCDIcons.journey}
 
-</Link>
-        </div>
+    </div>
+
+    <h2
+      className="
+        text-2xl
+        font-black
+        text-tcd-blue
+        mb-2
+      "
+    >
+      Institutes
+    </h2>
+
+    <p className="text-gray-600">
+
+      Manage campuses and institutes
+
+    </p>
+
+  </Link>
+
+  {/* Analytics */}
+
+  <Link
+    href="/admin/analytics"
+    className="
+      bg-white
+      rounded-[28px]
+      border
+      border-tcd-gold/10
+      shadow-lg
+      hover:shadow-2xl
+      hover:-translate-y-2
+      transition-all
+      duration-300
+      p-6
+    "
+  >
+
+    <div className="mb-4">
+
+      {TCDIcons.mastery}
+
+    </div>
+
+    <h2
+      className="
+        text-2xl
+        font-black
+        text-tcd-blue
+        mb-2
+      "
+    >
+      Analytics
+    </h2>
+
+    <p className="text-gray-600">
+
+      Institute performance analytics
+
+    </p>
+
+  </Link>
+
+  {/* Users */}
+
+  <Link
+    href="/admin/users"
+    className="
+      bg-white
+      rounded-[28px]
+      border
+      border-tcd-gold/10
+      shadow-lg
+      hover:shadow-2xl
+      hover:-translate-y-2
+      transition-all
+      duration-300
+      p-6
+    "
+  >
+
+    <div className="mb-4">
+
+      {TCDIcons.coin}
+
+    </div>
+
+    <h2
+      className="
+        text-2xl
+        font-black
+        text-tcd-blue
+        mb-2
+      "
+    >
+      Users
+    </h2>
+
+    <p className="text-gray-600">
+
+      Manage students and institutes
+
+    </p>
+
+  </Link>
+
+  {/* Teachers */}
+
+  <Link
+    href="/admin/teachers"
+    className="
+      bg-white
+      rounded-[28px]
+      border
+      border-tcd-gold/10
+      shadow-lg
+      hover:shadow-2xl
+      hover:-translate-y-2
+      transition-all
+      duration-300
+      p-6
+    "
+  >
+
+    <div className="mb-4">
+
+      {TCDIcons.rank}
+
+    </div>
+
+    <h2
+      className="
+        text-2xl
+        font-black
+        text-tcd-blue
+        mb-2
+      "
+    >
+      Teachers
+    </h2>
+
+    <p className="text-gray-600">
+
+      Manage institute teachers
+
+    </p>
+
+  </Link>
+
+  {/* Create Exam */}
+
+  <Link
+    href="/admin/create-exam"
+    className="
+      bg-white
+      rounded-[28px]
+      border
+      border-tcd-gold/10
+      shadow-lg
+      hover:shadow-2xl
+      hover:-translate-y-2
+      transition-all
+      duration-300
+      p-6
+    "
+  >
+
+    <div className="mb-4">
+
+      {TCDIcons.achievement}
+
+    </div>
+
+    <h2
+      className="
+        text-2xl
+        font-black
+        text-tcd-blue
+        mb-2
+      "
+    >
+      Create Exam
+    </h2>
+
+    <p className="text-gray-600">
+
+      Create and manage exams
+
+    </p>
+
+  </Link>
+
+  {/* Leaderboards */}
+
+  <Link
+    href="/admin/leaderboards"
+    className="
+      bg-white
+      rounded-[28px]
+      border
+      border-tcd-gold/10
+      shadow-lg
+      hover:shadow-2xl
+      hover:-translate-y-2
+      transition-all
+      duration-300
+      p-6
+    "
+  >
+
+    <div className="mb-4">
+
+      {TCDIcons.wallet}
+
+    </div>
+
+    <h2
+      className="
+        text-2xl
+        font-black
+        text-tcd-blue
+        mb-2
+      "
+    >
+      Leaderboards
+    </h2>
+
+    <p className="text-gray-600">
+
+      View rankings and performance
+
+    </p>
+
+  </Link>
+
+</div>
 
         {/* STATS */}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 mb-10">
 
-          <div className="bg-white rounded-2xl shadow-sm p-6 border">
+          <div className="bg-white
 
-            <p className="text-gray-700 text-sm mb-2">
+rounded-[24px]
 
-              Total Users
+border
+border-tcd-gold/10
 
-            </p>
+shadow-lg
+
+hover:shadow-xl
+hover:-translate-y-1
+
+transition-all
+
+p-6">
+
+           <div className="flex items-center gap-3 mb-3">
+
+  <div className="w-6 h-6 text-tcd-blue">
+
+    {TCDIcons.fire}
+
+  </div>
+
+  <p className="text-gray-700 text-sm font-semibold">
+
+    Total Students
+
+  </p>
+
+</div>
 
             <h2 className="text-2xl font-bold">
 
@@ -427,13 +730,37 @@ if (
 
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm p-6 border">
+          <div className="bg-white
 
-            <p className="text-gray-700 text-sm mb-2">
+rounded-[24px]
 
-              Total Exams
+border
+border-tcd-gold/10
 
-            </p>
+shadow-lg
+
+hover:shadow-xl
+hover:-translate-y-1
+
+transition-all
+
+p-6">
+
+            <div className="flex items-center gap-3 mb-3">
+
+  <div className="w-6 h-6 text-tcd-gold">
+
+    {TCDIcons.achievement}
+
+  </div>
+
+  <p className="text-gray-700 text-sm font-semibold">
+
+    Total Exams
+
+  </p>
+
+</div>
 
             <h2 className="text-2xl font-bold">
 
@@ -443,13 +770,37 @@ if (
 
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm p-6 border">
+          <div className="bg-white
 
-            <p className="text-gray-700 text-sm mb-2">
+rounded-[24px]
 
-              Total Questions
+border
+border-tcd-gold/10
 
-            </p>
+shadow-lg
+
+hover:shadow-xl
+hover:-translate-y-1
+
+transition-all
+
+p-6">
+
+           <div className="flex items-center gap-3 mb-3">
+
+  <div className="w-6 h-6 text-tcd-blue">
+
+    {TCDIcons.target}
+
+  </div>
+
+  <p className="text-gray-700 text-sm font-semibold">
+
+    Question Bank
+
+  </p>
+
+</div>
 
             <h2 className="text-2xl font-bold">
 
@@ -459,13 +810,37 @@ if (
 
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm p-6 border">
+          <div className="bg-white
 
-            <p className="text-gray-700 text-sm mb-2">
+rounded-[24px]
 
-             Learning Journeys
+border
+border-tcd-gold/10
 
-            </p>
+shadow-lg
+
+hover:shadow-xl
+hover:-translate-y-1
+
+transition-all
+
+p-6">
+
+            <div className="flex items-center gap-3 mb-3">
+
+  <div className="w-6 h-6 text-tcd-gold">
+
+    {TCDIcons.journey}
+
+  </div>
+
+  <p className="text-gray-700 text-sm font-semibold">
+
+    Learning Journeys
+
+  </p>
+
+</div>
 
             <h2 className="text-2xl font-bold">
 
@@ -475,13 +850,37 @@ if (
 
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm p-6 border">
+          <div className="bg-white
 
-            <p className="text-gray-700 text-sm mb-2">
+rounded-[24px]
 
-              Live Exams
+border
+border-tcd-gold/10
 
-            </p>
+shadow-lg
+
+hover:shadow-xl
+hover:-translate-y-1
+
+transition-all
+
+p-6">
+
+            <div className="flex items-center gap-3 mb-3">
+
+  <div className="w-6 h-6 text-green-600">
+
+    {TCDIcons.mastery}
+
+  </div>
+
+  <p className="text-gray-700 text-sm font-semibold">
+
+    Live Exams
+
+  </p>
+
+</div>
 
             <h2 className="text-2xl font-bold text-green-600">
 
@@ -496,21 +895,79 @@ if (
 
 <div className="bg-white rounded-3xl shadow-sm border p-6">
 
-  <div className="flex items-center justify-between mb-4">
+ <div
+  className="
+    flex
+    items-center
+    justify-between
 
-    <h2 className="text-3xl font-bold">
+    mb-6
+  "
+>
 
-      Exam Management
+  <div>
 
-    </h2>
+    <div
+      className="
+        inline-flex
+        items-center
+        gap-3
 
-    <div className="bg-gray-100 px-4 py-2 rounded-xl font-bold">
+        px-4
+        py-2
 
-      {recentExams.length} Exams
+        rounded-full
+
+        bg-tcd-gold/10
+
+        text-tcd-gold
+
+        border
+        border-tcd-gold/20
+
+        mb-3
+      "
+    >
+
+      {TCDIcons.achievement}
+
+      Exam Command Center
 
     </div>
 
+    <h2
+      className="
+        text-3xl
+        font-black
+
+        text-tcd-blue
+      "
+    >
+      Exam Management
+    </h2>
+
   </div>
+
+  <div
+    className="
+      bg-gradient-to-r
+      from-tcd-blue
+      to-[#35548C]
+
+      text-white
+
+      px-5
+      py-3
+
+      rounded-2xl
+
+      font-black
+    "
+  >
+    {recentExams.length} Exams
+  </div>
+
+</div>
 
   <div className="space-y-5">
 
@@ -519,12 +976,29 @@ if (
 
         <div
           key={exam.id}
-          className="border rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3"
-        >
+          className="
+  bg-white
+
+  rounded-[28px]
+
+  border
+  border-tcd-gold/10
+
+  shadow-md
+
+  hover:shadow-2xl
+  hover:-translate-y-1
+
+  transition-all
+
+  p-6
+"   >
 
           <div>
 
-            <h3 className="text-2xl font-bold mb-2">
+            <h3 className="text-2xl
+font-black
+text-tcd-blue">
 
               {exam.title}
 
@@ -559,14 +1033,26 @@ if (
 
             </div>
 
-            <p className="text-gray-600">
+            <div
+  className="
+    inline-flex
 
-              Reward:
-              {" "}
-              ₹
-              {exam.reward_pool || 0}
+    px-4
+    py-2
 
-            </p>
+    rounded-full
+
+    bg-tcd-gold/10
+
+    text-tcd-gold
+
+    font-bold
+
+    mt-2
+  "
+>
+  ₹ {exam.reward_pool || 0}
+</div>
 
             <p className="text-sm text-gray-700 mt-2">
 
@@ -596,7 +1082,9 @@ if (
 
             <div className="flex flex-wrap gap-3">
 
-{!exam.published && (
+{!exam.published &&
+ exam.status !== "cancelled" &&
+ exam.status !== "completed" && (
 
   <button
     onClick={() =>
@@ -605,8 +1093,10 @@ if (
       )
     }
     className="
-      bg-yellow-500
-      hover:bg-yellow-600
+     bg-[#F59E0B]
+hover:bg-[#D97706]
+rounded-2xl
+shadow-md
       text-white
       px-4
       py-2
@@ -619,7 +1109,9 @@ if (
   </button>
 
 )}
-              {!exam.published && 
+             {!exam.published &&
+ exam.status !== "cancelled" &&
+ exam.status !== "completed" && 
             
               (
 
@@ -662,7 +1154,9 @@ if (
   window.location.reload();
 }}
 
-                  className="bg-tcd-blue hover:bg-tcd-blue-light text-white px-4 py-2 rounded-xl font-bold"
+                  className="bg-tcd-blue
+hover:bg-[#35548C] rounded-2xl
+shadow-mdtext-white px-4 py-2 rounded-xl font-bold"
                 >
 
                   Publish
@@ -671,35 +1165,69 @@ if (
 
               )}
 
-              <button
+              {exam.status !== "cancelled" &&
+ exam.status !== "completed" && (
 
-                onClick={async () => {
+  <button
 
-                  await supabase
+    onClick={async () => {
 
-                    .from("exams")
+      const now =
+        new Date();
 
-                    .update({
+      const isCompleted =
+        new Date(
+          exam.end_time
+        ) < now;
 
-                      status:
-                        "cancelled",
+      if (isCompleted) {
 
-                    })
+        alert(
+          "Completed exams cannot be cancelled."
+        );
 
-                    .eq(
-                      "id",
-                      exam.id
-                    );
+        return;
+      }
 
-                  window.location.reload();
-                }}
+      await supabase
 
-                className="bg-red-500 text-white px-4 py-2 rounded-xl font-bold"
-              >
+        .from("exams")
 
-                Cancel
+        .update({
+          status: "cancelled",
+        })
 
-              </button>
+        .eq(
+          "id",
+          exam.id
+        );
+
+      window.location.reload();
+
+    }}
+
+    className="
+      bg-red-500
+      hover:bg-red-600
+
+      text-white
+
+      px-4
+      py-2
+
+      rounded-2xl
+
+      font-bold
+
+      shadow-md
+    "
+  >
+
+    Cancel
+
+  </button>
+
+)}
 
             </div>
 

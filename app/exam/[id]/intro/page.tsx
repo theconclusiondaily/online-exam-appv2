@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-
+import { demoExam }
+from "@/lib/demo/demoExam";
 import { supabase } from "@/lib/supabase/client";
 import { TCDIcons } from "@/components/ui/tcd-icons";
 
@@ -17,15 +18,26 @@ export default function ExamIntroPage() {
     loadExam();
   }, []);
 
-  async function loadExam() {
-    const { data } = await supabase
+ async function loadExam() {
+
+  if (id === "demo-exam") {
+
+    setExam(
+      demoExam
+    );
+
+    return;
+  }
+
+  const { data } =
+    await supabase
       .from("exams")
       .select("*")
       .eq("id", id)
       .single();
 
-    setExam(data);
-  }
+  setExam(data);
+}
 
   if (!exam) {
     return (

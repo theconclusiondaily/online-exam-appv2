@@ -254,23 +254,61 @@ useEffect(() => {
   useEffect(() => {
 
     async function initializeExam() {
-
+const isDemo =
+  localStorage.getItem(
+    "tcd_demo"
+  ) === "true";
       const {
         data: { user },
       } = await supabase
         .auth
         .getUser();
 
-      if (!user) {
+      if (!user && !isDemo) {
 
-        router.push(
-          "/login"
-        );
+  router.push(
+    "/login"
+  );
 
-        return;
-      }
+  return;
+}
+const currentUser = isDemo
+  ? {
+      id: "demo-user",
+      email: "demo@tcd.local",
+      user_metadata: {
+        name: "Guest Student",
+      },
+    }
+  : user!;
+if (isDemo) {
 
-      setUserId(user.id);
+  setUserId("demo-user");
+
+  setStudentName(
+    "Guest Student"
+  );
+
+  setExamInfo({
+    id: "demo-exam",
+
+    title:
+      "TCD Demo Practice Test",
+
+    description:
+      "Experience the complete TCD exam platform.",
+
+    duration: 30,
+
+    total_questions: 10,
+  });
+
+  setLoading(false);
+
+  return;
+}
+
+      setUserId(currentUser.id);
       const {
   data: profileData,
 } = await supabase
@@ -284,7 +322,7 @@ useEffect(() => {
 
   .eq(
     "id",
-    user.id
+    currentUser.id
   )
 
   .single();
@@ -293,7 +331,7 @@ useEffect(() => {
 } = await supabase
   .from("user_institutes")
   .select("institute_id")
-  .eq("user_id", user.id);
+  .eq("user_id", currentUser.id);
 
 const instituteIds =
   memberships?.map(
@@ -329,7 +367,7 @@ const {
 
   .eq(
     "user_id",
-    user.id
+    currentUser.id
   );
 
 if (savedAnswersData) {
@@ -358,10 +396,10 @@ if (savedAnswersData) {
 }
       setStudentName(
 
-  user.user_metadata
+  currentUser.user_metadata
     ?.name ||
 
-  user.email ||
+  currentUser.email ||
 
   "Student"
 );
@@ -382,7 +420,7 @@ if (savedAnswersData) {
 
   .eq(
     "user_id",
-    user.id
+    currentUser.id
   )
 
   .maybeSingle();

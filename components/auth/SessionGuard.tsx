@@ -33,6 +33,14 @@ const timer =
     setIsReady(true);
 
   }, 3000);
+  const isDemo =
+  localStorage.getItem(
+    "tcd_demo"
+  ) === "true";
+
+if (isDemo) {
+  return;
+}
     let interval:
       NodeJS.Timeout;
 
@@ -40,13 +48,6 @@ const timer =
       message?: string
     ) {
 
-      if (message) {
-        alert(message);
-      }
-
-      localStorage.removeItem(
-        "tcd_session_token"
-      );
 
       await supabase.auth.signOut();
 
@@ -55,29 +56,34 @@ const timer =
       );
     }
 
-    async function checkSession() {
-if (!isReady) {
+   async function checkSession() {
 
-  return;
+  try {
 
-}
-      try {
+    const {
+      data: { session },
+    } =
+      await supabase.auth.getSession();
 
-        const {
-  data: { session },
-} =
-  await supabase.auth.getSession();
+    const isDemo =
+      localStorage.getItem(
+        "tcd_demo"
+      ) === "true";
 
-if (!session) {
+    if (!session) {
 
-  return;
+      if (isDemo) {
+        return;
+      }
 
-}
+      router.replace("/login");
+      return;
+    }
 
-        const localToken =
-          localStorage.getItem(
-            "tcd_session_token"
-          );
+    const localToken =
+      localStorage.getItem(
+        "tcd_session_token"
+      );
 
       if (!localToken) {
 
@@ -149,25 +155,30 @@ if (!session) {
 
     // Listen for Supabase auth changes
     const {
-      data: authListener,
-    } = supabase.auth.onAuthStateChange(
-      async (
-        event,
-        session
-      ) => {
+  data: authListener,
+} = supabase.auth.onAuthStateChange(
+  async (
+    event,
+    session
+  ) => {
 
-        if (!session) {
+    const isDemo =
+      localStorage.getItem(
+        "tcd_demo"
+      ) === "true";
 
-          localStorage.removeItem(
-            "tcd_session_token"
-          );
+    if (!session && !isDemo) {
 
-          router.replace(
-            "/login"
-          );
-        }
-      }
-    );
+      localStorage.removeItem(
+        "tcd_session_token"
+      );
+
+      router.replace(
+        "/login"
+      );
+    }
+  }
+);
 
    return () => {
 

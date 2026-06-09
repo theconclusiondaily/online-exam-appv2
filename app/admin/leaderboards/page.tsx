@@ -6,10 +6,10 @@ import {
 } from "react";
 
 import AdminGuard from "@/components/AdminGuard";
-
+import Link from "next/link";
 import { supabase }
 from "@/lib/supabase/client";
-
+import { TCDIcons } from "@/components/ui/tcd-icons";
 export default function AdminLeaderboardsPage() {
 
   const [exams,
@@ -86,15 +86,24 @@ export default function AdminLeaderboardsPage() {
   }
 
   const {
-    data,
-    error,
-  } = await supabase
-    .from("exam_attempts")
-    .select("*")
-    .eq(
-      "exam_id",
-      selectedExam
-    );
+  data,
+  error,
+} = await supabase
+
+  .from("exam_attempts")
+
+  .select(`
+    *,
+    users (
+      name,
+      prestige_level
+    )
+  `)
+
+  .eq(
+    "exam_id",
+    selectedExam
+  );
 
   if (error) {
 
@@ -201,24 +210,117 @@ export default function AdminLeaderboardsPage() {
 
           {/* HEADER */}
 
-          <div className="flex justify-between items-center mb-10">
+          <div
+  className="
+    relative
+    overflow-hidden
 
-            <h1 className="text-2xl font-bold">
+    bg-gradient-to-br
+    from-tcd-blue
+    via-[#35548C]
+    to-[#203B63]
 
-              Leaderboards
+    rounded-[30px]
 
-            </h1>
+    p-8
 
-            <a
-              href="/admin"
-              className="bg-black text-white px-4 py-2 rounded-xl"
-            >
+    text-white
 
-              Dashboard
+    mb-6
 
-            </a>
+    shadow-2xl
+  "
+>
 
-          </div>
+  <img
+    src="/logo.png"
+    alt="TCD"
+    className="
+      absolute
+      right-[-40px]
+      top-[-40px]
+
+      w-72
+      h-72
+
+      opacity-10
+    "
+  />
+
+  <div className="relative z-10 flex justify-between items-center">
+
+    <div>
+
+      <div
+        className="
+          inline-flex
+          items-center
+          gap-3
+
+          px-4
+          py-2
+
+          rounded-full
+
+          bg-tcd-gold/15
+
+          border
+          border-tcd-gold/20
+
+          text-tcd-gold
+
+          mb-3
+        "
+      >
+<div className="w-5 h-5">
+
+    {TCDIcons.achievement}
+
+  </div> Leaderboard Command Center
+
+      </div>
+
+      <h1
+        className="
+          text-4xl
+          font-black
+        "
+      >
+        Exam Leaderboards
+      </h1>
+
+      <p className="text-white/80 mt-2">
+
+        Monitor rankings, scores and
+        performance across all exams.
+
+      </p>
+
+    </div>
+
+    <Link
+      href="/admin"
+      className="
+        bg-white/10
+        backdrop-blur-md
+
+        px-5
+        py-3
+
+        rounded-2xl
+
+        border
+        border-white/20
+
+        font-bold
+      "
+    >
+      Dashboard
+    </Link>
+
+  </div>
+
+</div>
 
           {/* SELECT EXAM */}
 
@@ -269,10 +371,28 @@ export default function AdminLeaderboardsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-10">
 
-              <div className="bg-white border rounded-3xl p-6 shadow-sm">
+              <div className="bg-white
+
+rounded-[28px]
+
+border
+border-tcd-gold/10
+
+shadow-lg
+
+hover:shadow-xl
+hover:-translate-y-1
+
+transition-all
+
+p-6">
 
                 <p className="text-gray-700 mb-2">
+<div className="mb-3">
 
+  {TCDIcons.coin}
+
+</div>
                   Participants
 
                 </p>
@@ -285,10 +405,28 @@ export default function AdminLeaderboardsPage() {
 
               </div>
 
-              <div className="bg-white border rounded-3xl p-6 shadow-sm">
+              <div className="bg-white
+
+rounded-[28px]
+
+border
+border-tcd-gold/10
+
+shadow-lg
+
+hover:shadow-xl
+hover:-translate-y-1
+
+transition-all
+
+p-6">
 
                 <p className="text-gray-700 mb-2">
+<div className="mb-3">
 
+  {TCDIcons.mastery}
+
+</div>
                   Average Score
 
                 </p>
@@ -340,19 +478,16 @@ export default function AdminLeaderboardsPage() {
                     <div
                       key={attempt.id}
                       className={`border rounded-3xl p-6 shadow-sm ${
-                        index === 0
+                       index === 0
+  ? "bg-gradient-to-r from-[#FFF4C7] to-[#FFE082] border-[#D4AF37]"
 
-                          ? "bg-yellow-100"
+  : index === 1
+  ? "bg-gradient-to-r from-[#F5F5F5] to-[#E5E7EB]"
 
-                          : index === 1
+  : index === 2
+  ? "bg-gradient-to-r from-[#FFE0B2] to-[#FFCC80]"
 
-                          ? "bg-gray-100"
-
-                          : index === 2
-
-                          ? "bg-orange-100"
-
-                          : "bg-white"
+  : "bg-white"
                       }`}
                     >
 
@@ -362,41 +497,94 @@ export default function AdminLeaderboardsPage() {
 
                           <h2 className="text-3xl font-bold mb-2">
 
-                            Rank
-                            {" "}
-                            #{index + 1}
+                            <div
+  className="
+    flex
+    items-center
+    gap-3
+  "
+>
+
+  <div className="w-7 h-7">
+
+    {TCDIcons.achievement}
+
+  </div>
+
+  <h2
+    className="
+      text-3xl
+      font-black
+    "
+  >
+
+    Rank #{index + 1}
+
+  </h2>
+
+</div>
 
                           </h2>
 
-                          <p className="text-gray-600">
+                         <div className="space-y-1">
 
-                            User:
-                            {" "}
+  <p
+    className="
+      text-xl
+      font-bold
+      text-tcd-blue
+    "
+  >
 
-                            {attempt.user_id.slice(
-                              0,
-                              8
-                            )}
+    {attempt.users?.name ||
+      "Student"}
 
-                          </p>
+  </p>
+
+  <p className="text-gray-600">
+
+    Prestige:
+    {" "}
+
+    {attempt.users
+      ?.prestige_level ||
+      "Scholar"}
+
+  </p>
+
+</div>
 
                         </div>
 
-                        <div className="text-right">
+                        <div
+  className="
+    flex
+    items-center
+    gap-2
 
-                          <h2 className="text-3xl font-bold text-green-600">
+    bg-tcd-gold/10
 
-                            {attempt.score}
+    text-tcd-blue
 
-                          </h2>
+    px-4
+    py-2
 
-                          <p className="text-gray-700 mt-1">
+    rounded-2xl
+  "
+>
 
-                            Score
+  {TCDIcons.mastery}
 
-                          </p>
+  <span
+    className="
+      font-black
+      text-2xl
+    "
+  >
+    {attempt.score}
+  </span>
 
-                        </div>
+</div>
 
                       </div>
 

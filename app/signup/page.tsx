@@ -139,10 +139,14 @@ if (!captchaToken) {
     setPassword("");
 
     await supabase.auth.signOut();
-    
-    router.replace(
-      "/login"
-    );
+
+localStorage.removeItem(
+  "tcd_demo"
+);
+
+router.replace(
+  "/login"
+);
 
   } catch (err) {
 
