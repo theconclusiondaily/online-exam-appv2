@@ -599,7 +599,7 @@ Achieve Greatness.
       {[
         {
           icon: "/icons/tcd-crown.svg",
-          title: "Crown",
+          title: "Achiever",
         },
         {
           icon: "/icons/tcd-medal.svg",
@@ -607,23 +607,23 @@ Achieve Greatness.
         },
         {
           icon: "/icons/tcd-star.svg",
-          title: "Star",
+          title: "Prestige",
         },
         {
           icon: "/icons/tcd-shield.svg",
-          title: "Shield",
+          title: "XP",
         },
         {
           icon: "/icons/tcd-target.svg",
-          title: "Target",
+          title: "Aim",
         },
         {
           icon: "/icons/tcd-flame.svg",
-          title: "Flame",
+          title: "Streak",
         },
         {
           icon: "/icons/tcd-mountain.svg",
-          title: "Mountain",
+          title: "Global Leader",
         },
         {
           icon: "/icons/mastery-star.svg",
