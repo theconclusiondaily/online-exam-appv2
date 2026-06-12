@@ -75,25 +75,17 @@ console.log(
 
       // FETCH ONLY LIVE EXAM LEADERBOARD
 
-      const {
-        data,
-        error,
-      } = await supabase
-        .from("leaderboard")
-        .select(`
-          *,
-          users (
-            name
-          )
-        `)
-        .eq(
-          "exam_id",
-          currentLiveExam.id
-        )
-        .order("score", {
-          ascending: false,
-        })
-        .limit(10);
+     const {
+  data,
+  error,
+} = await supabase
+  .from("leaderboard_view")
+  .select("*")
+  .eq("exam_id", currentLiveExam.id)
+  .order("score", {
+    ascending: false,
+  })
+  .limit(10);
 
       if (error) {
         console.log(error);
@@ -310,8 +302,7 @@ console.log(
 
                   <h3 className="font-bold text-lg">
 
-                    {leader.users?.name ||
-                      "Student"}
+                    {leader.name || "Student"}
 
                   </h3>
 
