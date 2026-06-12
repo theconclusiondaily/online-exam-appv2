@@ -114,24 +114,45 @@ const {
   print:p-0
 "
     >
-        
+        <div
+  className="
+    p-[6px]
+
+    rounded-[38px]
+
+    bg-gradient-to-br
+
+    from-[#FFF4B0]
+
+    via-[#D4AF37]
+
+    to-[#9A7315]
+
+    shadow-[0_0_60px_rgba(212,175,55,0.25)]
+
+    max-w-4xl
+
+    w-full
+  "
+>
        <div
         className="
         relative
+        
     overflow-hidden
-          max-w-4xl
+          
           w-full
 
           bg-gradient-to-br
 from-[#243B6B]
 to-[#1A2E57]
 
-          rounded-[32px]
+          rounded-[30px]
 
-          border-[12px]
-border-[#D4AF37]
+          border-[2px]
+border-[#F5E6A5]
 shadow-2xl
-p-16
+p-6 md:p-16
 
 print:w-full
 print:max-w-none
@@ -154,8 +175,56 @@ print:text-white
   className="
     absolute
 
+    inset-4
+
+    rounded-[24px]
+
+    border
+
+    border-[#E6C15A]/35
+
+    pointer-events-none
+  "
+/>
+        <img
+  src="/icons/tcd-crown.svg"
+  className="absolute top-6 left-6 w-10 h-10 opacity-20"
+/>
+
+<img
+  src="/icons/tcd-crown.svg"
+  className="absolute top-6 right-6 w-10 h-10 rotate-90 opacity-20"
+/>
+
+<img
+  src="/icons/tcd-crown.svg"
+  className="absolute bottom-6 left-6 w-10 h-10 -rotate-90 opacity-20"
+/>
+
+<img
+  src="/icons/tcd-crown.svg"
+  className="absolute bottom-6 right-6 w-10 h-10 rotate-180 opacity-20"
+/>
+        
+  <div
+  className="
+    absolute
+
     top-6
     left-6
+
+    px-4
+    py-3
+
+    rounded-2xl
+
+    bg-black/20
+
+    backdrop-blur-md
+
+    border
+
+    border-[#D4AF37]/30
   "
 >
 
@@ -191,30 +260,45 @@ print:text-white
     top-6
     right-6
 
-    text-right
+    px-4
+    py-3
+
+    rounded-2xl
+
+    bg-black/20
+
+    backdrop-blur-md
+
+    border
+
+    border-[#D4AF37]/30
   "
 >
 
   <p
     className="
-      text-[#E6C15A]
+text-[#E6C15A]
 
-      font-bold
+font-black
 
-      text-sm
+tracking-wider
 
-      tracking-wide
-    "
+text-lg
+"
   >
     ISSUED ON
   </p>
 
   <p
-    className="
-      text-[#E6C15A]
+   className="
+text-[#E6C15A]
 
-      font-black
-    "
+font-black
+
+tracking-wider
+
+text-lg
+"
   >
     {new Date(
       certificate.issued_at
@@ -228,29 +312,47 @@ print:text-white
     src="/logo.png"
     alt="TCD Watermark"
     className="
-  w-[950px]
-  h-[950px]
+  w-[720px]
+  h-[720px]
   object-contain
-  opacity-[0.04]
-
+  opacity-[0.05]
+select-none
 "
 
   />
   </div>
         <div className="text-center">
 
-          <img
-            src="/logo.png"
-            alt="TCD"
-            className="
-              w-24
-              h-24
+         <div className="relative inline-flex">
 
-              mx-auto
+  <div
+    className="
+      absolute
 
-              mb-4
-            "
-          />
+      inset-0
+
+      blur-3xl
+
+      bg-[#D4AF37]/20
+
+      rounded-full
+    "
+  />
+
+  <img
+    src="/logo.png"
+    className="
+      relative
+
+      w-24
+      h-24
+
+      mx-auto
+    "
+    alt="TCD"
+  />
+
+</div>
 
           <img
             src="/icons/achievement-medal.svg"
@@ -266,7 +368,7 @@ print:text-white
           />
  <p
             className="
-              text-gray-700
+              text-[#D4AF37]
 
               mt-4
             "
@@ -289,47 +391,64 @@ print:text-white
 
         <div className="text-center mt-10">
 
-          <p className="text-gray-700">
-            This certificate is awarded to
-          </p>
+          <p className="text-gray-300 mt-6">
+  This certificate is awarded to
+</p>
 
-          <h2
-            className="
-              text-7xl tracking-wide
-              font-black
+<p className="text-gray-300 mt-2">
+  For successfully participating in
+</p>
 
-              text-[#D4AF37]
+<h3
+  className="
+    text-3xl
+    md:text-4xl
 
-              mt-3
-            "
-          >
-            {student?.name}
-          </h2>
+    font-bold
 
-        </div>
+    text-white
 
-        <div className="text-center mt-10">
+    mt-3
+  "
+>
+  {exam?.title}
+</h3>
 
-          <p className="text-gray-700">
-            For successfully participating in
-          </p>
+<div className="flex justify-center mt-6">
 
-          <h3
-            className="
-              text-3xl
-              font-bold
+  <div className="w-48 h-[2px] bg-[#D4AF37]" />
 
-              text-tcd-gold
+</div>
 
-              mt-3
-            "
-          >
-            {exam?.title}
-          </h3>
+<h2
+  className="
+    text-5xl
+
+    md:text-7xl
+
+    font-black
+
+    tracking-[0.18em]
+
+    uppercase
+
+    text-[#E6C15A]
+
+    mt-6
+  "
+>
+  {student?.name}
+</h2>
+
+<div className="flex justify-center mt-5">
+
+  <div className="w-72 h-[2px] bg-[#D4AF37]" />
+
+</div>
 <div
   className="
     grid
-    grid-cols-3
+   grid-cols-2 md:grid-cols-4
 
     gap-6
 
@@ -342,20 +461,34 @@ print:text-white
 >
 
   <div
-  className="
-    bg-white/10
+ className="
+bg-white/10
 
-    backdrop-blur-sm
+backdrop-blur-md
 
-    rounded-2xl
+rounded-3xl
 
-    p-5
+p-6
 
-    border
-    border-white/20
-  "
+border
+
+border-[#D4AF37]/20
+
+shadow-xl
+
+transition-all
+
+duration-300
+
+hover:scale-105
+
+hover:border-[#D4AF37]/50
+"
 >
-
+<img
+  src="/icons/tcd-medal.svg"
+  className="w-8 h-8 mx-auto mb-3"
+/>
   <p className="text-gray-300">
     Score
   </p>
@@ -375,19 +508,33 @@ print:text-white
 </div>
 <div
   className="
-    bg-white/10
+bg-white/10
 
-    backdrop-blur-sm
+backdrop-blur-md
 
-    rounded-2xl
+rounded-3xl
 
-    p-5
+p-6
 
-    border
-    border-white/20
-  "
+border
+
+border-[#D4AF37]/20
+
+shadow-xl
+
+transition-all
+
+duration-300
+
+hover:scale-105
+
+hover:border-[#D4AF37]/50
+"
 >
-
+<img
+  src="/icons/tcd-crown.svg"
+  className="w-8 h-8 mx-auto mb-3"
+/>
   <p className="text-gray-300">
     Prestige
   </p>
@@ -409,19 +556,33 @@ print:text-white
 
   <div
   className="
-    bg-white/10
+bg-white/10
 
-    backdrop-blur-sm
+backdrop-blur-md
 
-    rounded-2xl
+rounded-3xl
 
-    p-5
+p-6
 
-    border
-    border-white/20
-  "
+border
+
+border-[#D4AF37]/20
+
+shadow-xl
+
+transition-all
+
+duration-300
+
+hover:scale-105
+
+hover:border-[#D4AF37]/50
+"
 >
-
+<img
+  src="/icons/tcd-star.svg"
+  className="w-8 h-8 mx-auto mb-3"
+/>
   <p className="text-gray-300">
     Percentage
   </p>
@@ -439,7 +600,58 @@ print:text-white
   </p>
 
 </div>
+<div
+ className="
+bg-white/10
 
+backdrop-blur-md
+
+rounded-3xl
+
+p-6
+
+border
+
+border-[#D4AF37]/20
+
+shadow-xl
+
+transition-all
+
+duration-300
+
+hover:scale-105
+
+hover:border-[#D4AF37]/50
+"
+>
+
+  <img
+    src="/icons/tcd-shield.svg"
+    className="w-8 h-8 mx-auto mb-3"
+  />
+
+  <p className="text-gray-300">
+
+    Verified
+
+  </p>
+
+  <p
+    className="
+      text-[#E6C15A]
+
+      font-black
+
+      text-xl
+    "
+  >
+
+    TCD
+
+  </p>
+
+</div>
 </div>
         </div>
 
@@ -475,9 +687,11 @@ print:text-white
       src="/signature.png"
       alt="Founder Signature"
       className="
-        h-25
-        object-contain
-      "
+h-24
+md:h-28
+
+object-contain
+"
     />
 
     <div
@@ -491,14 +705,35 @@ print:text-white
       "
     />
 
-   <p
-  className="
-    font-bold
-    text-[#E6C15A]
-  "
->
-  The Conclusion Daily
-</p>
+  <div className="flex justify-center items-center gap-3 mt-4">
+
+  <img
+    src="/icons/tcd-crown.svg"
+    className="w-8 h-8"
+    alt=""
+  />
+
+  <span
+    className="
+      text-[#E6C15A]
+
+      font-black
+
+      tracking-[0.35em]
+
+      uppercase
+    "
+  >
+    The Conclusion Daily
+  </span>
+
+  <img
+    src="/icons/tcd-crown.svg"
+    className="w-8 h-8"
+    alt=""
+  />
+
+</div>
 
 <p className="text-gray-300">
   Official Certification Authority
@@ -533,32 +768,234 @@ print:text-white
 
 </div>
         </div>
+<div className="space-y-2">
+
+  <p
+    className="
+      text-[#E6C15A]
+
+      font-bold
+
+      tracking-[0.25em]
+
+      uppercase
+    "
+  >
+
+    Recognizing Excellence
+
+  </p>
+
+  <p className="text-gray-300">
+
+    Inspiring Success • Building Futures
+
+  </p>
+
+</div>
+        {/* NEXT STEPS */}
+
+<div className="mt-12 flex flex-col print:hidden">
 <div
   className="
-    mt-10
+    mt-12
+
+    rounded-3xl
+
+    border
+
+    border-[#D4AF37]/30
+
+    bg-white/5
+
+    backdrop-blur-sm
+
+    p-6
 
     text-center
-
-    text-sm
-
-    text-gray-300
   "
 >
 
-  © The Conclusion Daily 2026
+  <img
+    src="/icons/tcd-medal.svg"
+    className="w-12 h-12 mx-auto mb-4"
+    alt=""
+  />
+
+  <h3
+    className="
+      text-xl
+
+      font-black
+
+      text-[#E6C15A]
+    "
+  >
+
+    Officially Certified
+
+  </h3>
+
+  <p className="text-gray-300 mt-2">
+
+    This achievement is now part of your permanent TCD academic record.
+
+  </p>
 
 </div>
-        <div className="mt-10 text-center">
+  
 
-          <PrintButton />
+  <div
+    className="
+      flex
+     flex-col
+md:flex-row
 
-        </div>
+      justify-center
+
+      gap-4
+    "
+  >
+
+    <PrintButton />
+
+    <a
+      href="/dashboard?tab=profile"
+      className="
+        flex
+        items-center
+
+        gap-3
+
+        px-6
+        py-4
+
+        rounded-2xl
+
+        bg-[#D4AF37]
+
+        text-[#243B6B]
+
+        font-bold
+
+        hover:scale-105
+
+        transition
+      "
+    >
+
+      <img
+        src="/icons/tcd-crown.svg"
+        className="w-6 h-6"
+        alt=""
+      />
+
+      My Profile
+
+    </a>
+
+    <a
+      href="/dashboard"
+      className="
+        flex
+        items-center
+
+        gap-3
+
+        px-6
+        py-4
+
+        rounded-2xl
+
+        bg-white/10
+
+        border
+
+        border-[#D4AF37]/30
+
+        text-white
+
+        font-bold
+
+        hover:bg-white/20
+
+        transition
+      "
+    >
+
+      <img
+        src="/icons/tcd-target.svg"
+        className="w-6 h-6"
+        alt=""
+      />
+
+      Continue Learning
+
+    </a>
+
+  </div>
+
+
+  <div className="flex justify-center mt-4">
+
+  <a
+    href="/dashboard"
+    className="
+      relative
+
+      flex
+      items-center
+      justify-center
+
+      w-56
+      h-14
+
+      rounded-2xl
+
+      bg-[#243B6B]
+
+      border
+      border-[#D4AF37]
+
+      text-white
+
+      font-bold
+
+      shadow-lg
+
+      hover:bg-[#1A2E57]
+
+      transition
+    "
+  >
+
+    <img
+      src="/icons/tcd-shield.svg"
+      className="
+        absolute
+        left-5
+
+        w-5
+        h-5
+      "
+      alt=""
+    />
+
+    Dashboard
+
+  </a>
+
+</div>
+
+ 
+
+</div>
 <div
   className="
     absolute
 
     bottom-6
-    right-8
+    right-14
   "
 >
 
@@ -578,7 +1015,7 @@ print:text-white
 
 </div>
       </div>
-
+</div>
     </main>
 
   );

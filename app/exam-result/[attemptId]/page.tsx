@@ -155,6 +155,7 @@ const {
     achievement_id,
     achievements (
       title,
+      description,
       reward_tcd
     )
   `)
@@ -174,9 +175,48 @@ if (
   achievements.length > 0
 ) {
 
-   setUnlockedAchievements(
-  achievements || []
-);
+  const formattedAchievements =
+    achievements.map(
+      (item: any) => ({
+
+        id: item.id,
+
+        title:
+          item.achievements?.title,
+
+        description:
+          item.achievements?.description,
+
+        reward_tcd:
+          item.achievements?.reward_tcd,
+
+      })
+    );
+
+  setUnlockedAchievements(
+    formattedAchievements
+  );
+
+  // Mark as seen so they don't show again
+
+  await supabase
+
+    .from("user_achievements")
+
+    .update({
+      seen: true,
+    })
+
+    .eq(
+      "user_id",
+      user.id
+    )
+
+    .eq(
+      "seen",
+      false
+    );
+
 }
 
         const {
@@ -916,69 +956,7 @@ p-4">
       </h3>
 
     </div>
-{
-  unlockedAchievements.length > 0 && (
 
-    <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm mt-6">
-
-      <h2 className="text-2xl font-black text-tcd-blue mb-4">
-        🎉 New Achievements Unlocked
-      </h2>
-
-      <div className="space-y-4">
-
-        {unlockedAchievements.map(
-          (achievement) => (
-
-            <div
-              key={achievement.id}
-              className="
-                flex
-                items-center
-                gap-4
-                bg-gradient-to-r
-                from-yellow-50
-                to-white
-                border
-                border-yellow-200
-                rounded-2xl
-                p-4
-              "
-            >
-
-              <img
-                src="/icons/achievement-medal.svg"
-                alt="Achievement"
-                className="w-12 h-12"
-              />
-
-              <div>
-
-                <h3 className="font-black text-tcd-blue">
-                  {achievement.title}
-                </h3>
-
-                <p className="text-sm text-gray-600">
-                  {achievement.description}
-                </p>
-
-                <p className="font-bold text-yellow-600 mt-1">
-                  +{achievement.reward_tcd} TCD Credits
-                </p>
-
-              </div>
-
-            </div>
-
-          )
-        )}
-
-      </div>
-
-    </div>
-
-  )
-}
     <div className="text-center">
 
       <p className="text-gray-700 mb-2">
@@ -998,6 +976,7 @@ p-4">
   </div>
 
 </div>
+
 
 <div className="bg-white rounded-3xl border shadow-sm p-5 mb-4">
 
@@ -1240,6 +1219,125 @@ p-4">
   )}
 
 </div>
+{
+  unlockedAchievements.length > 0 && (
+
+    <div className="bg-white rounded-[28px] p-5 border border-gray-100 shadow-sm mt-6">
+
+      <div className="flex items-center gap-3 mb-5">
+
+  <img
+    src="/icons/achievement-medal.svg"
+    alt="Achievements"
+    className="w-10 h-10"
+  />
+
+  <h2 className="text-2xl font-black text-tcd-blue">
+    New Achievements Unlocked
+  </h2>
+
+</div>
+
+      <div className="space-y-4">
+
+        {unlockedAchievements.map((achievement) => (
+
+          <div
+            key={achievement.id}
+            className="
+              flex
+              items-center
+              gap-4
+
+              p-5
+
+              rounded-2xl
+
+              border
+              border-tcd-gold/20
+
+              bg-gradient-to-r
+              from-[#FFFDF5]
+              to-white
+
+              shadow-sm
+            "
+          >
+
+            <img
+              src="/icons/achievement-medal.svg"
+              alt="Achievement"
+              className="w-14 h-14"
+            />
+
+            <div className="flex-1">
+
+              <h3 className="text-xl font-black text-tcd-blue">
+
+                {achievement.title}
+
+              </h3>
+
+              <p className="text-gray-600 mt-1">
+
+                {achievement.description}
+
+              </p>
+
+              <div className="flex flex-wrap gap-2 mt-3">
+
+                <span
+                  className="
+                    px-3
+                    py-1
+
+                    rounded-full
+
+                    bg-green-100
+                    text-green-700
+
+                    text-sm
+                    font-bold
+                  "
+                >
+                  Unlocked
+                </span>
+
+                {achievement.reward_tcd > 0 && (
+
+                  <span
+                    className="
+                      px-3
+                      py-1
+
+                      rounded-full
+
+                      bg-tcd-gold/10
+                      text-tcd-gold
+
+                      text-sm
+                      font-bold
+                    "
+                  >
+                    +{achievement.reward_tcd} TCD Credits
+                  </span>
+
+                )}
+
+              </div>
+
+            </div>
+
+          </div>
+
+        ))}
+
+      </div>
+
+    </div>
+
+  )
+}
       {/* Action Buttons */}
 
       <div className="flex flex-wrap gap-2 justify-center">

@@ -96,17 +96,19 @@ ${
 
     ? "bg-blue-600 text-white ring-4 ring-blue-200"
 
+    : marked && answered
+
+    ? "bg-purple-600 text-white"
+
+    : marked
+
+    ? "bg-yellow-500 text-black"
+
     : answered
 
     ? "bg-green-600 text-white"
 
-    : marked
-
-    ? "bg-yellow-500 text-white"
-
-    : visitedQuestions.includes(
-        index
-      )
+    : visitedQuestions.includes(index)
 
     ? "bg-gray-400 text-white"
 

@@ -12,11 +12,11 @@ import {
 } from "next/navigation";
 
 import dynamic from "next/dynamic";
-import Draggable from "react-draggable";
+
 import { toast } from "sonner";
 
 import { supabase } from "@/lib/supabase/client";
-
+import TCDLoader from "@/components/common/TCDLoader";
 import ExamTopStats from "@/components/exam/ExamTopStats";
 
 import useExamAutosave from "@/hooks/useExamAutosave";
@@ -56,11 +56,18 @@ const QuestionPalette = dynamic(
 );
 
 
+
 export default function ExamPage() {
 
   const params = useParams();
 
   const router = useRouter();
+  const [
+  questionCache,
+  setQuestionCache
+] = useState<
+  Record<number, any>
+>({});
 const [
   pendingSave,
   setPendingSave
@@ -93,10 +100,6 @@ const [cameraStream,
     useRef(0);
 
   
-const [
-  prefetchedQuestion,
-  setPrefetchedQuestion
-] = useState<any>(null);
   const [answers,
     setAnswers] =
     useState<any>({});
@@ -167,6 +170,49 @@ const [loading,
   const [userId,
     setUserId] =
     useState("");
+    const [cameraPosition, setCameraPosition] =
+  useState({
+    x: 0,
+    y: 180,
+  });
+  const [isDragging, setIsDragging] =
+  useState(false);
+
+const dragOffset =
+  useRef({
+    x: 0,
+    y: 0,
+  });
+
+useEffect(() => {
+
+  const saved =
+    localStorage.getItem(
+      `camera-position-${examId}`
+    );
+
+  if (saved) {
+
+    setCameraPosition(
+      JSON.parse(saved)
+    );
+
+  } else {
+
+    setCameraPosition({
+
+      x:
+        window.innerWidth > 1024
+          ? window.innerWidth - 220
+          : window.innerWidth - 110,
+
+      y: 180,
+
+    });
+
+  }
+
+}, [examId]);
 const [
   sessionToken,
   setSessionToken
@@ -788,6 +834,57 @@ useEffect(() => {
 
   submitted,
 ]);
+useEffect(() => {
+
+  function handleMove(e: PointerEvent) {
+
+    if (!isDragging) return;
+
+    setCameraPosition({
+
+      x:
+        e.clientX -
+        dragOffset.current.x,
+
+      y:
+        e.clientY -
+        dragOffset.current.y,
+
+    });
+
+  }
+
+  function handleUp() {
+
+    setIsDragging(false);
+
+  }
+
+  window.addEventListener(
+    "pointermove",
+    handleMove
+  );
+
+  window.addEventListener(
+    "pointerup",
+    handleUp
+  );
+
+  return () => {
+
+    window.removeEventListener(
+      "pointermove",
+      handleMove
+    );
+
+    window.removeEventListener(
+      "pointerup",
+      handleUp
+    );
+
+  };
+
+}, [isDragging]);
   useExamAutosave({
 
     answers,
@@ -972,6 +1069,21 @@ async function fetchQuestionByIndex(
 
   return;
 }
+
+if (
+  questionCache[index]
+) {
+
+  setCurrentQuestionData(
+    questionCache[index]
+  );
+
+  setCurrentQuestion(index);
+
+  return;
+}
+
+
 console.log(
   "FETCH QUESTION TOKEN:",
   sessionToken
@@ -1014,39 +1126,47 @@ console.log(
   result.totalQuestions
 );
 
-setTotalQuestions(
-  result.totalQuestions || 1
-);
+const total =
+  result.totalQuestions || 1;
+
+setTotalQuestions(total);
+
+if (
+  index + 1 < total
+) {
+
+  prefetchQuestion(
+    index + 1
+  );
+
+}
 console.log(
   "FETCH TOTAL QUESTIONS:",
   result.totalQuestions
 );
     const question =
       result.data;
+const shuffledQuestion = {
+  ...question,
 
-    const shuffledQuestion = {
-
-      ...question,
-
-      shuffledOptions: [
-        question.option_a,
-        question.option_b,
-        question.option_c,
-        question.option_d,
-      ].sort(
-        () =>
-          Math.random() - 0.5
-      ),
-    };
+  shuffledOptions: [
+    question.option_a,
+    question.option_b,
+    question.option_c,
+    question.option_d,
+  ].sort(() => Math.random() - 0.5),
+};
+setQuestionCache(prev => ({
+  ...prev,
+  [index]: shuffledQuestion,
+}));
 setCurrentQuestionData(
   shuffledQuestion
 );
-   
 
-console.log(
-  "CURRENT QUESTION:",
-  shuffledQuestion
-);
+setCurrentQuestion(index);
+setCurrentQuestionData(shuffledQuestion);
+
     setCurrentQuestion(
       index
     );
@@ -1059,6 +1179,7 @@ console.log(
   );
 }
   }
+  
 }
 async function prefetchQuestion(
   index: number
@@ -1112,9 +1233,10 @@ async function prefetchQuestion(
         ),
       };
 
-      setPrefetchedQuestion(
-        shuffledQuestion
-      );
+      setQuestionCache(prev => ({
+  ...prev,
+  [index]: shuffledQuestion,
+}));
     }
 
   } catch (error) {
@@ -1311,7 +1433,9 @@ const shuffledQuestion = {
 setCurrentQuestionData(
   shuffledQuestion
 );
-
+setQuestionCache({
+  0: shuffledQuestion,
+});
   setCurrentQuestion(0);
 }
 
@@ -1464,19 +1588,65 @@ if (!newValue) {
   examId,
 ]); 
 
-  async function submitExam() {
+  
+async function submitExam() {
 
-   if (submitting) {
+  if (submitting) {
+    return;
+  }
 
-  return;
+  if (submitted) {
+    return;
+  }
+
+      setSubmitting(true);
+// Flush pending answer before submitting
+if (
+  pendingSave &&
+  sessionToken
+) {
+
+  try {
+
+    await fetch(
+      "/api/exam/save-answer",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+
+        body: JSON.stringify({
+
+          examId,
+
+          questionId:
+            pendingSave.questionId,
+
+          selectedOption:
+            pendingSave.selectedOption,
+
+          sessionToken,
+
+        }),
+      }
+    );
+
+    // Prevent duplicate save from debounce
+    setPendingSave(null);
+
+  } catch (error) {
+
+    console.error(
+      "Failed to flush pending answer",
+      error
+    );
+
+  }
 }
-if (submitted) {
-
-  return;
-}
-    setSubmitting(true);
-
-
+  
     const response = await fetch(
   "/api/exam/submit",
   {
@@ -1820,9 +1990,9 @@ console.log(
   }
 );
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading...
-      </div>
+      <TCDLoader
+  text="Preparing Your Exam..."
+/>
     );
   }
 
@@ -1880,11 +2050,9 @@ if (submitted) {
 
         </h1>
 
-        <p className="text-gray-600">
-
-          Preparing your result...
-
-        </p>
+        <TCDLoader
+  text="Calculating Your Score..."
+/>
 
       </div>
 
@@ -2027,47 +2195,62 @@ if (submitted) {
         </div>
 
       </div>
-<Draggable>
 
-  <div
-    className="
-      fixed
+<div
+  style={{
+    position: "absolute",
+    left: cameraPosition.x,
+    top: cameraPosition.y,
+    zIndex: 9999,
+  }}
 
-      top-[220px]
-      right-4
+  onPointerDown={(e) => {
 
-      w-20
-      h-20
+    setIsDragging(true);
 
-      lg:w-40
-      lg:h-40
+    dragOffset.current = {
+      x:
+        e.clientX -
+        cameraPosition.x,
 
-      overflow-hidden
+      y:
+        e.clientY -
+        cameraPosition.y,
+    };
 
-      rounded-2xl
+  }}
 
-      border
-      border-white
 
-      shadow-2xl
 
-      bg-black
+  className="
+    w-20
+    h-20
 
-      z-50
+    lg:w-40
+    lg:h-40
 
-      cursor-move
+    overflow-hidden
 
-      touch-none
-    "
-  >
+    rounded-2xl
 
-    <StudentCameraStream
-      stream={cameraStream}
-    />
+    border
+    border-white
 
-  </div>
+    shadow-2xl
 
-</Draggable>
+    bg-black
+
+    cursor-move
+
+    select-none
+  "
+>
+
+  <StudentCameraStream
+    stream={cameraStream}
+  />
+
+</div>
 
       <div className="mt-2 mb-4 overflow-x-auto scrollbar-hide">
 
@@ -2087,8 +2270,14 @@ if (submitted) {
   answers={answers}
   currentQuestion={currentQuestion}
   setCurrentQuestion={
-     setCurrentQuestion
+  async (index: number) => {
+
+    await fetchQuestionByIndex(
+      index
+    );
+
   }
+}
   visitedQuestions={
     visitedQuestions
   }
@@ -2118,13 +2307,14 @@ if (submitted) {
 
           <div className="space-y-4">
 
-            {currentQuestionData
-  ?.shuffledOptions
-              ?.map(
-                (
-                  option: string,
-                  index: number
-                ) => (
+            {(
+  currentQuestionData?.shuffledOptions ?? [
+    currentQuestionData?.option_a,
+    currentQuestionData?.option_b,
+    currentQuestionData?.option_c,
+    currentQuestionData?.option_d,
+  ].filter(Boolean)
+).map((option: string, index: number) => (
 
                   <button
                     key={`${option}-${index}`}
@@ -2261,30 +2451,9 @@ if (submitted) {
     return;
   }
 
-  if (
-  prefetchedQuestion &&
-  nextIndex === currentQuestion + 1
-) {
-
-  setCurrentQuestionData(
-    prefetchedQuestion
-  );
-
-  setCurrentQuestion(
-    nextIndex
-  );
-
-  prefetchQuestion(
-    nextIndex + 1
-  );
-
-} else {
-
   await fetchQuestionByIndex(
-    nextIndex
-  );
-
-}
+  nextIndex
+);
 }}
 
       className="
@@ -2343,37 +2512,6 @@ hover:bg-tcd-blue-light
 
       </div>
 
-  <div
-  className="
-    hidden
-
-    2xl:flex
-
-    fixed
-
-    top-1/3
-    left-2
-
-    -translate-y-1/2
-
-    w-[170px]
-
-    z-10
-
-    scale-75
-
-    origin-right
-  "
->
-
-  <LiveEventFeed />
-
-</div>
-<XPRewardPopup
-  show={showXP}
-  xp={50}
-  levelUp={levelUp}
-/>
     </div>
   );
 }

@@ -198,7 +198,7 @@ const {
     }
   )
 
-  .limit(10);
+  
 
 console.log(
   recentExamData

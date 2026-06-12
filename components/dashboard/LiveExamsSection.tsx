@@ -17,8 +17,9 @@ const arenaExams =
 const dailyChallenges =
   arenaExams.filter(
     (exam) =>
-      exam.challenge_type ===
-      "DAILY"
+      !exam.challenge_type ||
+      exam.challenge_type === "NONE" ||
+      exam.challenge_type === "DAILY"
   );
 
 const weeklyChallenges =
@@ -48,6 +49,7 @@ const scholarshipChallenges =
       exam.challenge_type ===
       "SCHOLARSHIP"
   );
+  
   console.log(
   "Daily",
   dailyChallenges.length
@@ -119,6 +121,7 @@ console.log(
   "Institute Exams",
   instituteExams
 );
+
 const renderArenaSection = (
   title: string,
   icon: string,
