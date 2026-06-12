@@ -375,6 +375,63 @@ select-none
           >
             The Conclusion Daily
           </p>
+          <div className="flex justify-center mb-4">
+
+  <div
+    className="
+      flex
+
+      items-center
+
+      gap-3
+
+      px-6
+
+      py-2
+
+      rounded-full
+
+      bg-[#D4AF37]/15
+
+      border
+
+      border-[#D4AF37]/30
+    "
+  >
+
+    <img
+      src="/icons/tcd-crown.svg"
+      className="w-5 h-5"
+      alt=""
+    />
+
+    <span
+      className="
+        text-[#E6C15A]
+
+        text-sm
+
+        font-bold
+
+        tracking-[0.35em]
+
+        uppercase
+      "
+    >
+
+      Official Recognition
+
+    </span>
+
+    <img
+      src="/icons/tcd-crown.svg"
+      className="w-5 h-5"
+      alt=""
+    />
+
+  </div>
+
+</div>
           <h1
             className="
               text-4xl
@@ -416,7 +473,8 @@ select-none
 
 <div className="flex justify-center mt-6">
 
-  <div className="w-48 h-[2px] bg-[#D4AF37]" />
+  <div className="relative
+inline-block w-48 h-[2px] bg-[#D4AF37]"  />
 
 </div>
 
@@ -438,8 +496,21 @@ select-none
   "
 >
   {student?.name}
+  
 </h2>
+<div
+  className="
+    absolute
 
+    inset-0
+
+    blur-3xl
+
+    bg-[#D4AF37]/10
+
+    -z-10
+  "
+/>
 <div className="flex justify-center mt-5">
 
   <div className="w-72 h-[2px] bg-[#D4AF37]" />
@@ -694,16 +765,23 @@ object-contain
 "
     />
 
-    <div
-      className="
-        border-t-2
-        border-[#E6C15A]
+   <div
+  className="
+    w-72
 
-        w-64
+    h-[2px]
 
-        mt-2
-      "
-    />
+    bg-gradient-to-r
+
+    from-transparent
+
+    via-[#E6C15A]
+
+    to-transparent
+
+    mt-3
+  "
+/>
 
   <div className="flex justify-center items-center gap-3 mt-4">
 
@@ -735,8 +813,36 @@ object-contain
 
 </div>
 
-<p className="text-gray-300">
+<p
+  className="
+    text-[#E6C15A]
+
+    font-bold
+
+    tracking-[0.2em]
+
+    uppercase
+
+    mt-3
+  "
+>
+
   Official Certification Authority
+
+</p>
+
+<p
+  className="
+    text-gray-400
+
+    text-sm
+
+    mt-1
+  "
+>
+
+  The Conclusion Daily
+
 </p>
 
   </div>
@@ -751,25 +857,87 @@ object-contain
     "
   >
 
+    <div
+  className="
+    w-36
+    h-36
+
+    rounded-full
+
+    bg-gradient-to-br
+
+    from-[#FFF4B0]
+
+    via-[#D4AF37]
+
+    to-[#9A7315]
+
+    p-[5px]
+
+    shadow-[0_0_40px_rgba(212,175,55,0.35)]
+  "
+>
+
+  <div
+    className="
+      w-full
+      h-full
+
+      rounded-full
+
+      bg-[#243B6B]
+
+      flex
+
+      items-center
+
+      justify-center
+
+      border
+
+      border-[#F5E6A5]
+    "
+  >
+
     <img
       src="/logo.png"
       alt="Official Seal"
       className="
-        w-32
-        h-32
+        w-20
+        h-20
 
         object-contain
-
-        opacity-90
       "
     />
 
   </div>
 
 </div>
+
+  </div>
+
+</div>
         </div>
 <div className="space-y-2">
+<div className="flex justify-center my-8">
 
+  <div
+    className="
+      w-60
+
+      h-[2px]
+
+      bg-gradient-to-r
+
+      from-transparent
+
+      via-[#E6C15A]
+
+      to-transparent
+    "
+  />
+
+</div>
   <p
     className="
       text-[#E6C15A]
