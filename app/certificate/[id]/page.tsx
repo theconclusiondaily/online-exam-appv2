@@ -1,8 +1,11 @@
 import { notFound } from "next/navigation";
 import { createClient }
 from "@/lib/supabase/server";
+import SetCertificateTitle from "@/components/certificate/SetCertificateTitle";
 import PrintButton from
 "@/components/certificate/PrintButton";
+import QRCode from "qrcode";
+
 export default async function CertificatePage({
   params,
 }: {
@@ -95,13 +98,24 @@ const {
   )
 
   .single();
+const verificationUrl =
+  `https://theconclusiondaily.com/verify/${certificate.certificate_number}`;
 
+const qrCode =
+  await QRCode.toDataURL(
+    verificationUrl,
+    {
+      width: 220,
+      margin: 1,
+    }
+  );
   if (!certificate)
     notFound();
 
   return (
 
     <main
+    
             className="
   min-h-screen
   bg-[#243B6B]
@@ -114,6 +128,11 @@ const {
   print:p-0
 "
     >
+      <SetCertificateTitle
+  studentName={student?.name || "Student"}
+  examTitle={exam?.title || "Certificate"}
+  issuedDate={new Date(certificate.issued_at).toLocaleDateString("en-GB")}
+/>
         <div
   className="
     p-[6px]
@@ -135,41 +154,46 @@ const {
     w-full
   "
 >
-       <div
-        className="
-        relative
-        
-    overflow-hidden
-          
-          w-full
+  <div
+  id="certificate-wrapper"
+   className="
+    w-[90%]
+    mx-auto
+    pl-2
+    pr-4
+  "
+>
+  
 
-          bg-gradient-to-br
+       <div
+       id="certificate"
+       className="
+       certificate-print
+relative
+overflow-hidden
+
+w-[210mm]
+h-[297mm]
+
+mx-auto
+
+bg-gradient-to-br
 from-[#243B6B]
 to-[#1A2E57]
 
-          rounded-[30px]
+border-[10px]
+border-[#D4AF37]
 
-          border-[2px]
-border-[#F5E6A5]
-shadow-2xl
-p-6 md:p-16
+rounded-none
 
-print:w-full
-print:max-w-none
-print:w-full
-print:max-w-none
-print:min-h-0
-print:h-auto
-print:rounded-none
-print:shadow-none
+shadow-none
+
+p-6
+
+print:w-[210mm]
+print:h-[297mm]
 print:p-8
-print:rounded-none
-print:shadow-none
-print:border-[10px]
-print:overflow-hidden
-print:bg-[#243B6B]
-print:text-white
-        "
+"
       >
         <div
   className="
@@ -244,9 +268,13 @@ print:text-white
 
   <p
     className="
-      text-[#E6C15A]
+      text-[#FFF4B0]
 
-      font-black
+font-black
+
+tracking-wider
+
+text-lg
     "
   >
     {certificate.certificate_number}
@@ -311,11 +339,15 @@ text-lg
   <img
     src="/logo.png"
     alt="TCD Watermark"
-    className="
-  w-[720px]
-  h-[720px]
-  object-contain
-  opacity-[0.05]
+   className="
+w-[560px]
+
+h-[560px]
+
+object-contain
+
+opacity-[0.025]
+
 select-none
 "
 
@@ -344,8 +376,8 @@ select-none
     className="
       relative
 
-      w-24
-      h-24
+      w-16
+      h-16
 
       mx-auto
     "
@@ -354,19 +386,7 @@ select-none
 
 </div>
 
-          <img
-            src="/icons/achievement-medal.svg"
-            alt="Certificate"
-            className="
-              w-16
-              h-16
-
-              mx-auto
-
-              mb-4
-            "
-          />
- <p
+          <p
             className="
               text-[#D4AF37]
 
@@ -432,46 +452,58 @@ select-none
   </div>
 
 </div>
-          <h1
-            className="
-              text-4xl
-              font-black
+          <div
+  className="
+    inline-block
 
-              text-[#D4AF37]
-            "
-          >
-            Certificate of Achievement
-          </h1>
+    px-10
+
+    py-3
+
+    rounded-full
+
+    bg-gradient-to-r
+
+    from-[#FFF4B0]
+
+    via-[#D4AF37]
+
+    to-[#B88A1B]
+
+    shadow-lg
+
+    mt-2
+  "
+>
+
+  <h1
+    className="
+      text-4xl
+
+      font-black
+
+      text-[#243B6B]
+    "
+  >
+
+    Certificate of Achievement
+
+  </h1>
+
+</div>
           
 
         </div>
 
-        <div className="text-center mt-10">
+        <div className="text-center mt-5">
 
           <p className="text-gray-300 mt-6">
   This certificate is awarded to
 </p>
 
-<p className="text-gray-300 mt-2">
-  For successfully participating in
-</p>
 
-<h3
-  className="
-    text-3xl
-    md:text-4xl
 
-    font-bold
-
-    text-white
-
-    mt-3
-  "
->
-  {exam?.title}
-</h3>
-
-<div className="flex justify-center mt-6">
+<div className="flex justify-center mt-3  ">
 
   <div className="relative
 inline-block w-48 h-[2px] bg-[#D4AF37]"  />
@@ -479,24 +511,24 @@ inline-block w-48 h-[2px] bg-[#D4AF37]"  />
 </div>
 
 <h2
-  className="
-    text-5xl
-
-    md:text-7xl
-
+  className={`
+    mt-4
+    px-8
+    text-center
     font-black
+    text-[#D4AF37]
+    leading-tight
 
-    tracking-[0.18em]
-
-    uppercase
-
-    text-[#E6C15A]
-
-    mt-6
-  "
+    ${
+      student?.name?.length > 30
+        ? "text-3xl md:text-3xl"
+        : student?.name?.length > 20
+        ? "text-3xl md:text-5xl"
+        : "text-5xl md:text-6xl"
+    }
+  `}
 >
-  {student?.name}
-  
+   {student?.name?.toUpperCase()}
 </h2>
 <div
   className="
@@ -516,6 +548,39 @@ inline-block w-48 h-[2px] bg-[#D4AF37]"  />
   <div className="w-72 h-[2px] bg-[#D4AF37]" />
 
 </div>
+<p className="text-gray-300 mt-2">
+  For successfully participating in
+</p>
+
+<h3
+  className={`
+    mt-3
+
+    font-bold
+
+    text-white
+
+    text-center
+
+    max-w-[85%]
+
+    mx-auto
+
+    break-words
+
+    leading-tight
+
+    ${
+      (exam?.title?.length ?? 0) > 60
+        ? "text-xl md:text-2xl"
+        : (exam?.title?.length ?? 0) > 40
+        ? "text-2xl md:text-3xl"
+        : "text-3xl md:text-4xl"
+    }
+  `}
+>
+  {exam?.title}
+</h3>
 <div
   className="
     grid
@@ -527,7 +592,7 @@ inline-block w-48 h-[2px] bg-[#D4AF37]"  />
 
     mx-auto
 
-    mt-12
+    mt-6
   "
 >
 
@@ -539,7 +604,7 @@ backdrop-blur-md
 
 rounded-3xl
 
-p-6
+p-3
 
 border
 
@@ -558,7 +623,7 @@ hover:border-[#D4AF37]/50
 >
 <img
   src="/icons/tcd-medal.svg"
-  className="w-8 h-8 mx-auto mb-3"
+  className="w-6 h-6 mx-auto mb-3"
 />
   <p className="text-gray-300">
     Score
@@ -566,7 +631,7 @@ hover:border-[#D4AF37]/50
 
   <p
     className="
-      text-4xl
+      text-2xl
 
       font-black
 
@@ -585,7 +650,7 @@ backdrop-blur-md
 
 rounded-3xl
 
-p-6
+p-3
 
 border
 
@@ -604,7 +669,7 @@ hover:border-[#D4AF37]/50
 >
 <img
   src="/icons/tcd-crown.svg"
-  className="w-8 h-8 mx-auto mb-3"
+  className="w-6 h-6 mx-auto mb-3"
 />
   <p className="text-gray-300">
     Prestige
@@ -633,7 +698,7 @@ backdrop-blur-md
 
 rounded-3xl
 
-p-6
+p-3
 
 border
 
@@ -652,7 +717,7 @@ hover:border-[#D4AF37]/50
 >
 <img
   src="/icons/tcd-star.svg"
-  className="w-8 h-8 mx-auto mb-3"
+  className="w-6 h-6 mx-auto mb-3"
 />
   <p className="text-gray-300">
     Percentage
@@ -660,7 +725,7 @@ hover:border-[#D4AF37]/50
 
   <p
     className="
-      text-4xl
+      text-2xl
 
       font-black
 
@@ -679,7 +744,7 @@ backdrop-blur-md
 
 rounded-3xl
 
-p-6
+p-3
 
 border
 
@@ -699,7 +764,7 @@ hover:border-[#D4AF37]/50
 
   <img
     src="/icons/tcd-shield.svg"
-    className="w-8 h-8 mx-auto mb-3"
+    className="w-6 h-6 mx-auto mb-3"
   />
 
   <p className="text-gray-300">
@@ -733,7 +798,7 @@ hover:border-[#D4AF37]/50
 
             gap-6
 
-            mt-12
+            mt-6
           "
         >
         
@@ -741,13 +806,17 @@ hover:border-[#D4AF37]/50
           
 <div
   className="
-    flex
-    justify-between
+    grid
+
+    grid-cols-2
+
     items-end
 
-    mt-20
-    w-full
+    gap-12
+
+    mt-6
   "
+
 >
 
   {/* Signature */}
@@ -758,8 +827,8 @@ hover:border-[#D4AF37]/50
       src="/signature.png"
       alt="Founder Signature"
       className="
-h-24
-md:h-28
+h-48
+md:h-52
 
 object-contain
 "
@@ -767,7 +836,7 @@ object-contain
 
    <div
   className="
-    w-72
+    w-88
 
     h-[2px]
 
@@ -779,15 +848,15 @@ object-contain
 
     to-transparent
 
-    mt-3
+    mt-1
   "
 />
 
-  <div className="flex justify-center items-center gap-3 mt-4">
+  <div className="flex justify-center items-right gap-1 mt-1">
 
   <img
     src="/icons/tcd-crown.svg"
-    className="w-8 h-8"
+    className="w-6 h-6"
     alt=""
   />
 
@@ -797,7 +866,7 @@ object-contain
 
       font-black
 
-      tracking-[0.35em]
+      tracking-[0.15em]
 
       uppercase
     "
@@ -807,7 +876,7 @@ object-contain
 
   <img
     src="/icons/tcd-crown.svg"
-    className="w-8 h-8"
+    className="w-6 h-6"
     alt=""
   />
 
@@ -815,52 +884,109 @@ object-contain
 
 <p
   className="
-    text-[#E6C15A]
+    text-xs
 
-    font-bold
+    text-gray-500
 
-    tracking-[0.2em]
-
-    uppercase
-
-    mt-3
-  "
->
-
-  Official Certification Authority
-
-</p>
-
-<p
-  className="
-    text-gray-400
-
-    text-sm
+    italic
 
     mt-1
   "
 >
 
+  Digitally Signed by
   The Conclusion Daily
 
 </p>
 
-  </div>
 
-  {/* Seal */}
+  </div>
+<div
+  className="
+    flex
+    flex-col
+    items-center
+    gap-5
+  "
+>
+  <div
+  className="
+    flex
+    flex-col
+    items-center
+    gap-2
+  "
+>
 
   <div
     className="
-      flex
-      justify-end
-      flex-1
+      p-[4px]
+
+      rounded-3xl
+
+      bg-gradient-to-br
+
+      from-[#FFF4B0]
+
+      via-[#D4AF37]
+
+      to-[#9A7315]
     "
   >
 
     <div
+      className="
+        bg-white
+
+        rounded-[20px]
+
+        p-3
+      "
+    >
+
+      <img
+        src={qrCode}
+        alt="Verification QR"
+        className="w-24 h-24"
+      />
+
+    </div>
+
+  </div>
+
+  <p
+    className="
+      text-xs
+
+      font-bold
+
+      text-[#E6C15A]
+
+      uppercase
+
+      tracking-wider
+    "
+  >
+    Scan to Verify
+  </p>
+
+  <p
+    className="
+      text-[10px]
+
+      text-gray-400
+
+      text-center
+    "
+  >
+    Official Digital Verification
+  </p>
+
+</div>
+<div
   className="
-    w-36
-    h-36
+    w-28
+    h-28
 
     rounded-full
 
@@ -872,9 +998,9 @@ object-contain
 
     to-[#9A7315]
 
-    p-[5px]
+    p-[4px]
 
-    shadow-[0_0_40px_rgba(212,175,55,0.35)]
+    shadow-lg
   "
 >
 
@@ -901,10 +1027,10 @@ object-contain
 
     <img
       src="/logo.png"
-      alt="Official Seal"
+      alt="TCD Seal"
       className="
-        w-20
-        h-20
+        w-16
+        h-16
 
         object-contain
       "
@@ -913,13 +1039,12 @@ object-contain
   </div>
 
 </div>
-
-  </div>
+</div>
 
 </div>
         </div>
-<div className="space-y-2">
-<div className="flex justify-center my-8">
+<div className="space-y-1">
+<div className="flex justify-center my-4">
 
   <div
     className="
@@ -938,35 +1063,19 @@ object-contain
   />
 
 </div>
-  <p
-    className="
-      text-[#E6C15A]
 
-      font-bold
-
-      tracking-[0.25em]
-
-      uppercase
-    "
-  >
-
-    Recognizing Excellence
-
-  </p>
-
-  <p className="text-gray-300">
-
-    Inspiring Success • Building Futures
-
-  </p>
 
 </div>
         {/* NEXT STEPS */}
 
-<div className="mt-12 flex flex-col print:hidden">
+
+</div>
+</div>
+      </div>
+<div className="mt-6 flex flex-col print:hidden">
 <div
   className="
-    mt-12
+    mt-6
 
     rounded-3xl
 
@@ -978,7 +1087,7 @@ object-contain
 
     backdrop-blur-sm
 
-    p-6
+    p-4
 
     text-center
   "
@@ -1012,7 +1121,6 @@ object-contain
 
 </div>
   
-
   <div
     className="
       flex
@@ -1154,9 +1262,6 @@ md:flex-row
   </a>
 
 </div>
-
- 
-
 </div>
 <div
   className="
@@ -1166,23 +1271,6 @@ md:flex-row
     right-14
   "
 >
-
-  <span
-    className="
-      text-6xl
-
-      font-black
-
-      text-[#D4AF37]/30
-
-      tracking-widest
-    "
-  >
-    TCD
-  </span>
-
-</div>
-      </div>
 </div>
     </main>
 
