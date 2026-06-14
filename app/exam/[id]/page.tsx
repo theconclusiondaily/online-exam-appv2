@@ -55,7 +55,41 @@ const QuestionPalette = dynamic(
   }
 );
 
+function SummaryRow({
+  icon,
+  label,
+  value,
+  valueClass = "text-[#243B6B]",
+}: {
+  icon: string;
+  label: string;
+  value: number;
+  valueClass?: string;
+}) {
+  return (
+    <div className="flex items-center justify-between py-3">
 
+      <div className="flex items-center gap-3">
+
+        <img
+          src={icon}
+          alt=""
+          className="w-6 h-6"
+        />
+
+        <span className="font-semibold text-[#243B6B]">
+          {label}
+        </span>
+
+      </div>
+
+      <span className={`font-bold ${valueClass}`}>
+        {value}
+      </span>
+
+    </div>
+  );
+}
 
 export default function ExamPage() {
 
@@ -266,6 +300,8 @@ const [resumeAvailable,
   const [submitting,
     setSubmitting] =
     useState(false);
+    const [showSubmitSummary, setShowSubmitSummary] =
+  useState(false);
 const [showXP,
   setShowXP] =
   useState(false);
@@ -1975,26 +2011,29 @@ sessionStorage.setItem(
 
 }, 5000);
   }
+const answeredCount = Object.keys(answers).length;
 
+const markedCount = markedQuestions.length;
+
+const unansweredCount =
+  totalQuestions - answeredCount;
+
+const completionPercentage =
+  totalQuestions > 0
+    ? Math.round(
+        (answeredCount / totalQuestions) * 100
+      )
+    : 0;
   if (!mounted) {
 
     return null;
   }
 
   if (loading) {
-console.log(
-  "DEBUG STATE:",
-  {
-    currentQuestion,
-    totalQuestions,
-  }
-);
-    return (
-      <TCDLoader
-  text="Preparing Your Exam..."
-/>
-    );
-  }
+  return (
+    <TCDLoader text="Preparing Your Exam" />
+  );
+}
 
  if (
   alreadyAttempted &&
@@ -2040,7 +2079,11 @@ if (submitted) {
 
   return (
 
-    <main className="min-h-screen flex items-center justify-center bg-gray-50">
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br
+
+from-[#F7F9FC]
+
+to-[#EEF3FB]">
 
       <div className="text-center">
 
@@ -2066,122 +2109,276 @@ if (submitted) {
   ) {
 
     return (
-      <main className="min-h-screen p-6 flex items-center justify-center bg-gray-50">
+  <main className="min-h-screen bg-gradient-to-br from-[#F7F9FC] to-[#EEF3FB] flex items-center justify-center p-6">
 
-        <div className="max-w-2xl w-full bg-white border rounded-3xl p-6 shadow-sm">
+    <div className="w-full max-w-3xl bg-white rounded-[36px] border border-[#243B6B]/10 shadow-[0_20px_60px_rgba(36,59,107,0.12)] overflow-hidden">
 
-          <h1 className="text-2xl font-bold mb-4">
-            {examInfo.title}
-          </h1>
+      {/* Header */}
 
-          <p className="mb-4 text-gray-600">
-            {examInfo.description}
-          </p>
+      <div className="bg-gradient-to-r from-[#243B6B] to-[#36558F] px-8 py-8 text-center">
 
-          <div className="space-y-4 mb-4">
+        <img
+          src="/icons/tcd-shield.svg"
+          alt="TCD"
+          className="w-20 h-20 mx-auto mb-4"
+        />
 
-            <p>
-  Duration:
-  {" "}
-  {examInfo?.duration || 30}
-  {" "}
-  Minutes
-</p>
+        <h1 className="text-4xl font-black text-white">
+          {examInfo.title}
+        </h1>
 
-            <p>
-              Questions: {examInfo?.total_questions || 30}
+        <p className="text-[#F2D27A] mt-2 text-lg">
+          Excellence • Integrity • Performance
+        </p>
+
+      </div>
+
+      <div className="p-8">
+
+        {/* Description */}
+
+        <p className="text-center text-gray-600 text-lg mb-8">
+          {examInfo.description}
+        </p>
+
+        {/* Stats */}
+
+        <div className="grid grid-cols-2 gap-4 mb-8">
+
+          <div className="rounded-2xl bg-[#F8FAFD] border border-[#243B6B]/10 p-5">
+
+            <p className="text-sm text-gray-500">
+              Duration
+            </p>
+
+            <p className="text-3xl font-black text-[#243B6B]">
+              {examInfo?.duration || 30}
+            </p>
+
+            <p className="text-sm text-gray-500">
+              Minutes
             </p>
 
           </div>
-          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 mb-5">
 
-  <h3 className="font-bold text-lg mb-3">
+          <div className="rounded-2xl bg-[#F8FAFD] border border-[#243B6B]/10 p-5">
 
-    📋 Exam Instructions
+            <p className="text-sm text-gray-500">
+              Questions
+            </p>
 
-  </h3>
+            <p className="text-3xl font-black text-[#243B6B]">
+              {examInfo?.total_questions || 30}
+            </p>
 
-  <ul className="space-y-2 text-gray-700">
+            <p className="text-sm text-gray-500">
+              Total
+            </p>
 
-    <li>
-      ✅ Fullscreen mode is mandatory
-    </li>
+          </div>
 
-    <li>
-      ✅ Camera access is mandatory
-    </li>
+        </div>
 
-    <li>
-      ✅ Microphone access is mandatory
-    </li>
+        {/* Instructions */}
 
-    <li>
-      ✅ Answers are automatically saved
-    </li>
+        <div className="rounded-[28px] border border-[#D4AF37]/30 bg-[#FFF9E8] p-6 mb-8">
 
-    <li>
-      ✅ Resume available if browser closes
-    </li>
+          <div className="flex items-center gap-3 mb-5">
 
-    <li>
-      ⚠️ Two violations will auto-submit the exam
-    </li>
+            <img
+              src="/icons/tcd-shield.svg"
+              alt=""
+              className="w-8 h-8"
+            />
 
-    <li>
-      ⚠️ Do not switch tabs during the exam
-    </li>
+            <h3 className="text-2xl font-black text-[#243B6B]">
+              Exam Guidelines
+            </h3>
 
-  </ul>
+          </div>
 
-</div>
+          <div className="space-y-4">
+
+            <div className="flex items-center gap-3">
+              <img src="/icons/security.svg" className="w-5 h-5" alt="" />
+              <span>Fullscreen mode is mandatory.</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <img src="/icons/security.svg" className="w-5 h-5" alt="" />
+              <span>Camera permission is mandatory.</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <img src="/icons/security.svg" className="w-5 h-5" alt="" />
+              <span>Microphone permission is mandatory.</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <img src="/icons/answered.svg" className="w-5 h-5" alt="" />
+              <span>Your answers are automatically saved.</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <img src="/icons/bookmark.svg" className="w-5 h-5" alt="" />
+              <span>You can resume if the browser closes unexpectedly.</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <img src="/icons/security.svg" className="w-5 h-5" alt="" />
+              <span>Two violations will automatically submit the exam.</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <img src="/icons/security.svg" className="w-5 h-5" alt="" />
+              <span>Do not switch tabs during the examination.</span>
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* Buttons */}
+
+        <div className="space-y-4">
 
           <button
             onClick={requestPermissions}
-            className="bg-tcd-blue hover:bg-tcd-blue-light text-white px-6 py-3 rounded-2xl w-full mb-4 font-bold"
+            className="
+              w-full
+
+              py-4
+
+              rounded-2xl
+
+              bg-gradient-to-r
+
+              from-[#243B6B]
+
+              to-[#36558F]
+
+              text-white
+
+              font-bold
+
+              text-lg
+
+              hover:scale-[1.01]
+
+              transition-all
+            "
           >
             Allow Camera & Microphone
           </button>
-{resumeAvailable && (
 
-  <button
+          {resumeAvailable && (
 
-    onClick={resumeExam}
+            <button
+              onClick={resumeExam}
+              className="
+                w-full
 
-    className="bg-green-600 text-white px-6 py-3 rounded-2xl w-full mb-4 font-bold"
-  >
+                py-4
 
-    Resume Previous Session
+                rounded-2xl
 
-  </button>
+                border-2
 
-)}
+                border-[#D4AF37]
+
+                bg-[#FFF9E8]
+
+                text-[#243B6B]
+
+                font-bold
+
+                text-lg
+
+                hover:bg-[#FFF3C4]
+
+                transition
+              "
+            >
+              Resume Previous Session
+            </button>
+
+          )}
+
           <button
             onClick={startExam}
-            className="bg-black text-white px-6 py-3 rounded-2xl w-full font-bold"
+            className="
+              w-full
+
+              py-4
+
+              rounded-2xl
+
+              bg-[#D4AF37]
+
+              hover:bg-[#C89A1F]
+
+              text-white
+
+              font-black
+
+              text-xl
+
+              transition
+            "
           >
-            Start Exam
+            Start Examination
           </button>
 
         </div>
 
-      </main>
-    );
+      </div>
+
+    </div>
+
+  </main>
+);
   }
 
   return (
 
     <div
       ref={examContainerRef}
-      className="min-h-screen bg-gray-50 p-5"
+      className="min-h-screen bg-gradient-to-br
+
+from-[#F7F9FC]
+
+to-[#EEF3FB] p-5"
     >
 
       <div className="sticky top-0 z-30 bg-gray-50 pb-2 mb-4">
 
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-2">
 
-          <h1 className="text-3xl font-bold">
-            Exam
-          </h1>
+          <h1
+  className="
+    text-3xl
+
+    font-black
+
+    text-[#243B6B]
+
+    flex
+
+    items-center
+
+    gap-3
+  "
+>
+
+  <img
+    src="/icons/tcd-shield.svg"
+    className="w-8 h-8"
+    alt=""
+  />
+
+  TCD Exam
+
+</h1>
 
           <ExamTopStats
   durationMinutes={
@@ -2234,7 +2431,9 @@ if (submitted) {
     rounded-2xl
 
     border
-    border-white
+    border-[#D4AF37]
+
+shadow-[0_0_25px_rgba(212,175,55,0.25)]
 
     shadow-2xl
 
@@ -2293,13 +2492,59 @@ if (submitted) {
 
       <div className="max-w-5xl mx-auto">
 
-        <div className="bg-white p-6 rounded-2xl border shadow-sm">
+        <div
+  className="
+    bg-white
 
-          <h2 className="text-2xl font-bold mb-4">
-            Question {currentQuestion + 1}
-          </h2>
+    p-8
 
-          <p className="text-xl leading-relaxed mb-10">
+    rounded-[32px]
+
+    border
+
+    border-[#243B6B]/10
+
+    shadow-[0_10px_40px_rgba(36,59,107,0.08)]
+
+    text-[#243B6B]
+  "
+>
+
+          <div className="flex items-center gap-3 mb-5">
+
+  <img
+    src="/icons/tcd-shield.svg"
+    alt=""
+    className="w-6 h-6"
+  />
+
+  <h2
+    className="
+      text-2xl
+
+      font-black
+
+      text-[#243B6B]
+    "
+  >
+    Question {currentQuestion + 1}
+  </h2>
+
+</div>
+
+          <p
+  className="
+    text-2xl
+
+    leading-loose
+
+    font-medium
+
+    text-[#243B6B]
+
+    mb-10
+  "
+>
             {
               currentQuestionData?.question
             }
@@ -2333,9 +2578,9 @@ if (submitted) {
   currentQuestionData.id
 ]=== option
 
-                          ? "bg-tcd-blue text-white border-tcd-blue border-blue-600"
+                          ? "bg-[#243B6B] text-white border-[#243B6B] shadow-lg"
 
-                          : "bg-white hover:border-blue-400"
+                          : "bg-white text-[#243B6B] border-gray-200 hover:border-[#243B6B] hover:bg-[#243B6B]/5"
                       }
                     `}
                   >
@@ -2381,7 +2626,11 @@ if (submitted) {
 
     bg-white
 
-    hover:bg-gray-100
+text-[#243B6B]
+
+border-[#243B6B]/20
+
+hover:bg-[#243B6B]/5
 
     font-bold
 
@@ -2420,8 +2669,9 @@ if (submitted) {
 
     rounded-2xl
 
-    bg-yellow-500
-    hover:bg-yellow-600
+    bg-[#D4AF37]
+
+hover:bg-[#C89A1F]
 
     text-white
     font-bold
@@ -2485,7 +2735,7 @@ hover:bg-tcd-blue-light
   ) && (
 
     <button
-      onClick={submitExam}
+      onClick={() => setShowSubmitSummary(true)}
 
       className="
         px-8
@@ -2493,7 +2743,15 @@ hover:bg-tcd-blue-light
 
         rounded-2xl
 
-        bg-green-600
+        bg-gradient-to-r
+
+from-[#243B6B]
+
+to-[#36558F]
+
+hover:scale-[1.02]
+
+transition-all
         hover:bg-green-700
 
         text-white
@@ -2507,11 +2765,396 @@ hover:bg-tcd-blue-light
 
     </button>
   )}
+  
 
 </div>
 
-      </div>
+
+      
+    </div>
+
+    {showSubmitSummary &&
+ currentQuestion === Math.max(totalQuestions - 1, 0) && (
+
+  <div
+    className="
+      fixed
+      inset-0
+      z-[9999]
+      bg-black/70
+      backdrop-blur-md
+      flex
+      items-center
+      justify-center
+      p-6
+    "
+  >
+
+    <div
+      className="
+        bg-white
+        rounded-[32px]
+        p-8
+        w-full
+        max-w-3xl
+        max-h-[90vh]
+        overflow-y-auto
+      "
+    >
+     <div className="grid grid-cols-2 gap-4 mt-8">
+      <div className="flex justify-center mb-8">
+
+  <div className="relative w-44 h-44">
+
+    <svg
+      className="w-44 h-44 -rotate-90"
+      viewBox="0 0 160 160"
+    >
+
+      {/* Background Circle */}
+
+      <circle
+        cx="80"
+        cy="80"
+        r="68"
+        fill="none"
+        stroke="#E5E7EB"
+        strokeWidth="10"
+      />
+
+      {/* Progress Circle */}
+
+      <circle
+        cx="80"
+        cy="80"
+        r="68"
+        fill="none"
+        stroke="url(#tcdGradient)"
+        strokeWidth="10"
+        strokeLinecap="round"
+        strokeDasharray={2 * Math.PI * 68}
+        strokeDashoffset={
+          2 * Math.PI * 68 *
+          (1 - completionPercentage / 100)
+        }
+        className="
+transition-all
+duration-1000
+animate-[tcdPop_.25s_ease-out]
+"
+
+      />
+
+      <defs>
+
+        <linearGradient
+          id="tcdGradient"
+          x1="0%"
+          y1="0%"
+          x2="100%"
+          y2="100%"
+        >
+
+          <stop
+            offset="0%"
+            stopColor="#D4AF37"
+          />
+
+          <stop
+            offset="100%"
+            stopColor="#243B6B"
+          />
+
+        </linearGradient>
+
+      </defs>
+
+    </svg>
+
+    {/* Center Content */}
+
+    <div
+      className="
+        absolute
+
+        inset-0
+
+        flex
+
+        flex-col
+
+        items-center
+
+        justify-center
+      "
+    >
+
+      <img
+        src="/icons/tcd-shield.svg"
+        alt=""
+        className="w-10 h-10 mb-2"
+      />
+
+      <span
+        className="
+          text-4xl
+
+          font-black
+
+          text-[#243B6B]
+        "
+      >
+        {completionPercentage}%
+      </span>
+
+      <span
+        className="
+          text-sm
+
+          text-gray-500
+
+          tracking-wide
+        "
+      >
+        COMPLETED
+      </span>
 
     </div>
-  );
+
+  </div>
+
+</div>
+<div className="text-center mb-8">
+
+  <p className="text-[#243B6B] font-semibold text-lg">
+
+    {answeredCount === totalQuestions
+      ? "Outstanding! Every question has been attempted."
+      : `You have completed ${answeredCount} out of ${totalQuestions} questions.`}
+
+  </p>
+
+</div>
+
+  {/* Total */}
+
+  <div className="rounded-2xl border border-[#243B6B]/10 p-4 bg-[#F8FAFD]">
+
+    <div className="flex items-center gap-2">
+
+      <img
+        src="/icons/questions.svg"
+        className="w-6 h-6"
+        alt=""
+      />
+
+      <span className="text-sm text-gray-500">
+        Total
+      </span>
+
+    </div>
+
+    <p className="text-3xl font-black text-[#243B6B] mt-2">
+
+      {totalQuestions}
+
+    </p>
+
+  </div>
+
+  {/* Answered */}
+
+  <div className="rounded-2xl border border-green-200 p-4 bg-green-50">
+
+    <div className="flex items-center gap-2">
+
+      <img
+        src="/icons/answered.svg"
+        className="w-6 h-6"
+        alt=""
+      />
+
+      <span className="text-sm text-green-700">
+
+        Answered
+
+      </span>
+
+    </div>
+
+    <p className="text-3xl font-black text-green-600 mt-2">
+
+      {answeredCount}
+
+    </p>
+
+  </div>
+
+  {/* Marked */}
+
+  <div className="rounded-2xl border border-[#D4AF37]/30 p-4 bg-[#FFF9E8]">
+
+    <div className="flex items-center gap-2">
+
+      <img
+        src="/icons/bookmark.svg"
+        className="w-6 h-6"
+        alt=""
+      />
+
+      <span className="text-sm text-[#9A7315]">
+
+        Marked
+
+      </span>
+
+    </div>
+
+    <p className="text-3xl font-black text-[#D4AF37] mt-2">
+
+      {markedCount}
+
+    </p>
+
+  </div>
+
+  {/* Unanswered */}
+
+  <div className="rounded-2xl border border-gray-200 p-4 bg-gray-50">
+
+    <div className="flex items-center gap-2">
+
+      <img
+        src="/icons/unanswered.svg"
+        className="w-6 h-6"
+        alt=""
+      />
+
+      <span className="text-sm text-gray-500">
+
+        Unanswered
+
+      </span>
+
+    </div>
+
+    <p className="text-3xl font-black text-gray-600 mt-2">
+
+      {unansweredCount}
+
+    </p>
+
+  </div>
+
+</div>
+<div className="mt-4 rounded-2xl border border-[#243B6B]/10 p-4 bg-[#F8FAFD]">
+
+  <div className="flex justify-between items-center">
+
+    <div className="flex items-center gap-3">
+
+      <img
+        src="/icons/security.svg"
+        className="w-6 h-6"
+        alt=""
+      />
+
+      <span className="font-semibold text-[#243B6B]">
+
+        Security Violations
+
+      </span>
+
+    </div>
+
+    <span
+      className={`text-2xl font-black ${
+        violations > 0
+          ? "text-red-600"
+          : "text-green-600"
+      }`}
+    >
+      {violations}
+    </span>
+
+  </div>
+
+</div>
+{unansweredCount > 0 ? (
+
+  <div className="mt-6 rounded-2xl bg-[#FFF9E8] border border-[#D4AF37]/40 p-4">
+
+    <p className="text-[#9A7315] font-semibold">
+
+      You still have <strong>{unansweredCount}</strong> unanswered question{unansweredCount > 1 ? "s" : ""}.
+      Review them before submitting if needed.
+
+    </p>
+
+  </div>
+
+) : (
+
+  <div className="mt-6 rounded-2xl bg-green-50 border border-green-200 p-4">
+
+    <p className="text-green-700 font-semibold">
+
+      Excellent! You have attempted every question.
+
+    </p>
+
+  </div>
+
+)}
+<div className="mt-8 flex gap-4">
+
+  <button
+    onClick={() => setShowSubmitSummary(false)}
+    className="
+      flex-1
+      py-4
+      rounded-2xl
+      border
+      border-[#243B6B]
+      text-[#243B6B]
+      font-bold
+      hover:bg-[#243B6B]/5
+      transition
+    "
+  >
+    Continue Exam
+  </button>
+
+  <button
+    onClick={async () => {
+
+      setShowSubmitSummary(false);
+
+      await submitExam();
+
+    }}
+    className="
+      flex-1
+      py-4
+      rounded-2xl
+      bg-gradient-to-r
+      from-[#243B6B]
+      to-[#36558F]
+      text-white
+      font-bold
+      hover:scale-[1.02]
+      transition-all
+    "
+  >
+    Final Submit
+  </button>
+
+</div>
+
+  </div>
+
+</div>
+ )}
+</div>
+);
 }

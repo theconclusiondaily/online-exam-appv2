@@ -61,16 +61,21 @@ const [liveUpdate,
 
     // FETCH ATTEMPTS
 
-    const {
-      data,
-      error,
-    } = await supabase
-      .from("exam_attempts")
-      .select("*")
-      .eq(
-        "exam_id",
-        examId
-      );
+   const {
+  data,
+  error,
+} = await supabase
+  .from("exam_attempts")
+  .select(`
+    *,
+    profiles:user_id (
+      name
+    )
+  `)
+  .eq(
+    "exam_id",
+    examId
+  );
 
     if (error) {
 
@@ -416,7 +421,7 @@ const [liveUpdate,
 
                     <p className="text-gray-600 mt-2 font-semibold">
 
-  {attempt.users?.name || "Student"}
+  {attempt.profiles?.name ?? "Unknown User"}
 
 </p>
 

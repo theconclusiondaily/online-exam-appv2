@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
-
+import TCDLoader from "@/components/common/TCDLoader";
 
 type ReviewQuestion = {
   question_id: string;
@@ -284,12 +284,8 @@ setQuestions(
   }, [attemptId, router]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading Review...
-      </div>
-    );
-  }
+  return <TCDLoader text="Loading Review" />;
+}
 
   if (locked) {
     return (

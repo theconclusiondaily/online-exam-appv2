@@ -337,4 +337,57 @@ body {
   }
 
 }
+@keyframes tcdGlow {
 
+  0% {
+    filter: drop-shadow(0 0 6px rgba(212,175,55,0.2));
+  }
+
+  50% {
+    filter: drop-shadow(0 0 20px rgba(212,175,55,0.8));
+  }
+
+  100% {
+    filter: drop-shadow(0 0 6px rgba(212,175,55,0.2));
+  }
+
+}
+.text-brand {
+  color: #243B6B;
+}
+
+.text-brand-light {
+  color: #2F4B7C;
+}
+
+.text-brand-gold {
+  color: #D4AF37;
+}
+
+.bg-brand {
+  background-color: #243B6B;
+}
+.bg-brand-light {
+  background-color: #36558f;
+}
+.bg-brand-gold {
+  background-color: #D4AF37;
+}
+
+.border-brand {
+  border-color: #243B6B;
+}
+
+.border-brand-gold {
+  border-color: #D4AF37;
+}
+@keyframes tcdPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

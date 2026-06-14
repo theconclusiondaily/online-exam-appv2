@@ -12,7 +12,7 @@ from "@/lib/supabase/client";
 
 import { TCDIcons }
 from "@/components/ui/tcd-icons";
-
+import TCDLoader from "@/components/common/TCDLoader";
 import TCDMotion
 from "@/components/ui/TCDMotion";
 function getPrestigeStyle(prestige: string) {
@@ -122,37 +122,8 @@ export default function LeaderboardPage() {
   }
 
   if (loading) {
-
-    return (
-
-      <div
-        className="
-          min-h-screen
-
-          flex
-          items-center
-          justify-center
-
-          bg-[#F7F9FC]
-        "
-      >
-
-        <div
-          className="
-            text-2xl
-            font-black
-
-            text-tcd-blue
-          "
-        >
-
-          Loading Leaderboard...
-
-        </div>
-
-      </div>
-    );
-  }
+  return <TCDLoader text="Loading Leaderboard" />;
+}
 
   const topThree =
     leaders.slice(0, 3);

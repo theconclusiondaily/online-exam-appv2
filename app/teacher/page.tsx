@@ -4,7 +4,7 @@ import {
   useEffect,
   useState,
 } from "react";
-
+import TCDLoader from "@/components/common/TCDLoader";
 import Link from "next/link";
 import StatCard from "@/components/dashboard/StatCard";
 import AnalyticsChart from "@/components/dashboard/AnalyticsChart";
@@ -266,20 +266,8 @@ setLiveExams(
   }
 
   if (loading) {
-
-    return (
-
-      <main className="min-h-screen flex items-center justify-center bg-gray-50">
-
-        <div className="text-2xl font-bold">
-
-          Loading Teacher Dashboard...
-
-        </div>
-
-      </main>
-    );
-  }
+  return <TCDLoader text="Loading Teacher Portal" />;
+}
 
   return (
 

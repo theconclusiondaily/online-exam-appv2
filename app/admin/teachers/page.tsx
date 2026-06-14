@@ -9,7 +9,7 @@ import Link from "next/link";
 
 import AdminGuard
 from "@/components/AdminGuard";
-
+import TCDLoader from "@/components/common/TCDLoader";
 import { supabase }
 from "@/lib/supabase/client";
 
@@ -101,20 +101,8 @@ export default function TeachersPage() {
   }, []);
 
   if (loading) {
-
-    return (
-
-      <main className="min-h-screen flex items-center justify-center bg-gray-50">
-
-        <div className="text-2xl font-bold">
-
-          Loading Teachers...
-
-        </div>
-
-      </main>
-    );
-  }
+  return <TCDLoader text="Loading Teachers" />;
+}
 
   return (
 

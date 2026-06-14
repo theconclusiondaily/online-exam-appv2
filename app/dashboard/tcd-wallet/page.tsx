@@ -12,7 +12,7 @@ from "@/lib/supabase/client";
 
 import { TCDIcons }
 from "@/components/ui/tcd-icons";
-
+import TCDLoader from "@/components/common/TCDLoader";
 export default function TCDWalletPage() {
 
   const [wallet,
@@ -142,25 +142,8 @@ export default function TCDWalletPage() {
   }
 
   if (loading) {
-
-    return (
-
-      <div
-        className="
-          min-h-screen
-          flex
-          items-center
-          justify-center
-
-          bg-[#F7F9FC]
-        "
-      >
-
-        Loading...
-
-      </div>
-    );
-  }
+  return <TCDLoader text="Loading Wallet" />;
+}
 
   return (
 

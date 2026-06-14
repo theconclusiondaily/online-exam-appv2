@@ -15,7 +15,7 @@ from "@/components/dashboard/LiveExamsSection";
 
 import { TCDIcons }
 from "@/components/ui/tcd-icons";
-
+import TCDLoader from "@/components/common/TCDLoader";
 import {
   getExamStatus
 } from "@/lib/getExamStatus";
@@ -154,75 +154,8 @@ export default function ActiveOpportunitiesPage() {
 }
 
   if (loading) {
-
-    return (
-
-      <div
-        className="
-          min-h-screen
-
-          flex
-          items-center
-          justify-center
-
-          bg-[#F7F9FC]
-        "
-      >
-
-        <div
-          className="
-            bg-white/90
-            backdrop-blur-xl
-
-            px-10
-            py-6
-
-            rounded-2xl
-
-            border
-            border-tcd-gold/10
-
-            shadow-xl
-
-            flex
-            items-center
-            gap-2
-          "
-        >
-
-          <div className="animate-pulse">
-
-            {TCDIcons.mastery}
-
-          </div>
-
-          <div>
-
-            <h2
-              className="
-                text-2xl
-                font-black
-                text-tcd-blue
-              "
-            >
-
-              Loading Opportunities
-
-            </h2>
-
-            <p className="text-gray-700">
-
-              Preparing live exams...
-
-            </p>
-
-          </div>
-
-        </div>
-
-      </div>
-    );
-  }
+  return <TCDLoader text="Loading Opportunities" />;
+}
 
   return (
 

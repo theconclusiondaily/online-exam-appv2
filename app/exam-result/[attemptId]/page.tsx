@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
-
+import TCDLoader from "@/components/common/TCDLoader";
 export default function ExamResultPage() {
   const params = useParams();
   const router = useRouter();
@@ -559,12 +559,10 @@ useEffect(() => {
   reviewLocked,
 ]);
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-xl font-semibold">
-        Loading Result...
-      </div>
-    );
-  }
+  return (
+    <TCDLoader text="Calculating Results" />
+  );
+}
 
   if (!result) {
     return (

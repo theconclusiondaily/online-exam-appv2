@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase }
 from "@/lib/supabase/client";
-
+import TCDLoader from "@/components/common/TCDLoader";
 export default function ReferralClient() {
 
   const [loading, setLoading] =
@@ -174,13 +174,8 @@ function shareTelegram() {
   );
 }
   if (loading) {
-
-    return (
-      <main className="p-6">
-        Loading...
-      </main>
-    );
-  }
+  return <TCDLoader text="Loading Referrals" />;
+}
 
   return (
 

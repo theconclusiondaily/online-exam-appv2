@@ -7,7 +7,7 @@ import {
 
 import { supabase }
 from "@/lib/supabase/client";
-
+import TCDLoader from "@/components/common/TCDLoader";
 import {
   sendStudentWarning,
   forceSubmitStudent,
@@ -180,21 +180,9 @@ const completedStudents =
 
 }, [selectedExam]);
 
-  if (loading) {
-
-    return (
-
-      <main className="min-h-screen flex items-center justify-center bg-gray-50">
-
-        <h1 className="text-3xl font-bold">
-
-          Loading Monitoring Dashboard...
-
-        </h1>
-
-      </main>
-    );
-  }
+ if (loading) {
+  return <TCDLoader text="Loading Monitor" />;
+}
 
   return (
 

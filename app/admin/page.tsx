@@ -15,6 +15,7 @@ import { supabase }
 from "@/lib/supabase/client";
 import { TCDIcons }
 from "@/components/ui/tcd-icons";
+import TCDLoader from "@/components/common/TCDLoader";
 export default function AdminPage() {
 
   const router = useRouter();
@@ -231,21 +232,9 @@ if (
     window.location.href = "/login";
   }
 
-  if (loading) {
-
-    return (
-
-      <main className="min-h-screen flex items-center justify-center">
-
-        <div className="text-2xl font-bold">
-
-          Loading Admin Dashboard...
-
-        </div>
-
-      </main>
-    );
-  }
+ if (loading) {
+  return <TCDLoader text="Loading Admin Panel" />;
+}
 
   return (
 

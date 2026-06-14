@@ -6,7 +6,7 @@ import {
 } from "react";
 
 import Link from "next/link";
-
+import TCDLoader from "@/components/common/TCDLoader";
 import {
   useRouter,
 } from "next/navigation";
@@ -93,13 +93,8 @@ export default function TeacherQuestionsPage() {
   }, [router]);
 
   if (loading) {
-
-    return (
-      <main className="p-6">
-        Loading...
-      </main>
-    );
-  }
+  return <TCDLoader text="Loading Question Bank" />;
+}
 
   if (!authorized) {
     return null;

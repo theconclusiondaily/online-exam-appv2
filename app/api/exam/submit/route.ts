@@ -32,6 +32,7 @@ export async function POST(
 
 const {
   data: profileData,
+  error: profileError,
 } = await supabase
 
   .from("users")
@@ -40,13 +41,19 @@ const {
     institute_id
   `)
 
-  .eq(
-    "id",
-    user.id
-  )
+  .eq("id", user.id)
 
   .single();
-
+if (profileError || !profileData) {
+  return NextResponse.json(
+    {
+      error: "User profile not found.",
+    },
+    {
+      status: 404,
+    }
+  );
+}
 if (!profileData?.institute_id) {
 
   return NextResponse.json(
@@ -68,22 +75,31 @@ if (!profileData?.institute_id) {
     } = body;
 const {
   data: exam,
+  error: examError,
 } = await supabase
 
   .from("exams")
 
   .select(`
     id,
-    institute_id
+    institute_id,
+    start_time,
+    end_time
   `)
 
-  .eq(
-    "id",
-    examId
-  )
+  .eq("id", examId)
 
   .single();
-
+if (examError || !exam) {
+  return NextResponse.json(
+    {
+      error: examError?.message || "Exam not found.",
+    },
+    {
+      status: 404,
+    }
+  );
+}
   if (
   exam?.institute_id !==
   profileData.institute_id
@@ -98,6 +114,33 @@ const {
       status: 403,
     }
   );
+}
+const now = new Date();
+
+if (now < new Date(exam.start_time)) {
+
+  return NextResponse.json(
+    {
+      error: "Exam has not started yet.",
+    },
+    {
+      status: 403,
+    }
+  );
+
+}
+
+if (now > new Date(exam.end_time)) {
+
+  return NextResponse.json(
+    {
+      error: "Exam has already ended.",
+    },
+    {
+      status: 403,
+    }
+  );
+
 }
     if (
       !examId ||
@@ -116,59 +159,28 @@ const {
 
     // Validate session
 
-    const {
-      data: session,
-      error: sessionError,
-    } = await supabase
-      .from("exam_sessions")
-      .select("*")
-      .eq(
-        "exam_id",
-        examId
-      )
-      .eq(
-        "user_id",
-        user.id
-      )
-      .eq(
-        "session_token",
-        sessionToken
-      )
-      .maybeSingle();
+   const {
+  data: session,
+  error: sessionError,
+} = await supabase
+  .from("exam_sessions")
+  .select("*")
+  .eq("exam_id", examId)
+  .eq("user_id", user.id)
+  .eq("session_token", sessionToken)
+  .maybeSingle();
 
-    if (
-      sessionError ||
-      !session
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Invalid session",
-        },
-        {
-          status: 403,
-        }
-      );
+if (sessionError || !session) {
+  return NextResponse.json(
+    {
+      error: "Invalid session.",
+    },
+    {
+      status: 403,
     }
-
-    // Prevent double submit
-
-    if (
-      session.status !==
-      "active"
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Exam already submitted",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    // Session expiry
+  );
+}
+// Session expiry
 
     if (
       session.expires_at &&
@@ -197,6 +209,62 @@ const {
         }
       );
     }
+    // Prevent double submit
+
+    if (
+      session.status !==
+      "active"
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Exam already submitted",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+// Lock the session immediately to prevent race conditions
+
+const {
+  data: completedSession,
+  error: sessionUpdateError,
+} = await supabase
+
+  .from("exam_sessions")
+
+  .update({
+
+    status: "completed",
+
+    submitted_at: new Date().toISOString(),
+
+  })
+
+  .eq("id", session.id)
+
+  .eq("status", "active")
+
+  .select();
+
+if (
+  sessionUpdateError ||
+  !completedSession ||
+  completedSession.length === 0
+) {
+
+  return NextResponse.json(
+    {
+      error: "Exam already submitted.",
+    },
+    {
+      status: 409,
+    }
+  );
+
+}
+    
 
     // Fetch answers
 
@@ -409,41 +477,7 @@ console.log(
 
     // Final session check
 
-    const {
-      data: latestSession,
-    } = await supabase
-      .from("exam_sessions")
-      .select("status")
-      .eq(
-        "id",
-        session.id
-      )
-      .single();
-console.log(
-  "ANSWER COUNT:",
-  questionIds.length
-);
-
-console.log(
-  "SESSION STATUS:",
-  latestSession?.status
-);
-    if (
-      latestSession?.status !==
-      "active"
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Already submitted",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    console.log({
+     console.log({
   totalScore,
   correctCount,
   wrongCount,
@@ -467,6 +501,45 @@ const timeTaken =
         ) / 1000
       )
     : 0;
+    // Prevent duplicate exam attempts
+
+const {
+  data: existingAttempt,
+  error: existingAttemptError,
+} = await supabase
+  .from("exam_attempts")
+  .select("id")
+  .eq("user_id", user.id)
+  .eq("exam_id", examId)
+  .maybeSingle();
+
+if (existingAttemptError) {
+
+  return NextResponse.json(
+    {
+      error: existingAttemptError.message,
+    },
+    {
+      status: 500,
+    }
+  );
+
+}
+
+if (existingAttempt) {
+
+  return NextResponse.json(
+    {
+      success: true,
+      attemptId: existingAttempt.id,
+      alreadySubmitted: true,
+    },
+    {
+      status: 200,
+    }
+  );
+
+}
     // Insert attempt
 
     const {
@@ -525,11 +598,7 @@ const timeTaken =
       "ATTEMPT ERROR:",
       attemptError
     );
-await updateWeeklyChallenges(
-  user.id,
-  totalScore,
-  percentage
-);
+
     if (attemptError) {
   return NextResponse.json(
     {
@@ -543,60 +612,123 @@ await updateWeeklyChallenges(
     }
   );
 }
+await updateWeeklyChallenges(
+  user.id,
+  totalScore,
+  percentage
+);
 const certificateNumber =
   `TCD-${Date.now()}`;
+const {
+  data: existingCertificate,
+} = await supabase
 
-await supabase
   .from("certificates")
-  .insert({
 
-    user_id:
-      user.id,
+  .select("id")
 
-    exam_id:
-      examId,
+  .eq("user_id", user.id)
 
-    certificate_type:
-      "PARTICIPATION",
+  .eq("exam_id", examId)
 
-    certificate_number:
-      certificateNumber,
+  .maybeSingle();
 
-    issued_at:
-      new Date()
-        .toISOString(),
+if (!existingCertificate) {
 
-  });
+  await supabase
+
+    .from("certificates")
+
+    .insert({
+
+      user_id: user.id,
+
+      exam_id: examId,
+
+      certificate_type: "PARTICIPATION",
+
+      certificate_number: certificateNumber,
+
+      issued_at: new Date().toISOString(),
+
+    });
+
+}
+
 const xpEarned =
   10 +
   Math.floor(
     percentage / 2
   );
 
-const { error: xpError } =
-  await supabase.rpc(
-    "add_user_xp",
-    {
-      p_user_id: user.id,
-      p_xp: xpEarned,
-    }
-  );
+// Award XP only for a newly created attempt
 
-if (xpError) {
+if (attemptData?.length) {
 
-  console.error(
-    "XP ERROR:",
-    xpError
-  );
+  const { error: xpError } =
+    await supabase.rpc(
+      "add_user_xp",
+      {
+        p_user_id: user.id,
+        p_xp: xpEarned,
+      }
+    );
+
+  if (xpError) {
+
+    console.error(
+      "XP ERROR:",
+      xpError
+    );
+
+  }
+
 }
-const { error: rewardError } =
-  await supabase.rpc(
-    "award_participation_tcd",
-    {
-      p_user_id: user.id,
-      p_exam_id: examId,
-    }
-  );
+await supabase
+
+  .from("exam_sessions")
+
+  .update({
+
+    final_score: totalScore,
+
+  })
+
+  .eq("id", session.id);
+
+// Check whether participation reward already exists
+
+const {
+  data: existingReward,
+} = await supabase
+
+  .from("tcd_transactions")
+
+  .select("id")
+
+  .eq("user_id", user.id)
+
+  .eq("exam_id", examId)
+
+  .maybeSingle();
+
+let rewardError = null;
+
+if (!existingReward) {
+
+  const rewardResult =
+    await supabase.rpc(
+      "award_participation_tcd",
+      {
+        p_user_id: user.id,
+        p_exam_id: examId,
+      }
+    );
+
+  rewardError =
+    rewardResult.error;
+
+}
 
 const {
   data: achievementData,
@@ -708,39 +840,7 @@ if (rewardError) {
 
     // Complete session
 
-    const {
-      error:
-        sessionUpdateError,
-    } = await supabase
-      .from("exam_sessions")
-      .update({
-        status:
-          "completed",
-
-        submitted_at:
-          new Date().toISOString(),
-
-        final_score:
-          totalScore,
-      })
-      .eq(
-        "id",
-        session.id
-      );
-
-    if (
-      sessionUpdateError
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            sessionUpdateError.message,
-        },
-        {
-          status: 500,
-        }
-      );
-    }
+  
     const {
   data: unlockedAchievements,
 } = await supabase

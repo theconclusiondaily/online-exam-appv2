@@ -20,7 +20,7 @@ import SmartInsights
 from "@/components/dashboard/SmartInsights";
 import TCDMotion
 from "@/components/ui/TCDMotion";
-
+import TCDLoader from "@/components/common/TCDLoader";
 export default function LearningJourneyPage() {
 
   const [loading,
@@ -108,6 +108,10 @@ const {
 } = await supabase
   .from("study_streaks")
   .select("*")
+  .eq(
+    "user_id",
+    user.id
+  )
   .single();
 
 setStreak(
@@ -173,70 +177,77 @@ setStreak(
 
       // FETCH RANKS
 
- const rankMap: any = {};
+ 
+const rankMap: Record<string, number> = {};
 
-await Promise.all(
+// Fetch all attempts for all relevant exams once
+const { data: allExamAttempts, error: allAttemptsError } =
+  await supabase
+    .from("exam_attempts")
+    .select(`
+      id,
+      exam_id,
+      score,
+      accuracy,
+      time_taken,
+      submitted_at,
+      created_at
+    `)
+    .in("exam_id", examIds);
 
-  (attemptsData || []).map(
-    async (attempt) => {
+if (allAttemptsError || !allExamAttempts) {
+  console.error(allAttemptsError);
+} else {
 
-      const {
-        count,
-        error,
-      } = await supabase
+  // Group by exam
+  const grouped: Record<string, any[]> = {};
 
-        .from(
-          "exam_attempts"
-        )
+  allExamAttempts.forEach((item) => {
+    if (!grouped[item.exam_id]) {
+      grouped[item.exam_id] = [];
+    }
+    grouped[item.exam_id].push(item);
+  });
 
-        .select(
-          "id",
-          {
-            count: "exact",
-            head: true,
-          }
-        )
+  // Sort exactly like the leaderboard page
+  Object.values(grouped).forEach((list) => {
 
-        .eq(
-          "exam_id",
-          attempt.exam_id
-        )
+    list.sort((a, b) => {
 
-        .gt(
-          "percentage",
-          Number(
-            attempt.percentage
-          )
-        );
-
-      if (error) {
-
-        console.error(
-          error
-        );
-
-        rankMap[
-          attempt.id
-        ] = 1;
-
-        return;
+      // 1. Higher score first
+      if ((b.score || 0) !== (a.score || 0)) {
+        return (b.score || 0) - (a.score || 0);
       }
 
-      rankMap[
-        attempt.id
-      ] =
-        (count || 0) + 1;
-    }
-  )
-);
+      // 2. Higher accuracy first
+      if ((b.accuracy || 0) !== (a.accuracy || 0)) {
+        return (b.accuracy || 0) - (a.accuracy || 0);
+      }
 
-console.log(
-  "RANK MAP:",
-  rankMap
-);
+      // 3. Less time taken wins
+      if ((a.time_taken || 0) !== (b.time_taken || 0)) {
+        return (a.time_taken || 0) - (b.time_taken || 0);
+      }
+
+      // 4. Earlier submission wins
+      return (
+        new Date(a.submitted_at || a.created_at).getTime() -
+        new Date(b.submitted_at || b.created_at).getTime()
+      );
+    });
+
+    // Assign ranks
+    list.forEach((item, index) => {
+      rankMap[item.id] = index + 1;
+    });
+
+  });
+
+}
+
+console.log("FINAL RANK MAP", rankMap);
 
 setRanks(rankMap);
-
     } catch (error) {
 
       console.error(
@@ -251,21 +262,8 @@ setRanks(rankMap);
   }
 
   if (loading) {
-
-    return (
-
-      <div
-        className="
-          min-h-screen
-          flex
-          items-center
-          justify-center
-        "
-      >
-        Loading...
-      </div>
-    );
-  }
+  return <TCDLoader text="Loading Learning Journey" />;
+}
 
   return (
 

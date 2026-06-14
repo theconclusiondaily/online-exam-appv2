@@ -6,7 +6,7 @@ import {
 } from "react";
 
 import Link from "next/link";
-
+import TCDLoader from "@/components/common/TCDLoader";
 import {
   useRouter,
 } from "next/navigation";
@@ -181,13 +181,8 @@ cancelled: false,
   }
 
   if (loading) {
-
-    return (
-      <main className="p-6">
-        Loading...
-      </main>
-    );
-  }
+  return <TCDLoader text="Preparing Exam Builder" />;
+}
 
   if (!authorized) {
     return null;

@@ -37,37 +37,24 @@ const features = [
 ];
 
 export default function HomePage() {
-    const [
-    showIntro,
-    setShowIntro,
-  ] = useState(false);
+    const [showIntro, setShowIntro] = useState<boolean | null>(null);
 
 useEffect(() => {
-
-  const seen =
-    sessionStorage.getItem(
-      "tcd_intro_seen"
-    );
-
-  if (!seen) {
-
-    setShowIntro(true);
-
-  }
-
+  const seen = sessionStorage.getItem("tcd_intro_seen");
+  setShowIntro(seen !== "true");
 }, []);
 
-  if (showIntro) {
+if (showIntro === null) {
+  return null;
+}
 
-    return (
-      <TCDIntro
-        onComplete={() =>
-          setShowIntro(false)
-        }
-      />
-    );
-  }
-  
+if (showIntro) {
+  return (
+    <TCDIntro
+      onComplete={() => setShowIntro(false)}
+    />
+  );
+}
 
 return (
   <main
@@ -137,7 +124,7 @@ text-sm md:text-base
               className="
   bg-[#D4AF37]
 
-  text-black
+  text-brand
 
   px-4 md:px-10
 py-2 md:py-4
@@ -367,7 +354,7 @@ Achieve Greatness.
                 className="
   bg-[#D4AF37]
 
-  text-black
+  text-brand
 
   px-10
   py-4
@@ -706,7 +693,7 @@ Achieve Greatness.
 
           <Link
             href="/signup"
-            className="inline-block mt-10 bg-[#D4AF37] text-black px-10 py-5 rounded-md text-lg font-bold hover:scale-105 transition"
+            className="inline-block mt-10 bg-[#D4AF37] text-brand px-10 py-5 rounded-md text-lg font-bold hover:scale-105 transition"
           >
             Create Free Account
           </Link>

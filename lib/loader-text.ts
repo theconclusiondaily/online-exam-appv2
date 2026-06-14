@@ -1,0 +1,22 @@
+// lib/loader-text.ts
+export const LoaderText = {
+  dashboard: "Loading Dashboard",
+  exam: "Preparing Exam",
+  results: "Calculating Results",
+  review: "Loading Review",
+  wallet: "Loading Wallet",
+  leaderboard: "Loading Leaderboard",
+  analytics: "Loading Analytics",
+  learningJourney: "Loading Learning Journey",
+  opportunities: "Loading Opportunities",
+  referrals: "Loading Referrals",
+  admin: "Loading Admin Panel",
+  teacher: "Loading Teacher Portal",
+  examBuilder: "Preparing Exam Builder",
+  questionBank: "Loading Question Bank",
+  auth: "Authenticating",
+  verify: "Verifying Certificate",
+  certificate: "Generating Certificate",
+  signup: "Creating Account",
+  signin: "Signing In",
+} as const;
