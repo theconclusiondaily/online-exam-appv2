@@ -224,4 +224,24 @@ export const TCDIcons = {
     </svg>
   ),
 
+  questions: (
+  <img src="/icons/questions.svg" className="w-6 h-6" />
+),
+
+answered: (
+  <img src="/icons/answered.svg" className="w-6 h-6" />
+),
+
+bookmark: (
+  <img src="/icons/bookmark.svg" className="w-6 h-6" />
+),
+
+unanswered: (
+  <img src="/icons/unanswered.svg" className="w-6 h-6" />
+),
+
+security: (
+  <img src="/icons/security.svg" className="w-6 h-6" />
+),
+
 };

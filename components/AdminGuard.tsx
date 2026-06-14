@@ -8,7 +8,7 @@ import {
 import {
   useRouter,
 } from "next/navigation";
-
+import TCDLoader from "./common/TCDLoader";
 import { supabase }
 from "@/lib/supabase/client";
 
@@ -115,22 +115,11 @@ export default function AdminGuard({
 
   }, [router]);
 
-  if (loading) {
-
-    return (
-
-      <main className="min-h-screen flex items-center justify-center">
-
-        <div className="text-2xl font-bold">
-
-          Loading...
-
-        </div>
-
-      </main>
-
-    );
-  }
+if (loading) {
+  return (
+    <TCDLoader text="Authenticating" />
+  );
+}
 
   return <>{children}</>;
 }

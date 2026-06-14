@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-
+import TCDLoader from "../common/TCDLoader";
 import { useAuth } from "@/components/providers/AuthProvider";
 
 export default function ProtectedRoute({
@@ -24,12 +24,10 @@ export default function ProtectedRoute({
   }, [user, loading, router]);
 
   if (loading) {
-    return (
-      <div className="text-white p-6">
-        Loading...
-      </div>
-    );
-  }
+  return (
+    <TCDLoader text="Authenticating" />
+  );
+}
 
   if (!user) return null;
 

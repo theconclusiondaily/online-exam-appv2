@@ -246,7 +246,7 @@ export default function AchievementPopup({
 
               bg-white
 
-              text-black
+              text-brand
 
               py-4
 

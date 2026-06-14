@@ -136,9 +136,13 @@ export default function ExamHistoryTable({
                 ];
 
               const rank =
-                ranks?.[
-                  attempt.id
-                ] || 1;
+  ranks?.[
+    attempt.id
+  ] ?? 0;
+  const numericRank =
+  typeof rank === "number"
+    ? rank
+    : 999;
 
               return (
 
@@ -316,7 +320,11 @@ export default function ExamHistoryTable({
 
   </div>
 
-  Rank #{rank}
+  <p>
+  {rank > 0
+    ? `Rank #${rank}`
+    : "Rank Not Available"}
+</p>
 
 </div>
 

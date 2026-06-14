@@ -102,7 +102,7 @@ ${
 
     : marked
 
-    ? "bg-yellow-500 text-black"
+    ? "bg-yellow-500 text-brand"
 
     : answered
 
@@ -112,7 +112,7 @@ ${
 
     ? "bg-gray-400 text-white"
 
-    : "bg-gray-200 text-black"
+    : "bg-gray-200 text-brand"
 }
   
 `}

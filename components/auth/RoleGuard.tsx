@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-
+import TCDLoader from "../common/TCDLoader";
 import { supabase }
 from "@/lib/supabase/client";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -48,12 +48,10 @@ export default function RoleGuard({
   }, [user, loading, allowedRole, router]);
 
   if (loading) {
-    return (
-      <div className="text-white p-6">
-        Loading...
-      </div>
-    );
-  }
+  return (
+    <TCDLoader text="Authenticating" />
+  );
+}
 
   if (!authorized) return null;
 

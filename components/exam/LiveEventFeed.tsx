@@ -94,7 +94,7 @@ function LiveEventFeed() {
 
         <div>
 
-          <h2 className="text-sm font-bold text-gray-900">
+          <h2 className="text-sm font-bold text-brand">
 
             Live Exam Feed
 
