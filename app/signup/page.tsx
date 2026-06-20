@@ -62,44 +62,67 @@ if (!captchaToken) {
       return;
     }
 
-    const {
-      data,
-      error,
-    } = await supabase.auth.signUp({
+   // Normalize inputs
+const normalizedName = name.trim();
+const normalizedEmail = email.trim().toLowerCase();
+const normalizedMobile = mobile.trim();
 
-      email,
+// Email validation
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-      password,
+if (!emailRegex.test(normalizedEmail)) {
+  alert("Please enter a valid email address.");
+  return;
+}
 
-      options: {
+// Mobile validation (India)
+const mobileRegex = /^[6-9]\d{9}$/;
 
-        emailRedirectTo:
-          window.location.hostname ===
-          "localhost"
-            ? "http://localhost:3000/login"
-            : "https://www.theconclusiondaily.com/login",
+if (!mobileRegex.test(normalizedMobile)) {
+  alert("Please enter a valid 10-digit mobile number.");
+  return;
+}
 
-        data: {
-          name,
-          mobile,
-          dob,
-          referral_code:
-      referralCode || null,
-        },
+// Strong password validation
+const passwordRegex =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
 
-      },
+if (!passwordRegex.test(password)) {
+  alert(
+    "Password must be at least 8 characters and include uppercase, lowercase, number, and special character."
+  );
+  return;
+}
 
-    });
+// Create account
+const { data, error } = await supabase.auth.signUp({
+  email: normalizedEmail,
+  password,
 
-    if (error) {
+  options: {
+    emailRedirectTo:
+      window.location.hostname === "localhost"
+        ? "http://localhost:3000/auth/callback"
+        : "https://www.theconclusiondaily.com/auth/callback",
 
-      alert(
-        error.message
-      );
+  data: {
+  name,
+  mobile,
+  dob,
+  referred_by: referralCode || null,
+},
+  },
+});
 
-      return;
-    }
+if (error) {
+  alert(error.message);
+  return;
+}
 
+// Success
+router.replace(
+  `/verify-email?email=${encodeURIComponent(normalizedEmail)}`
+);
     const user =
       data.user;
 

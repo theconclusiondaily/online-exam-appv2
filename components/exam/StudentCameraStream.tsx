@@ -8,34 +8,40 @@ import {
 
 type Props = {
   stream: MediaStream | null;
+  videoRef?: React.RefObject<HTMLVideoElement | null>;
 };
 
 function StudentCameraStream({
   stream,
+  videoRef,
 }: Props) {
 
-  const videoRef =
-    useRef<HTMLVideoElement>(
-      null
-    );
+  const internalVideoRef =
+  useRef<HTMLVideoElement>(
+    null
+  );
+
+const activeVideoRef =
+  videoRef ||
+  internalVideoRef;
 
   useEffect(() => {
 
-    if (
-      videoRef.current &&
-      stream
-    ) {
+   if (
+  activeVideoRef.current &&
+  stream
+) {
 
-      videoRef.current.srcObject =
-        stream;
-    }
+  activeVideoRef.current.srcObject =
+    stream;
+}
 
   }, [stream]);
 
   return (
 
     <video
-      ref={videoRef}
+  ref={activeVideoRef}
       autoPlay
       muted
       playsInline

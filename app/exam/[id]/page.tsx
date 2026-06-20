@@ -18,13 +18,16 @@ import { toast } from "sonner";
 import { supabase } from "@/lib/supabase/client";
 import TCDLoader from "@/components/common/TCDLoader";
 import ExamTopStats from "@/components/exam/ExamTopStats";
-
+import ProctoringCapture
+from "@/components/exam/ProctoringCapture";
 import useExamAutosave from "@/hooks/useExamAutosave";
 import useAntiCheat from "@/hooks/useAntiCheat";
 import useLiveStudents from "@/hooks/useLiveStudents";
 import StudentCameraStream
 from "@/components/exam/StudentCameraStream";
-
+import {
+  getFaceDetector
+} from "@/lib/faceDetection";
 import {
   fetchExam,
 } from "@/services/exam.service";
@@ -102,24 +105,26 @@ export default function ExamPage() {
 ] = useState<
   Record<number, any>
 >({});
-const [
-  pendingSave,
-  setPendingSave
-] = useState<{
-  questionId: string;
-  selectedOption: string | null;
-} | null>(null);
+const [pendingSaves, setPendingSaves] =
+  useState<
+    {
+      questionId: string;
+      selectedOption: string | null;
+    }[]
+  >([]);
+  const [savingAnswers, setSavingAnswers] = useState(false);
   const examId = Array.isArray(
     params.id
   )
     ? params.id[0]
     : params.id;
 
+
   const examContainerRef =
     useRef<HTMLDivElement>(
       null
     );
-
+const [timerInitialized, setTimerInitialized] = useState(false);
   const streamRef =
     useRef<MediaStream | null>(
       null
@@ -129,11 +134,19 @@ const [cameraStream,
   useState<MediaStream | null>(
     null
   );
-
+  
+const videoRef =
+  useRef<HTMLVideoElement | null>(null);
   const lastViolationRef =
     useRef(0);
-
-  
+const snapshotIntervalRef =
+  useRef<NodeJS.Timeout | null>(
+    null
+  );
+  const [
+  adminWarning,
+  setAdminWarning
+] = useState<string | null>(null);
   const [answers,
     setAnswers] =
     useState<any>({});
@@ -141,6 +154,8 @@ const [cameraStream,
   const [currentQuestion,
     setCurrentQuestion] =
     useState(0);
+    const [attemptId, setAttemptId] =
+  useState<string | null>(null);
 const [
   currentQuestionData,
   setCurrentQuestionData
@@ -209,6 +224,8 @@ const [loading,
     x: 0,
     y: 180,
   });
+  const cameraRef =
+  useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] =
   useState(false);
 
@@ -217,7 +234,7 @@ const dragOffset =
     x: 0,
     y: 0,
   });
-
+const savingRef = useRef(false);
 useEffect(() => {
 
   const saved =
@@ -288,7 +305,8 @@ const [resumeAvailable,
   const [violations,
     setViolations] =
     useState(0);
-
+const [finalizingExam, setFinalizingExam] =
+  useState(false);
   const [cameraAllowed,
     setCameraAllowed] =
     useState(false);
@@ -322,6 +340,37 @@ const [levelUp,
     setMounted(true);
 
   }, []);
+  useEffect(() => {
+
+  if (
+    !examStarted ||
+    timerInitialized ||
+    !currentQuestionData
+  ) {
+    return;
+  }
+
+  // Give React one frame to paint the question
+  requestAnimationFrame(() => {
+
+    localStorage.setItem(
+      `exam-start-time-${examId}-${userId}`,
+      Date.now().toString()
+    );
+
+    setTimerInitialized(true);
+
+    console.log("✅ Timer Started");
+
+  });
+
+}, [
+  examStarted,
+  currentQuestionData,
+  timerInitialized,
+  examId,
+  userId,
+]);
 useEffect(() => {
 
   return () => {
@@ -779,25 +828,63 @@ useEffect(() => {
           const data =
             payload.new as any;
 
-          if (
-            data.warning_message
-          ) {
+      if (
 
-            alert(
-              `Teacher Warning: ${data.warning_message}`
-            );
-          }
+  data.warning_message &&
 
-          if (
-            data.force_submit
-          ) {
+  data.warning_sent_at
 
-            alert(
-              "Teacher force submitted your exam"
-            );
+) {
 
-            await submitExam();
-          }
+  const warningAge =
+
+    Date.now() -
+
+    new Date(
+      data.warning_sent_at
+    ).getTime();
+
+  if (
+    warningAge < 60000
+  ) {
+
+    setAdminWarning(
+      data.warning_message
+    );
+
+  }
+
+}
+
+         if (
+  data.force_submit
+) {
+
+  alert(
+    "Teacher force submitted your exam"
+  );
+
+  await supabase
+
+    .from(
+      "exam_live_status"
+    )
+
+    .update({
+
+      force_submit:
+        false,
+
+    })
+
+    .eq(
+      "user_id",
+      userId
+    );
+
+  await submitExam();
+
+}
 
           if (
             data.removed
@@ -874,27 +961,51 @@ useEffect(() => {
 
   function handleMove(e: PointerEvent) {
 
-    if (!isDragging) return;
+  if (!isDragging) return;
 
-    setCameraPosition({
+  const x =
+    e.clientX - dragOffset.current.x;
 
-      x:
-        e.clientX -
-        dragOffset.current.x,
+  const y =
+    e.clientY - dragOffset.current.y;
 
-      y:
-        e.clientY -
-        dragOffset.current.y,
+  requestAnimationFrame(() => {
 
-    });
+    if (!cameraRef.current) return;
 
-  }
+    cameraRef.current.style.transform =
+      `translate3d(${x}px, ${y}px, 0)`;
 
-  function handleUp() {
+  });
 
-    setIsDragging(false);
+}
 
-  }
+  function handleUp(e: PointerEvent) {
+
+  if (!isDragging) return;
+
+  const x =
+    e.clientX - dragOffset.current.x;
+
+  const y =
+    e.clientY - dragOffset.current.y;
+
+  setCameraPosition({
+    x,
+    y,
+  });
+
+  localStorage.setItem(
+    `camera-position-${examId}`,
+    JSON.stringify({
+      x,
+      y,
+    })
+  );
+
+  setIsDragging(false);
+
+}
 
   window.addEventListener(
     "pointermove",
@@ -972,7 +1083,29 @@ useEffect(() => {
 
   const updated =
     prev + 1;
+if (
+  userId &&
+  examId
+) {
 
+  supabase
+    .from(
+      "proctoring_events"
+    )
+    .insert({
+      attempt_id:
+        examId,
+      student_id:
+        userId,
+      event_type:
+        "violation",
+      violation_reason:
+        reason,
+      created_at:
+        new Date().toISOString(),
+    });
+
+}
   alert(
     `${reason}. Violations: ${updated}/2`
   );
@@ -1028,6 +1161,155 @@ useEffect(() => {
       );
     }
   }
+  async function uploadSnapshot() {
+
+  if (!videoRef.current) {
+    return;
+  }
+
+  const canvas =
+    document.createElement(
+      "canvas"
+    );
+
+  canvas.width = 320;
+  canvas.height = 240;
+
+  const ctx =
+    canvas.getContext("2d");
+
+  if (!ctx) {
+    return;
+  }
+
+  ctx.drawImage(
+    videoRef.current,
+    0,
+    0,
+    320,
+    240
+  );
+const detector =
+  await getFaceDetector();
+
+const result =
+  detector.detect(
+    canvas
+  );
+
+const faceCount =
+  result.detections.length;
+  await supabase
+  .from(
+    "proctoring_events"
+  )
+  .insert({
+    attempt_id:
+      examId,
+    student_id:
+      userId,
+    event_type:
+      "face_scan",
+    face_count:
+      faceCount,
+  });
+  if (faceCount === 0) {
+
+  handleViolation(
+    "Face not visible"
+  );
+
+}
+
+if (faceCount > 1) {
+
+  handleViolation(
+    "Multiple faces detected"
+  );
+
+}
+  const blob =
+    await new Promise<Blob | null>(
+      (resolve) =>
+        canvas.toBlob(
+          resolve,
+          "image/jpeg",
+          0.7
+        )
+    );
+
+  if (!blob) {
+    return;
+  }
+
+  const fileName =
+    `${userId}/${examId}/${Date.now()}.jpg`;
+
+const {
+  data: uploadData,
+  error,
+} = await supabase.storage
+
+  .from("proctoring")
+
+  .upload(
+    fileName,
+    blob,
+    {
+      upsert: false,
+    }
+  );
+  if (error) {
+
+  console.error(
+    "Snapshot Upload Error:",
+    error
+  );
+
+  return;
+}
+const {
+  data: publicUrlData,
+} = supabase.storage
+
+  .from("proctoring")
+
+  .getPublicUrl(
+    uploadData.path
+  );
+
+const imageUrl =
+  publicUrlData.publicUrl;
+  await supabase
+
+  .from(
+    "proctoring_snapshots"
+  )
+
+  .insert({
+
+    attempt_id:null,
+
+    student_id:
+      userId,
+
+    image_url:
+      imageUrl,
+
+    face_count:
+      faceCount,
+
+  });
+
+  if (error) {
+
+    console.error(
+      "Snapshot Upload Error:",
+      error
+    );
+
+  }
+}
 async function resumeExam() {
 
   if (!sessionToken) {
@@ -1334,6 +1616,10 @@ const response = await fetch(
 
 const result =
   await response.json();
+  setAttemptId(
+  result.session?.attempt_id ||
+  null
+);
 console.log(
   "START RESULT FULL:",
   JSON.stringify(
@@ -1482,10 +1768,6 @@ localStorage.setItem(
   "true"
 );
 
-localStorage.setItem(
-  `exam-start-time-${examId}-${userId}`,
-  Date.now().toString()
-);
 }
     
   async function selectAnswer(
@@ -1531,9 +1813,20 @@ setAnswers(
     [questionId]: newValue,
   })
 );
-setPendingSave({
-  questionId,
-  selectedOption: newValue,
+setPendingSaves(prev => {
+
+  const filtered = prev.filter(
+    item => item.questionId !== questionId
+  );
+
+  return [
+    ...filtered,
+    {
+      questionId,
+      selectedOption: newValue,
+    },
+  ];
+
 });
 if (!newValue) {
 
@@ -1565,68 +1858,115 @@ if (!newValue) {
  useEffect(() => {
 
   if (
-    !pendingSave ||
+    pendingSaves.length === 0 ||
     !sessionToken
   ) {
     return;
   }
+setSavingAnswers(true);
+  const saveAll = async () => {
 
-  const timeout =
-    setTimeout(
-      async () => {
+  // Prevent multiple save loops
+  if (savingRef.current) return;
 
-        try {
+  savingRef.current = true;
 
-          await fetch(
-            "/api/exam/save-answer",
-            {
-              method: "POST",
+  setSavingAnswers(true);
 
-              headers: {
-                "Content-Type":
-                  "application/json",
-              },
+  try {
 
-              body: JSON.stringify({
-                examId,
+    const queue = [...pendingSaves];
 
-                questionId:
-                  pendingSave.questionId,
+    // Clear the queue that we're about to process
+    setPendingSaves([]);
 
-                selectedOption:
-                  pendingSave.selectedOption,
+    for (const item of queue) {
 
-                sessionToken,
-              }),
-            }
-          );
-
-        } catch (error) {
-
-          console.error(
-            "Autosave failed",
-            error
-          );
+      await fetch(
+        "/api/exam/save-answer",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            examId,
+            questionId: item.questionId,
+            selectedOption: item.selectedOption,
+            sessionToken,
+          }),
+          
         }
+      );
 
-      },
-      1000
-    );
+    }
 
-  return () =>
-    clearTimeout(
-      timeout
-    );
+  } catch (error) {
+
+    console.error("Auto-save failed:", error);
+    
+
+    // Optional: re-add failed items here for retry
+
+  } finally {
+
+    // ✅ STEP 5 GOES HERE
+
+    setSavingAnswers(false);
+
+    savingRef.current = false;
+
+    
+
+  }
+
+};
+
+  saveAll();
 
 }, [
-  pendingSave,
+  pendingSaves,
   sessionToken,
   examId,
-]); 
+]);
+useEffect(() => {
 
+  if (
+    !examStarted ||
+    !cameraStream
+  ) {
+    return;
+  }
+
+  snapshotIntervalRef.current =
+    setInterval(
+      () => {
+        uploadSnapshot();
+      },
+      15000
+    );
+
+  return () => {
+
+    if (
+      snapshotIntervalRef.current
+    ) {
+
+      clearInterval(
+        snapshotIntervalRef.current
+      );
+
+    }
+
+  };
+
+}, [
+  examStarted,
+  cameraStream
+]);
   
 async function submitExam() {
-
+setFinalizingExam(true);
   if (submitting) {
     return;
   }
@@ -1637,51 +1977,26 @@ async function submitExam() {
 
       setSubmitting(true);
 // Flush pending answer before submitting
-if (
-  pendingSave &&
-  sessionToken
-) {
+const startTime = Date.now();
 
-  try {
+while (savingAnswers || pendingSaves.length > 0) {
 
-    await fetch(
-      "/api/exam/save-answer",
-      {
-        method: "POST",
+  if (Date.now() - startTime > 10000) {
 
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
-
-        body: JSON.stringify({
-
-          examId,
-
-          questionId:
-            pendingSave.questionId,
-
-          selectedOption:
-            pendingSave.selectedOption,
-
-          sessionToken,
-
-        }),
-      }
+    toast.error(
+      "Unable to save latest answers. Please try again."
     );
 
-    // Prevent duplicate save from debounce
-    setPendingSave(null);
-
-  } catch (error) {
-
-    console.error(
-      "Failed to flush pending answer",
-      error
-    );
+    return;
 
   }
+
+  await new Promise(resolve =>
+    setTimeout(resolve, 100)
+  );
+
 }
+
   
     const response = await fetch(
   "/api/exam/submit",
@@ -2075,9 +2390,17 @@ const completionPercentage =
     </main>
   );
 }
-if (submitted) {
+if (submitted || finalizingExam) {
 
   return (
+
+    <TCDLoader
+      text="Finalizing Your Performance..."
+    />
+
+  );
+
+}
 
     <main className="min-h-screen flex items-center justify-center bg-gradient-to-br
 
@@ -2101,8 +2424,8 @@ to-[#EEF3FB]">
 
     </main>
 
-  );
-}
+  
+
   if (
     !examStarted &&
     examInfo
@@ -2394,12 +2717,12 @@ to-[#EEF3FB] p-5"
       </div>
 
 <div
+ref={cameraRef}
   style={{
-    position: "absolute",
-    left: cameraPosition.x,
-    top: cameraPosition.y,
-    zIndex: 9999,
-  }}
+  position: "absolute",
+  transform: `translate3d(${cameraPosition.x}px, ${cameraPosition.y}px, 0)`,
+  zIndex: 9999,
+}}
 
   onPointerDown={(e) => {
 
@@ -2445,9 +2768,10 @@ shadow-[0_0_25px_rgba(212,175,55,0.25)]
   "
 >
 
-  <StudentCameraStream
-    stream={cameraStream}
-  />
+ <StudentCameraStream
+  stream={cameraStream}
+  videoRef={videoRef}
+/>
 
 </div>
 
@@ -3155,6 +3479,105 @@ animate-[tcdPop_.25s_ease-out]
 
 </div>
  )}
+ {adminWarning && (
+
+  <div
+    className="
+      fixed
+      inset-0
+      z-[99999]
+      bg-black/70
+      backdrop-blur-md
+      flex
+      items-center
+      justify-center
+      p-4
+    "
+  >
+
+    <div
+      className="
+        bg-white
+        rounded-[32px]
+        p-8
+        max-w-md
+        w-full
+        text-center
+        border
+        border-[#D4AF37]/30
+      "
+    >
+
+      <img
+        src="/icons/security.svg"
+        alt=""
+        className="
+          w-16
+          h-16
+          mx-auto
+          mb-4
+        "
+      />
+
+      <h2
+        className="
+          text-2xl
+          font-black
+          text-[#243B6B]
+        "
+      >
+        Admin Warning
+      </h2>
+
+      <p
+        className="
+          mt-4
+          text-gray-600
+        "
+      >
+        {adminWarning}
+      </p>
+
+      <button
+
+  onClick={async () => {
+
+    setAdminWarning(
+      null
+    );
+
+    await supabase
+
+      .from(
+        "exam_live_status"
+      )
+
+      .update({
+
+        warning_message:
+          null,
+
+        warning_sent_at:
+          null,
+
+      })
+
+      .eq(
+        "user_id",
+        userId
+      );
+
+  }}
+
+>
+  Understood
+</button>
+
+    </div>
+
+  </div>
+
+)}
 </div>
 );
 }

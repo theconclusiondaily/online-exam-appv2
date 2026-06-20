@@ -137,7 +137,7 @@ export default function ExamHistoryTable({
 
               const rank =
   ranks?.[
-    attempt.id
+    attempt.exam_id
   ] ?? 0;
   const numericRank =
   typeof rank === "number"

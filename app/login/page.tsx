@@ -10,29 +10,51 @@ import { Eye, EyeOff } from "lucide-react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { processReferral }
 from "@/lib/referrals/processReferral";
+import { useSearchParams } from "next/navigation";
 export default function LoginPage() {
 
   const router = useRouter();
 
 useEffect(() => {
-
   async function checkUser() {
-
     const {
       data: { session },
     } = await supabase.auth.getSession();
 
-    if (session) {
+    if (!session) {
+      return;
+    }
 
+    const { data: profile, error } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", session.user.id)
+      .single();
+
+    if (error || !profile) {
       router.replace("/dashboard");
+      return;
+    }
 
+    switch (profile.role) {
+      case "admin":
+        router.replace("/admin");
+        break;
+
+      case "teacher":
+        router.replace("/teacher");
+        break;
+
+      default:
+        router.replace("/dashboard");
     }
   }
 
   checkUser();
+}, [router]);
+const searchParams = useSearchParams();
 
-}, []);
-
+const verified = searchParams.get("verified");
   const [email, setEmail] =
     useState("");
 
@@ -50,7 +72,9 @@ const [
     useState(false);
 async function handleForgotPassword() {
 
-  if (!email) {
+ const normalizedEmail = email.trim().toLowerCase();
+
+if (!normalizedEmail) {
 
     alert(
       "Please enter your email address first."
@@ -61,7 +85,7 @@ async function handleForgotPassword() {
 
   const { error } =
     await supabase.auth.resetPasswordForEmail(
-      email,
+  normalizedEmail,
       {
         redirectTo:
           window.location.hostname === "localhost"
@@ -82,62 +106,31 @@ async function handleForgotPassword() {
   );
 }
 async function handleResendVerification() {
+  const normalizedEmail = email.trim().toLowerCase();
 
-  if (!email) {
-
-    alert(
-      "Please enter your email address first."
-    );
-
+  if (!normalizedEmail) {
+    alert("Please enter your email address first.");
     return;
   }
 
-  const {
-    error,
-  } = await supabase.auth.resend({
-
+  const { error } = await supabase.auth.resend({
     type: "signup",
-
-    email,
+    email: normalizedEmail,
 
     options: {
-
       emailRedirectTo:
-        window.location.hostname ===
-        "localhost"
-          ? "http://localhost:3000/login"
-          : "https://www.theconclusiondaily.com/login",
-
+        window.location.hostname === "localhost"
+          ? "http://localhost:3000/auth/callback"
+          : "https://www.theconclusiondaily.com/auth/callback",
     },
-
   });
 
   if (error) {
-
-  if (
-    error.message
-      .toLowerCase()
-      .includes(
-        "email not confirmed"
-      )
-  ) {
-
-    alert(
-      "Please verify your email before logging in. You can use the Resend Verification button below."
-    );
-
-  } else {
-
-    alert(
-      error.message
-    );
+    alert(error.message);
+    return;
   }
 
-  return;
-}
-  alert(
-    "Verification email sent successfully."
-  );
+  alert("Verification email sent successfully.");
 }
   async function handleLogin() {
 if (!captchaToken) {
@@ -163,23 +156,29 @@ if (!captchaToken) {
 
       return;
     }
+const normalizedEmail = email.trim().toLowerCase();
+await supabase.auth.signInWithPassword({
+  email: normalizedEmail,
+  password,
+});
+   const { error } = await supabase.auth.signInWithPassword({
+  email,
+  password,
+});
 
-    const {
-      error,
-    } =
-      await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+if (error) {
+  if (
+    error.message.toLowerCase().includes("email not confirmed")
+  ) {
+    alert(
+      "Please verify your email before logging in. You can use the 'Resend Verification' button below."
+    );
+  } else {
+    alert(error.message);
+  }
 
-    if (error) {
-
-      alert(
-        error.message
-      );
-
-      return;
-    }
+  return;
+}
 
     const {
       data: { user },
@@ -210,11 +209,11 @@ const {
 if (!existingProfile) {
 
   const generatedCode =
-    "TCD" +
-    Math.random()
-      .toString(36)
-      .substring(2, 8)
-      .toUpperCase();
+  "TCD" +
+  crypto.randomUUID()
+    .replace(/-/g, "")
+    .slice(0, 8)
+    .toUpperCase();
 
   const {
     error: profileError,
@@ -284,11 +283,10 @@ await supabase
 
     });
 
-  await processReferral(
-    user.id,
-    user.user_metadata
-      ?.referral_code
-  );
+ await processReferral(
+  user.id,
+  user.user_metadata?.referred_by
+);
 }  
 
 const {
@@ -301,28 +299,19 @@ const {
     user.id
   )
   .maybeSingle();
+const existingUser = await supabase
+  .from("users")
+  .select("referral_code")
+  .eq("id", user.id)
+  .single();
 
-if (!existingReferral) {
-
-  const generatedCode =
-    "TCD" +
-    Math.random()
-      .toString(36)
-      .substring(2, 8)
-      .toUpperCase();
-
-  await supabase
-    .from("referral_codes")
-    .insert({
-      user_id: user.id,
-      referral_code: generatedCode,
-      total_referrals: 0,
-      total_rewards: 0,
-    });
-
-}
-
-
+const generatedCode =
+  existingUser.data?.referral_code ??
+  ("TCD" +
+    crypto.randomUUID()
+      .replace(/-/g, "")
+      .slice(0, 8)
+      .toUpperCase());
 // SESSION TOKEN
 
     const sessionToken =
@@ -445,6 +434,7 @@ localStorage.removeItem(
       false
     );
   }
+  if (loading) return;
 }
 
   return (
@@ -528,7 +518,17 @@ growth.
           
 
         </div>
+{verified === "true" && (
+  <div className="mb-4 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-700">
+    ✅ Email verified successfully. You can now log in.
+  </div>
+)}
 
+{verified === "false" && (
+  <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+    ❌ Email verification failed. Please try again.
+  </div>
+)}
         {/* FORM */}
 
         <div className="space-y-4">
