@@ -147,6 +147,10 @@ const snapshotIntervalRef =
   adminWarning,
   setAdminWarning
 ] = useState<string | null>(null);
+const [
+  language,
+  setLanguage
+] = useState<"en" | "hi">("en");
   const [answers,
     setAnswers] =
     useState<any>({});
@@ -2853,7 +2857,43 @@ shadow-[0_0_25px_rgba(212,175,55,0.25)]
   >
     Question {currentQuestion + 1}
   </h2>
+<div className="flex gap-2 mt-3">
 
+  <button
+    onClick={() => setLanguage("en")}
+    className={`
+      px-4
+      py-2
+      rounded-xl
+      font-bold
+      ${
+        language === "en"
+          ? "bg-[#243B6B] text-white"
+          : "bg-gray-100 text-gray-600"
+      }
+    `}
+  >
+    English
+  </button>
+
+  <button
+    onClick={() => setLanguage("hi")}
+    className={`
+      px-4
+      py-2
+      rounded-xl
+      font-bold
+      ${
+        language === "hi"
+          ? "bg-[#D4AF37] text-white"
+          : "bg-gray-100 text-gray-600"
+      }
+    `}
+  >
+    हिन्दी
+  </button>
+
+</div>
 </div>
 
           <p
@@ -2870,8 +2910,13 @@ shadow-[0_0_25px_rgba(212,175,55,0.25)]
   "
 >
             {
-              currentQuestionData?.question
-            }
+  language === "hi" &&
+  currentQuestionData?.question_hi
+
+    ? currentQuestionData.question_hi
+
+    : currentQuestionData?.question
+}
           </p>
 
           <div className="space-y-4">

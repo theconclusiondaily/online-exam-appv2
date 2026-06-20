@@ -173,13 +173,21 @@ if (
     } = await supabase
       .from("questions")
       .select(`
-        id,
-        question,
-        option_a,
-        option_b,
-        option_c,
-        option_d
-      `)
+  id,
+
+  question,
+  question_text_hi,
+
+  option_a,
+  option_b,
+  option_c,
+  option_d,
+
+  option_a_hi,
+  option_b_hi,
+  option_c_hi,
+  option_d_hi
+`)
       .eq(
         "id",
         currentQuestionId
