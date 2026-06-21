@@ -69,7 +69,7 @@ export default function WalletCard({
           <p
             className="
               text-sm
-              text-gray-700
+              text-tcd-primary
             "
           >
             Your earned credits
@@ -97,7 +97,7 @@ export default function WalletCard({
         <div
           className="
             mt-2
-            text-gray-700
+            text-tcd-primary
           "
         >
           Current Balance
@@ -121,7 +121,7 @@ export default function WalletCard({
           "
         >
 
-          <span className="text-gray-600">
+          <span className="text-brand">
             Last Earned
           </span>
 
@@ -148,7 +148,7 @@ export default function WalletCard({
           "
         >
 
-          <span className="text-gray-600">
+          <span className="text-brand">
             Lifetime Earned
           </span>
 

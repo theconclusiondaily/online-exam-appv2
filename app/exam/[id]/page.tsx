@@ -134,7 +134,18 @@ const [cameraStream,
   useState<MediaStream | null>(
     null
   );
-  
+  const [
+  noFaceSince,
+  setNoFaceSince
+] = useState<number | null>(
+  null
+);
+const [
+  multipleFaceSince,
+  setMultipleFaceSince
+] = useState<number | null>(
+  null
+);
 const videoRef =
   useRef<HTMLVideoElement | null>(null);
   const lastViolationRef =
@@ -831,7 +842,10 @@ useEffect(() => {
 
           const data =
             payload.new as any;
-
+console.log(
+  "REALTIME EVENT:",
+  payload
+);
       if (
 
   data.warning_message &&
@@ -963,23 +977,23 @@ useEffect(() => {
 ]);
 useEffect(() => {
 
-  function handleMove(e: PointerEvent) {
+ function handleMove(
+  e: PointerEvent
+) {
 
   if (!isDragging) return;
 
   const x =
-    e.clientX - dragOffset.current.x;
+    e.clientX -
+    dragOffset.current.x;
 
   const y =
-    e.clientY - dragOffset.current.y;
+    e.clientY -
+    dragOffset.current.y;
 
-  requestAnimationFrame(() => {
-
-    if (!cameraRef.current) return;
-
-    cameraRef.current.style.transform =
-      `translate3d(${x}px, ${y}px, 0)`;
-
+  setCameraPosition({
+    x,
+    y,
   });
 
 }
@@ -1110,11 +1124,11 @@ if (
     });
 
 }
-  alert(
-    `${reason}. Violations: ${updated}/2`
-  );
+ toast.error(
+  `${reason}. Violations: ${updated}/2`
+);
 
-  if (updated >= 2) {
+  if (updated >= 10) {
 
     console.log(
       "AUTO SUBMIT TRIGGERED"
@@ -1217,18 +1231,78 @@ const faceCount =
     face_count:
       faceCount,
   });
-  if (faceCount === 0) {
+ if (faceCount === 0) {
 
-  handleViolation(
-    "Face not visible"
-  );
+  if (!noFaceSince) {
+
+    setNoFaceSince(
+      Date.now()
+    );
+
+  } else {
+
+    const duration =
+
+      Date.now() -
+      noFaceSince;
+
+    if (
+      duration > 60000
+    ) {
+
+      handleViolation(
+        "Face not visible for 60 seconds"
+      );
+
+      setNoFaceSince(
+        Date.now()
+      );
+
+    }
+
+  }
+
+} else {
+
+  setNoFaceSince(null);
 
 }
 
 if (faceCount > 1) {
 
-  handleViolation(
-    "Multiple faces detected"
+  if (!multipleFaceSince) {
+
+    setMultipleFaceSince(
+      Date.now()
+    );
+
+  } else {
+
+    const duration =
+
+      Date.now() -
+      multipleFaceSince;
+
+    if (
+      duration > 30000
+    ) {
+
+      handleViolation(
+        "Multiple faces detected"
+      );
+
+      setMultipleFaceSince(
+        Date.now()
+      );
+
+    }
+
+  }
+
+} else {
+
+  setMultipleFaceSince(
+    null
   );
 
 }
@@ -2464,7 +2538,7 @@ to-[#EEF3FB]">
 
         {/* Description */}
 
-        <p className="text-center text-gray-600 text-lg mb-8">
+        <p className="text-center text-brand text-lg mb-8">
           {examInfo.description}
         </p>
 
@@ -2474,7 +2548,7 @@ to-[#EEF3FB]">
 
           <div className="rounded-2xl bg-[#F8FAFD] border border-[#243B6B]/10 p-5">
 
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-brand-light">
               Duration
             </p>
 
@@ -2482,7 +2556,7 @@ to-[#EEF3FB]">
               {examInfo?.duration || 30}
             </p>
 
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-brand-light">
               Minutes
             </p>
 
@@ -2490,7 +2564,7 @@ to-[#EEF3FB]">
 
           <div className="rounded-2xl bg-[#F8FAFD] border border-[#243B6B]/10 p-5">
 
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-brand-light">
               Questions
             </p>
 
@@ -2498,7 +2572,7 @@ to-[#EEF3FB]">
               {examInfo?.total_questions || 30}
             </p>
 
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-brand-light">
               Total
             </p>
 
@@ -2869,7 +2943,7 @@ shadow-[0_0_25px_rgba(212,175,55,0.25)]
       ${
         language === "en"
           ? "bg-[#243B6B] text-white"
-          : "bg-gray-100 text-gray-600"
+          : "bg-gray-100 text-brand"
       }
     `}
   >
@@ -2886,7 +2960,7 @@ shadow-[0_0_25px_rgba(212,175,55,0.25)]
       ${
         language === "hi"
           ? "bg-[#D4AF37] text-white"
-          : "bg-gray-100 text-gray-600"
+          : "bg-gray-100 text-brand"
       }
     `}
   >
@@ -3280,7 +3354,7 @@ animate-[tcdPop_.25s_ease-out]
         className="
           text-sm
 
-          text-gray-500
+          text-brand-light
 
           tracking-wide
         "
@@ -3317,7 +3391,7 @@ animate-[tcdPop_.25s_ease-out]
         alt=""
       />
 
-      <span className="text-sm text-gray-500">
+      <span className="text-sm text-brand-light">
         Total
       </span>
 
@@ -3399,7 +3473,7 @@ animate-[tcdPop_.25s_ease-out]
         alt=""
       />
 
-      <span className="text-sm text-gray-500">
+      <span className="text-sm text-brand-light">
 
         Unanswered
 
@@ -3407,7 +3481,7 @@ animate-[tcdPop_.25s_ease-out]
 
     </div>
 
-    <p className="text-3xl font-black text-gray-600 mt-2">
+    <p className="text-3xl font-black text-brand mt-2">
 
       {unansweredCount}
 
@@ -3577,7 +3651,7 @@ animate-[tcdPop_.25s_ease-out]
       <p
         className="
           mt-4
-          text-gray-600
+          text-brand
         "
       >
         {adminWarning}

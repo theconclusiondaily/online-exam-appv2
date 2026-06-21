@@ -103,7 +103,7 @@ export default function AnalyticsChart() {
           Student Registrations
         </h2>
 
-        <p className="text-gray-700">
+        <p className="text-tcd-primary">
           Real platform growth analytics
         </p>
 

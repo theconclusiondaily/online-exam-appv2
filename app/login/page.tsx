@@ -504,11 +504,11 @@ lg:grid-cols-[1.2fr_0.8fr]
 The Conclusion Daily
           </h1>
 
-          <p className="text-gray-700 mt-2">
+          <p className="text-tcd-primary mt-2">
 
           Hope • Faith • Excellence
           </p>
-<p className="text-gray-700 mt-2">
+<p className="text-tcd-primary mt-2">
   Continue your journey of
 learning, achievement and
 growth.
@@ -555,7 +555,7 @@ border-[#D8E1F0]
 bg-[#F7F9FC]
 
 text-[#274472]
-placeholder:text-gray-700
+placeholder:text-tcd-primary
 
 transition-all
 
@@ -596,7 +596,7 @@ focus:ring-[#D4AF37]/30
       bg-[#F7F9FC]
 
       text-[#274472]
-      placeholder:text-gray-700
+      placeholder:text-tcd-primary
 
       focus:outline-none
       focus:border-[#D4AF37]
@@ -619,7 +619,7 @@ focus:ring-[#D4AF37]/30
 
       -translate-y-1/2
 
-      text-gray-700
+      text-tcd-primary
     "
   >
     {
@@ -726,7 +726,7 @@ transition-all
 
         <div className="mt-8 text-center">
 
-          <p className="text-gray-700">
+          <p className="text-tcd-primary">
 
             Don't have an account?
 

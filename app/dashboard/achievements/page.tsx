@@ -310,7 +310,7 @@ setStats({
 
         <p
           className="
-            text-gray-700
+            text-tcd-primary
             text-lg
             mb-4
           "
@@ -527,7 +527,7 @@ else if (
 
                     <p
                       className="
-                        text-gray-700
+                        text-tcd-primary
                         mb-3
                       "
                     >
@@ -585,7 +585,7 @@ else if (
                       <span
                         className="
                           font-semibold
-                          text-gray-600
+                          text-brand
                         "
                       >
 
@@ -658,7 +658,7 @@ else if (
 
                               ? "text-green-600"
 
-                              : "text-gray-700"
+                              : "text-tcd-primary"
                           }
                         `}
                       >
@@ -883,7 +883,7 @@ gap-4
 
             </div>
 
-            <p className="text-gray-700">
+            <p className="text-tcd-primary">
 
               Unlocked
 
@@ -934,7 +934,7 @@ gap-4
 
             </div>
 
-            <p className="text-gray-700">
+            <p className="text-tcd-primary">
 
               Total Achievements
 
@@ -985,7 +985,7 @@ gap-4
 
             </div>
 
-            <p className="text-gray-700">
+            <p className="text-tcd-primary">
 
               Completion
 

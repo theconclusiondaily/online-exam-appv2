@@ -243,7 +243,7 @@ export default function AnalyticsPage() {
 
                       </h2>
 
-                      <p className="text-gray-600">
+                      <p className="text-brand">
 
                         {item.city}
 
@@ -257,7 +257,7 @@ export default function AnalyticsPage() {
 
                       <div>
 
-                        <p className="text-gray-700 text-sm mb-1">
+                        <p className="text-tcd-primary text-sm mb-1">
 
                           Students
 
@@ -273,7 +273,7 @@ export default function AnalyticsPage() {
 
                       <div>
 
-                        <p className="text-gray-700 text-sm mb-1">
+                        <p className="text-tcd-primary text-sm mb-1">
 
                           Exams
 
@@ -289,7 +289,7 @@ export default function AnalyticsPage() {
 
                       <div>
 
-                        <p className="text-gray-700 text-sm mb-1">
+                        <p className="text-tcd-primary text-sm mb-1">
 
                           Learning Journeys
 
@@ -305,7 +305,7 @@ export default function AnalyticsPage() {
 
                       <div>
 
-                        <p className="text-gray-700 text-sm mb-1">
+                        <p className="text-tcd-primary text-sm mb-1">
 
                           Avg Score
 
@@ -321,7 +321,7 @@ export default function AnalyticsPage() {
 
                       <div>
 
-                        <p className="text-gray-700 text-sm mb-1">
+                        <p className="text-tcd-primary text-sm mb-1">
 
                           Top Score
 
@@ -346,7 +346,7 @@ export default function AnalyticsPage() {
 
             {analytics.length === 0 && (
 
-              <div className="bg-white border rounded-3xl p-6 text-center text-gray-700">
+              <div className="bg-white border rounded-3xl p-6 text-center text-tcd-primary">
 
                 No analytics available yet
 

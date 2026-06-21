@@ -319,7 +319,7 @@ setRanks(rankMap);
             Learning Journey
           </h1>
 
-          <p className="text-gray-700 text-base">
+          <p className="text-tcd-primary text-base">
 
             Track your exam
             history, performance,

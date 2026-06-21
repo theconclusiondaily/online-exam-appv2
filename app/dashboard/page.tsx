@@ -1773,7 +1773,7 @@ const handleClaimReward =
 
       text-xs
 
-      text-gray-700
+      text-tcd-primary
 
       mb-2
     "
@@ -1866,7 +1866,7 @@ const handleClaimReward =
 
         <p
           className="
-            text-gray-700
+            text-tcd-primary
 
             text-sm
           "
@@ -2183,7 +2183,7 @@ const handleClaimReward =
     {/* PRESTIGE */}
 
     <div>
-      <p className="text-xs text-gray-700 mb-1">
+      <p className="text-xs text-tcd-primary mb-1">
         Prestige
       </p>
 
@@ -2203,7 +2203,7 @@ const handleClaimReward =
     {/* SCORE */}
 
     <div>
-      <p className="text-xs text-gray-700 mb-1">
+      <p className="text-xs text-tcd-primary mb-1">
         Achievement Score
       </p>
 
@@ -2223,7 +2223,7 @@ const handleClaimReward =
     {/* ACHIEVEMENTS */}
 
     <div>
-      <p className="text-xs text-gray-700 mb-1">
+      <p className="text-xs text-tcd-primary mb-1">
         Achievements
       </p>
 
@@ -2243,7 +2243,7 @@ const handleClaimReward =
     {/* STREAK */}
 
     <div>
-      <p className="text-xs text-gray-700 mb-1">
+      <p className="text-xs text-tcd-primary mb-1">
         Study Streak
       </p>
 
@@ -2263,7 +2263,7 @@ const handleClaimReward =
     {/* TCD */}
 
     <div>
-      <p className="text-xs text-gray-700 mb-1">
+      <p className="text-xs text-tcd-primary mb-1">
         TCD Credits
       </p>
 
@@ -2331,7 +2331,7 @@ const handleClaimReward =
 
             </p>
 
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-tcd-primary">
 
               {
                 membership
@@ -2389,7 +2389,7 @@ const handleClaimReward =
           <p
             className="
               text-sm
-              text-gray-700
+              text-tcd-primary
               mt-2
             "
           >
@@ -2425,7 +2425,7 @@ const handleClaimReward =
           <p
             className="
               text-xs
-              text-gray-300
+              text-tcd-muted
               mt-3
             "
           >

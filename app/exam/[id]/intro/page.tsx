@@ -179,7 +179,7 @@ export default function ExamIntroPage() {
           }}
           className="
             text-center
-            text-gray-700
+            text-tcd-primary
             text-lg
             md:text-2xl
             mt-6

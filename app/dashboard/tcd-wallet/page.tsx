@@ -285,7 +285,7 @@ export default function TCDWalletPage() {
 
             <p
               className="
-                text-gray-700
+                text-tcd-primary
 
                 max-w-2xl
               "
@@ -382,7 +382,7 @@ export default function TCDWalletPage() {
 
                 </h3>
 
-                <p className="text-gray-700 text-sm">
+                <p className="text-tcd-primary text-sm">
 
                   Current Balance
 
@@ -402,7 +402,7 @@ export default function TCDWalletPage() {
                 py-3
 
                 text-sm
-                text-gray-600
+                text-brand
               "
             >
 
@@ -480,7 +480,7 @@ export default function TCDWalletPage() {
 
                 </h3>
 
-                <p className="text-gray-700 text-sm">
+                <p className="text-tcd-primary text-sm">
 
                   Lifetime Earned
 
@@ -500,7 +500,7 @@ export default function TCDWalletPage() {
                 py-3
 
                 text-sm
-                text-gray-600
+                text-brand
               "
             >
 
@@ -578,7 +578,7 @@ export default function TCDWalletPage() {
 
                 </h3>
 
-                <p className="text-gray-700 text-sm">
+                <p className="text-tcd-primary text-sm">
 
                   Achievements
 
@@ -598,7 +598,7 @@ export default function TCDWalletPage() {
                 py-3
 
                 text-sm
-                text-gray-600
+                text-brand
               "
             >
 
@@ -709,7 +709,7 @@ export default function TCDWalletPage() {
 
                     <p
                       className="
-                        text-gray-700
+                        text-tcd-primary
 
                         mt-2
                       "
@@ -795,7 +795,7 @@ export default function TCDWalletPage() {
                                 <p
                                   className="
                                     text-xs
-                                    text-gray-700
+                                    text-tcd-primary
                                   "
                                 >
 
@@ -985,7 +985,7 @@ export default function TCDWalletPage() {
                               <p
                                 className="
                                   text-xs
-                                  text-gray-700
+                                  text-tcd-primary
 
                                   mt-1
                                 "
@@ -1017,7 +1017,7 @@ export default function TCDWalletPage() {
                               <p
                                 className="
                                   text-xs
-                                  text-gray-700
+                                  text-tcd-primary
                                 "
                               >
 

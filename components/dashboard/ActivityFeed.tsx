@@ -243,7 +243,7 @@ useEffect(() => {
             <p
               className="
                 text-sm
-                text-gray-700
+                text-tcd-primary
 
                 mt-1
               "
@@ -352,7 +352,7 @@ useEffect(() => {
 
             <p
               className="
-                text-gray-700
+                text-tcd-primary
 
                 mt-2
 
@@ -447,7 +447,7 @@ useEffect(() => {
                         <p
                           className="
                             text-xs
-                            text-gray-700
+                            text-tcd-primary
 
                             whitespace-nowrap
                           "
@@ -474,7 +474,7 @@ useEffect(() => {
                       <p
                         className="
                           text-sm
-                          text-gray-600
+                          text-brand
 
                           mt-1
                         "

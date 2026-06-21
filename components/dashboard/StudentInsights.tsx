@@ -243,7 +243,7 @@ export default function StudentInsights({
 
         </h2>
 
-        <p className="text-gray-700 text-sm">
+        <p className="text-tcd-primary text-sm">
 
           Compact overview of
           your competitive
@@ -347,7 +347,7 @@ export default function StudentInsights({
 
                     bg-white/70
 
-                    text-gray-600
+                    text-brand
                   "
                 >
 
@@ -361,7 +361,7 @@ export default function StudentInsights({
 
               <p
                 className="
-                  text-gray-700
+                  text-tcd-primary
                   text-sm
 
                   mb-1

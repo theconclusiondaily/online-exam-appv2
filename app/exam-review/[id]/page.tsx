@@ -295,7 +295,7 @@ setQuestions(
             🔒 Review Locked
           </h1>
 
-          <p className="text-gray-600">
+          <p className="text-brand">
             Answer review will be
             available after the
             review release time.
@@ -351,7 +351,7 @@ setQuestions(
               No Review Data Found
             </h2>
 
-            <p className="text-gray-700">
+            <p className="text-tcd-primary">
               No answers were found
               for this exam.
             </p>

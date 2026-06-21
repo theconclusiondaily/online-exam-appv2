@@ -154,7 +154,7 @@ export default function AchievementPopup({
               ${
                 rarity.label ===
                 "Common"
-                  ? "text-gray-700"
+                  ? "text-tcd-primary"
                   : "text-white/90"
               }
             `}
@@ -194,7 +194,7 @@ export default function AchievementPopup({
                 height={28}
               />
 
-              <p className="text-gray-600">
+              <p className="text-brand">
   TCD Credits
 </p>
 
@@ -223,7 +223,7 @@ export default function AchievementPopup({
                 height={28}
               />
 
-              <p className="mt-2 text-sm text-gray-600">
+              <p className="mt-2 text-sm text-brand">
   Achievement
 </p>
 

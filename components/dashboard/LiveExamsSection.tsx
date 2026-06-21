@@ -297,7 +297,7 @@ const renderArenaSection = (
 
               <p
                 className="
-                  text-gray-700
+                  text-tcd-primary
                   text-sm
                   mb-2
                   line-clamp-3
@@ -313,7 +313,7 @@ const renderArenaSection = (
 
                 <div className="flex justify-between">
 
-                  <span className="text-gray-700">
+                  <span className="text-tcd-primary">
                     Duration
                   </span>
 
@@ -325,7 +325,7 @@ const renderArenaSection = (
 
                 <div className="flex justify-between">
 
-                  <span className="text-gray-700">
+                  <span className="text-tcd-primary">
                     Ends
                   </span>
 
@@ -479,7 +479,7 @@ const renderArenaSection = (
       className="w-4 h-4"
     />
 
-    <span className="font-semibold text-gray-700">
+    <span className="font-semibold text-tcd-primary">
       Completed:
       {" "}
       {completedExams.length}
@@ -487,7 +487,7 @@ const renderArenaSection = (
   </div>
 
 </div>
-        <p className="text-gray-700 mt-1">
+        <p className="text-tcd-primary mt-1">
           Compete in public challenges and institute exams to earn XP, achievements, prestige and TCD credits.
         </p>
 
@@ -532,7 +532,7 @@ const renderArenaSection = (
             No Active Opportunities
           </h3>
 
-          <p className="text-gray-700 mt-3">
+          <p className="text-tcd-primary mt-3">
 
             New exams will appear here when published.
 
@@ -567,7 +567,7 @@ const renderArenaSection = (
 
   </div>
 
-  <p className="text-gray-700 mb-5">
+  <p className="text-tcd-primary mb-5">
     Daily Challenges, Weekly Challenges,
     Monthly Challenges and Public Competitions.
   </p>
@@ -623,7 +623,7 @@ const renderArenaSection = (
 
       </div>
 
-      <p className="text-gray-700 mb-5">
+      <p className="text-tcd-primary mb-5">
         Exams available through your institute memberships.
       </p>
 
@@ -778,7 +778,7 @@ const renderArenaSection = (
 
               <p
                 className="
-                  text-gray-700
+                  text-tcd-primary
                   text-sm
                   mb-2
                   line-clamp-3
@@ -794,7 +794,7 @@ const renderArenaSection = (
 
                 <div className="flex justify-between">
 
-                  <span className="text-gray-700">
+                  <span className="text-tcd-primary">
                     Duration
                   </span>
 
@@ -806,7 +806,7 @@ const renderArenaSection = (
 
                 <div className="flex justify-between">
 
-                  <span className="text-gray-700">
+                  <span className="text-tcd-primary">
                     Ends
                   </span>
 

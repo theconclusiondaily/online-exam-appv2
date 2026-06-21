@@ -320,7 +320,7 @@ export default function XPLevelCard() {
   "
 >
 
-  <p className="text-gray-500 text-sm mb-1">
+  <p className="text-brand-light text-sm mb-1">
 
     Competitive Hub
 
@@ -354,7 +354,7 @@ export default function XPLevelCard() {
             "
           >
 
-            <p className="text-gray-500 text-sm mb-1">
+            <p className="text-brand-light text-sm mb-1">
 
               Total XP
 
@@ -389,7 +389,7 @@ export default function XPLevelCard() {
             "
           >
 
-            <p className="text-gray-500 text-sm mb-1">
+            <p className="text-brand-light text-sm mb-1">
 
               Next Level
 

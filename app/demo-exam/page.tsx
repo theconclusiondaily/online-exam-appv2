@@ -152,7 +152,7 @@ export default function DemoExamPage() {
               Demo Completed 🎉
             </h1>
 
-            <p className="text-xl text-gray-600 mb-6">
+            <p className="text-xl text-brand mb-6">
               You experienced the
               complete TCD exam
               platform.
@@ -161,7 +161,7 @@ export default function DemoExamPage() {
             <div className="grid grid-cols-2 gap-4 mb-8">
 
               <div className="border rounded-2xl p-4">
-                <p className="text-gray-500">
+                <p className="text-brand-light">
                   Score
                 </p>
 
@@ -174,7 +174,7 @@ export default function DemoExamPage() {
               </div>
 
               <div className="border rounded-2xl p-4">
-                <p className="text-gray-500">
+                <p className="text-brand-light">
                   Percentage
                 </p>
 
@@ -260,7 +260,7 @@ export default function DemoExamPage() {
             }
           </h1>
 
-          <p className="text-gray-600">
+          <p className="text-brand">
             {
               DEMO_EXAM_CONFIG.description
             }

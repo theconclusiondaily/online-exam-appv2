@@ -138,7 +138,7 @@ export default function JoinInstitutePage() {
 
             <p
               className="
-                text-gray-700
+                text-tcd-primary
                 mt-3
               "
             >
@@ -178,7 +178,7 @@ export default function JoinInstitutePage() {
                 border-[#D8E1F0]
                 bg-[#F7F9FC]
                 text-[#274472]
-                placeholder:text-gray-700
+                placeholder:text-tcd-primary
                 focus:outline-none
                 focus:border-[#D4AF37]
                 focus:ring-2
@@ -245,7 +245,7 @@ export default function JoinInstitutePage() {
                 <p
                   className="
                     text-sm
-                    text-gray-700
+                    text-tcd-primary
                     mt-1
                   "
                 >

@@ -407,7 +407,7 @@ if (
       Question Builder
     </h2>
 
-    <p className="text-gray-600">
+    <p className="text-brand">
 
       Create and manage exam questions
 
@@ -450,7 +450,7 @@ if (
       Institutes
     </h2>
 
-    <p className="text-gray-600">
+    <p className="text-brand">
 
       Manage campuses and institutes
 
@@ -493,7 +493,7 @@ if (
       Analytics
     </h2>
 
-    <p className="text-gray-600">
+    <p className="text-brand">
 
       Institute performance analytics
 
@@ -536,7 +536,7 @@ if (
       Users
     </h2>
 
-    <p className="text-gray-600">
+    <p className="text-brand">
 
       Manage students and institutes
 
@@ -579,7 +579,7 @@ if (
       Teachers
     </h2>
 
-    <p className="text-gray-600">
+    <p className="text-brand">
 
       Manage institute teachers
 
@@ -622,7 +622,7 @@ if (
       Create Exam
     </h2>
 
-    <p className="text-gray-600">
+    <p className="text-brand">
 
       Create and manage exams
 
@@ -665,7 +665,7 @@ if (
       Leaderboards
     </h2>
 
-    <p className="text-gray-600">
+    <p className="text-brand">
 
       View rankings and performance
 
@@ -703,7 +703,7 @@ p-6">
 
   </div>
 
-  <p className="text-gray-700 text-sm font-semibold">
+  <p className="text-tcd-primary text-sm font-semibold">
 
     Total Students
 
@@ -743,7 +743,7 @@ p-6">
 
   </div>
 
-  <p className="text-gray-700 text-sm font-semibold">
+  <p className="text-tcd-primary text-sm font-semibold">
 
     Total Exams
 
@@ -783,7 +783,7 @@ p-6">
 
   </div>
 
-  <p className="text-gray-700 text-sm font-semibold">
+  <p className="text-tcd-primary text-sm font-semibold">
 
     Question Bank
 
@@ -823,7 +823,7 @@ p-6">
 
   </div>
 
-  <p className="text-gray-700 text-sm font-semibold">
+  <p className="text-tcd-primary text-sm font-semibold">
 
     Learning Journeys
 
@@ -863,7 +863,7 @@ p-6">
 
   </div>
 
-  <p className="text-gray-700 text-sm font-semibold">
+  <p className="text-tcd-primary text-sm font-semibold">
 
     Live Exams
 
@@ -1007,7 +1007,7 @@ text-tcd-blue">
 
                     : exam.status === "completed"
 
-                    ? "bg-gray-200 text-gray-700"
+                    ? "bg-gray-200 text-tcd-primary"
 
                     : exam.status === "cancelled"
 
@@ -1043,7 +1043,7 @@ text-tcd-blue">
   ₹ {exam.reward_pool || 0}
 </div>
 
-            <p className="text-sm text-gray-700 mt-2">
+            <p className="text-sm text-tcd-primary mt-2">
 
               Institute:
               {" "}
@@ -1055,7 +1055,7 @@ text-tcd-blue">
 
           <div className="flex flex-col items-end gap-2">
 
-            <div className="text-gray-600">
+            <div className="text-brand">
 
               {new Date(
                 exam.start_time
@@ -1229,7 +1229,7 @@ shadow-mdtext-white px-4 py-2 rounded-xl font-bold"
 
     {recentExams.length === 0 && (
 
-      <div className="text-center text-gray-700 py-10">
+      <div className="text-center text-tcd-primary py-10">
 
         No exams found
 

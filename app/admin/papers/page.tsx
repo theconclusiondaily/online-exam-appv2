@@ -340,13 +340,13 @@ export default function PapersPage() {
                     {paper.title}
                   </h2>
 
-                  <p className="text-gray-600 mt-2">
+                  <p className="text-brand mt-2">
                     Subject:
                     {" "}
                     {paper.subject}
                   </p>
 
-                  <p className="text-gray-600">
+                  <p className="text-brand">
                     Class:
                     {" "}
                     {paper.class}
@@ -362,7 +362,7 @@ export default function PapersPage() {
                     mins
                   </p>
 
-                  <p className="text-gray-700">
+                  <p className="text-tcd-primary">
                     Duration
                   </p>
 
@@ -370,7 +370,7 @@ export default function PapersPage() {
                     {paper.total_questions}
                   </p>
 
-                  <p className="text-gray-700">
+                  <p className="text-tcd-primary">
                     Questions
                   </p>
 

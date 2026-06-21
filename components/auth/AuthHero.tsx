@@ -1,5 +1,6 @@
 "use client";
-
+import { TCDIcons }
+from "@/components/ui/tcd-icons";
 export default function AuthHero() {
   return (
     <div
@@ -122,7 +123,10 @@ export default function AuthHero() {
               mb-2
             "
           >
-            🌱 Knowledge Growth
+            <div className="w-5 h-5">
+                      {TCDIcons.rank}
+                    </div>
+                     Knowledge Growth
 
           </h3>
 
@@ -154,7 +158,10 @@ export default function AuthHero() {
               mb-2
             "
           >
-            🏆 Achievement System
+             <div className="w-5 h-5">
+                      {TCDIcons.achievement}
+                    </div>
+                     Achievement System
           </h3>
 
           <p className="text-white/80">
@@ -186,7 +193,10 @@ export default function AuthHero() {
               mb-2
             "
           >
-            🪙 TCD Credits Wallet
+            <div className="w-5 h-5">
+                      {TCDIcons.coin}
+                    </div>
+                     TCD Credits Wallet
           </h3>
 
           <p className="text-white/80">

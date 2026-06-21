@@ -144,7 +144,7 @@ console.log(
           No Live Exam
         </h2>
 
-        <p className="text-gray-500">
+        <p className="text-brand-light">
           Leaderboard will appear when an exam goes live.
         </p>
 
@@ -173,13 +173,13 @@ console.log(
 
     <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
 
-    <p className="text-gray-500">
+    <p className="text-brand-light">
       Live Exam Leaderboard
     </p>
 
   </div>
 
-  <p className="text-sm text-gray-300 mt-2">
+  <p className="text-sm text-tcd-muted mt-2">
     Updated:
     {" "}
     {lastUpdated}
@@ -195,7 +195,7 @@ console.log(
 
         <div className="bg-blue-50 rounded-2xl p-4">
 
-          <h3 className="text-sm text-gray-500 mb-1">
+          <h3 className="text-sm text-brand-light mb-1">
             Total Players
           </h3>
 
@@ -207,7 +207,7 @@ console.log(
 
         <div className="bg-green-50 rounded-2xl p-4">
 
-          <h3 className="text-sm text-gray-700 mb-1">
+          <h3 className="text-sm text-tcd-primary mb-1">
             Highest Score
           </h3>
 
@@ -219,7 +219,7 @@ console.log(
 
         <div className="bg-yellow-50 rounded-2xl p-4">
 
-          <h3 className="text-sm text-gray-500 mb-1">
+          <h3 className="text-sm text-brand-light mb-1">
             Top Rank
           </h3>
 
@@ -306,7 +306,7 @@ console.log(
 
                   </h3>
 
-                  <div className="flex gap-2 text-sm text-gray-500">
+                  <div className="flex gap-2 text-sm text-brand-light">
 
                     <p>
                       Correct:
@@ -334,7 +334,7 @@ console.log(
 
                 </h2>
 
-                <p className="text-gray-500 text-sm">
+                <p className="text-brand-light text-sm">
 
                   Score
 

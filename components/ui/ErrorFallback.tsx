@@ -21,7 +21,7 @@ export default function ErrorFallback({
 
         </h1>
 
-        <p className="text-gray-600 mb-4">
+        <p className="text-brand mb-4">
 
           {error.message}
 

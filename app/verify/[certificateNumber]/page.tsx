@@ -138,7 +138,7 @@ export default async function VerifyPage({
           VERIFIED
         </h1>
 
-        <p className="text-gray-300 mt-2">
+        <p className="text-tcd-muted mt-2">
           This certificate is authentic and issued by
           The Conclusion Daily.
         </p>
@@ -217,7 +217,7 @@ function Info({
         p-4
       "
     >
-      <p className="text-sm text-gray-400">
+      <p className="text-sm text-[#243B6B]/70">
         {label}
       </p>
 

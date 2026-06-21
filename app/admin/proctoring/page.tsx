@@ -76,7 +76,7 @@ function isOnline(
       lastSeen
     ).getTime();
 
-  return age < 60000;
+  return age < 300000;
 }
 export default function ProctoringPage() {
 
@@ -460,7 +460,7 @@ async function forceSubmit(
 
         </div>
 
-        <p className="text-sm text-gray-500 mt-3">
+        <p className="text-sm text-brand-light mt-3">
           Students
         </p>
 
@@ -504,7 +504,7 @@ async function forceSubmit(
 
         </div>
 
-        <p className="text-sm text-gray-500 mt-3">
+        <p className="text-sm text-brand-light mt-3">
           High Risk
         </p>
 
@@ -549,7 +549,7 @@ async function forceSubmit(
 
         </div>
 
-        <p className="text-sm text-gray-500 mt-3">
+        <p className="text-sm text-brand-light mt-3">
           Medium Risk
         </p>
 
@@ -596,7 +596,7 @@ async function forceSubmit(
 
         </div>
 
-        <p className="text-sm text-gray-500 mt-3">
+        <p className="text-sm text-brand-light mt-3">
           Low Risk
         </p>
 
@@ -711,7 +711,7 @@ async function forceSubmit(
                 <p
                   className="
                     text-sm
-                    text-gray-500
+                    text-brand-light
                   "
                 >
                   {event.email}
@@ -719,7 +719,7 @@ async function forceSubmit(
 <p
   className="
     text-xs
-    text-gray-400
+    text-[#243B6B]/70
     mt-1
   "
 >
@@ -830,7 +830,7 @@ async function forceSubmit(
                   <span
                     className="
                       text-xs
-                      text-gray-500
+                      text-brand-light
                     "
                   >
                     Violations
@@ -871,7 +871,7 @@ async function forceSubmit(
     <span
       className="
         text-xs
-        text-gray-500
+        text-brand-light
       "
     >
       Face Count
@@ -948,7 +948,7 @@ async function forceSubmit(
 
         ? "bg-[#243B6B] text-white"
 
-        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+        : "bg-gray-300 text-brand-light cursor-not-allowed"
 
     }
   `}
@@ -997,7 +997,7 @@ async function forceSubmit(
         ]
       )
         ? "bg-red-600 text-white"
-        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+        : "bg-gray-300 text-brand-light cursor-not-allowed"
     }
   `}
 >

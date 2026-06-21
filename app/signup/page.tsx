@@ -257,7 +257,7 @@ router.replace(
 
           <p
             className="
-              text-gray-700
+              text-tcd-primary
               mt-3
             "
           >
@@ -293,7 +293,7 @@ border-[#D8E1F0]
 bg-[#F7F9FC]
 
 text-[#274472]
-placeholder:text-gray-700
+placeholder:text-tcd-primary
 
 transition-all
 
@@ -326,7 +326,7 @@ border-[#D8E1F0]
 bg-[#F7F9FC]
 
 text-[#274472]
-placeholder:text-gray-700
+placeholder:text-tcd-primary
 
 transition-all
 
@@ -359,7 +359,7 @@ border-[#D8E1F0]
 bg-[#F7F9FC]
 
 text-[#274472]
-placeholder:text-gray-700
+placeholder:text-tcd-primary
 
 transition-all
 
@@ -386,7 +386,7 @@ focus:ring-[#D4AF37]/30
     border-[#D8E1F0]
     bg-[#F7F9FC]
     text-[#274472]
-    placeholder:text-gray-700
+    placeholder:text-tcd-primary
     focus:outline-none
     focus:border-[#D4AF37]
     focus:ring-2
@@ -454,7 +454,7 @@ value={password}
       bg-[#F7F9FC]
 
       text-[#274472]
-      placeholder:text-gray-700
+      placeholder:text-tcd-primary
 
       focus:outline-none
       focus:border-[#D4AF37]
@@ -477,7 +477,7 @@ value={password}
 
       -translate-y-1/2
 
-      text-gray-700
+      text-tcd-primary
     "
   >
     {
@@ -539,7 +539,7 @@ value={password}
               pt-4
               text-center
               text-sm
-              text-gray-700
+              text-tcd-primary
             "
           >
             Already have an account?

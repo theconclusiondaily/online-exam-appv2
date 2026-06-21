@@ -679,7 +679,7 @@ console.log(
           Exam Result
         </h1>
 
-        <p className="text-gray-700 text-lg">
+        <p className="text-tcd-primary text-lg">
           Your performance summary
         </p>
 
@@ -795,7 +795,7 @@ console.log(
         {achievementReward}
       </h3>
 
-      <p className="text-gray-700">
+      <p className="text-tcd-primary">
         Credits Earned
       </p>
 
@@ -812,7 +812,7 @@ console.log(
         {achievementCount}
       </h3>
 
-      <p className="text-gray-700">
+      <p className="text-tcd-primary">
         Achievements
       </p>
 
@@ -829,7 +829,7 @@ console.log(
         {rank || "-"}
       </h3>
 
-      <p className="text-gray-700">
+      <p className="text-tcd-primary">
         Current Rank
       </p>
 
@@ -863,7 +863,7 @@ console.log(
     Performance Insight
   </h2>
 
-  <p className="text-gray-600 mt-3">
+  <p className="text-brand mt-3">
 
     {result.accuracy >= 90
       ? "Outstanding performance. You demonstrated excellent accuracy and consistency."
@@ -880,7 +880,7 @@ console.log(
 
         <div className="bg-green-50 rounded-2xl p-6 text-center shadow-sm">
 
-          <p className="text-gray-700">
+          <p className="text-tcd-primary">
             Correct
           </p>
 
@@ -892,7 +892,7 @@ console.log(
 
         <div className="bg-red-50 rounded-2xl p-6 text-center shadow-sm">
 
-          <p className="text-gray-700">
+          <p className="text-tcd-primary">
             Wrong
           </p>
 
@@ -904,7 +904,7 @@ console.log(
 
         <div className="bg-yellow-50 rounded-2xl p-6 text-center shadow-sm">
 
-          <p className="text-gray-700">
+          <p className="text-tcd-primary">
             Accuracy
           </p>
 
@@ -916,7 +916,7 @@ console.log(
 
         <div className="bg-purple-50 rounded-2xl p-6 text-center shadow-sm">
 
-          <p className="text-gray-700">
+          <p className="text-tcd-primary">
             Violations
           </p>
 
@@ -941,7 +941,7 @@ p-4">
 
     <div className="text-center">
 
-      <p className="text-gray-700 mb-2">
+      <p className="text-tcd-primary mb-2">
 
         Current Rank
 
@@ -957,7 +957,7 @@ p-4">
 
     <div className="text-center">
 
-      <p className="text-gray-700 mb-2">
+      <p className="text-tcd-primary mb-2">
 
         Percentile
 
@@ -994,7 +994,7 @@ p-4">
 
       </h3>
 
-      <p className="text-gray-700">
+      <p className="text-tcd-primary">
 
         Congratulations! You currently hold the highest score in this exam.
 
@@ -1008,7 +1008,7 @@ p-4">
 
       <div className="text-center">
 
-        <p className="text-gray-700">
+        <p className="text-tcd-primary">
 
           Score Gap
 
@@ -1020,7 +1020,7 @@ p-4">
 
         </h3>
 
-        <p className="text-sm text-gray-700">
+        <p className="text-sm text-tcd-primary">
 
           marks behind topper
 
@@ -1030,7 +1030,7 @@ p-4">
 
       <div className="text-center">
 
-        <p className="text-gray-700">
+        <p className="text-tcd-primary">
 
           Topper Accuracy
 
@@ -1046,7 +1046,7 @@ p-4">
 
       <div className="text-center">
 
-        <p className="text-gray-700">
+        <p className="text-tcd-primary">
 
           Time Difference
 
@@ -1084,7 +1084,7 @@ p-4">
 
     <div className="flex justify-between border-b pb-3">
 
-      <span className="text-gray-700">
+      <span className="text-tcd-primary">
         Total Questions
       </span>
 
@@ -1096,7 +1096,7 @@ p-4">
 
     <div className="flex justify-between border-b pb-3">
 
-      <span className="text-gray-700">
+      <span className="text-tcd-primary">
         Submitted At
       </span>
 
@@ -1112,7 +1112,7 @@ p-4">
 
     <div className="flex justify-between border-b pb-3">
 
-      <span className="text-gray-700">
+      <span className="text-tcd-primary">
         Time Taken
       </span>
 
@@ -1124,7 +1124,7 @@ p-4">
 
     <div className="flex justify-between">
 
-      <span className="text-gray-700">
+      <span className="text-tcd-primary">
         Status
       </span>
 
@@ -1155,7 +1155,7 @@ p-4">
 
       </p>
 
-      <p className="text-gray-600">
+      <p className="text-brand">
 
         Answer key and
         detailed review
@@ -1276,7 +1276,7 @@ p-4">
 
               </h3>
 
-              <p className="text-gray-600 mt-1">
+              <p className="text-brand mt-1">
 
                 {achievement.description}
 

@@ -387,7 +387,7 @@ transition-all
 
 p-6">
 
-                <p className="text-gray-700 mb-2">
+                <p className="text-tcd-primary mb-2">
 <div className="mb-3">
 
   {TCDIcons.coin}
@@ -421,7 +421,7 @@ transition-all
 
 p-6">
 
-                <p className="text-gray-700 mb-2">
+                <p className="text-tcd-primary mb-2">
 <div className="mb-3">
 
   {TCDIcons.mastery}
@@ -541,7 +541,7 @@ p-6">
 
   </p>
 
-  <p className="text-gray-600">
+  <p className="text-brand">
 
     Prestige:
     {" "}
@@ -595,7 +595,7 @@ p-6">
 
                 {attempts.length === 0 && (
 
-                  <div className="bg-white border rounded-3xl p-6 text-center text-gray-700 shadow-sm">
+                  <div className="bg-white border rounded-3xl p-6 text-center text-tcd-primary shadow-sm">
 
                     No learning journeys recorded yet
 

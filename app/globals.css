@@ -74,7 +74,7 @@ body {
 }
 
 .tcd-page-subtitle {
-  @apply text-gray-500 text-base md:text-lg;
+  @apply text-tcd-blue text-base md:text-lg;
 }
 
 .tcd-section-title {
@@ -359,7 +359,30 @@ body {
 .text-brand-light {
   color: #2F4B7C;
 }
+.text-brand-muted {
+  color: rgba(
+    36,
+    59,
+    107,
+    0.7
+  );
+}
+.text-tcd-primary {
+  color: #243B6B;
+}
 
+.text-tcd-secondary {
+  color: #36558F;
+}
+
+.text-tcd-muted {
+  color: rgba(
+    36,
+    59,
+    107,
+    0.75
+  );
+}
 .text-brand-gold {
   color: #D4AF37;
 }

@@ -139,7 +139,7 @@ export default function TeachersPage() {
 
             <div className="bg-white border rounded-3xl p-6 shadow-sm">
 
-              <p className="text-gray-700 mb-2">
+              <p className="text-tcd-primary mb-2">
 
                 Total Teachers
 
@@ -155,7 +155,7 @@ export default function TeachersPage() {
 
             <div className="bg-white border rounded-3xl p-6 shadow-sm">
 
-              <p className="text-gray-700 mb-2">
+              <p className="text-tcd-primary mb-2">
 
                 Active Institutes
 
@@ -176,7 +176,7 @@ export default function TeachersPage() {
 
             <div className="bg-white border rounded-3xl p-6 shadow-sm">
 
-              <p className="text-gray-700 mb-2">
+              <p className="text-tcd-primary mb-2">
 
                 Disabled Teachers
 
@@ -238,7 +238,7 @@ export default function TeachersPage() {
 
                       </h3>
 
-                      <p className="text-gray-600 mb-2">
+                      <p className="text-brand mb-2">
 
                         {teacher.email}
 
@@ -264,7 +264,7 @@ export default function TeachersPage() {
 
                       </div>
 
-                      <p className="text-sm text-gray-700">
+                      <p className="text-sm text-tcd-primary">
 
                         Institute:
                         {" "}
@@ -398,7 +398,7 @@ export default function TeachersPage() {
 
               {teachers.length === 0 && (
 
-                <div className="text-center text-gray-700 py-10">
+                <div className="text-center text-tcd-primary py-10">
 
                   No teachers found
 

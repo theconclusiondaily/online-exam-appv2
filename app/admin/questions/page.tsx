@@ -450,7 +450,7 @@ await fetchExams();
     className="w-full"
   />
 
-  <div className="mt-4 text-sm text-gray-600 space-y-1">
+  <div className="mt-4 text-sm text-brand space-y-1">
 
     <p>
       CSV format:
@@ -785,7 +785,7 @@ await fetchExams();
 
             {questions.length === 0 && (
 
-              <div className="text-center text-gray-700 py-10">
+              <div className="text-center text-tcd-primary py-10">
                 No questions found
               </div>
 

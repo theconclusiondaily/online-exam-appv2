@@ -44,7 +44,7 @@ function getPrestigeStyle(prestige: string) {
       return "bg-yellow-100 text-yellow-700";
 
     case "Silver":
-      return "bg-gray-100 text-gray-700";
+      return "bg-gray-100 text-tcd-primary";
 
     default:
       return "bg-amber-100 text-amber-700";
@@ -461,7 +461,7 @@ export default function LeaderboardPage() {
 <p
   className="
     text-sm
-    text-gray-600
+    text-brand
 
     mb-4
   "
@@ -494,7 +494,7 @@ export default function LeaderboardPage() {
                       <p
                         className="
                           text-xs
-                          text-gray-700
+                          text-tcd-primary
                         "
                       >
 
@@ -529,7 +529,7 @@ export default function LeaderboardPage() {
                       <p
                         className="
                           text-xs
-                          text-gray-700
+                          text-tcd-primary
                         "
                       >
 
@@ -579,7 +579,7 @@ export default function LeaderboardPage() {
     <p
       className="
         text-xs
-        text-gray-700
+        text-tcd-primary
       "
     >
       Score
@@ -715,7 +715,7 @@ export default function LeaderboardPage() {
                         <p
                           className="
                             text-sm
-                            text-gray-700
+                            text-tcd-primary
                           "
                         >
 
@@ -780,7 +780,7 @@ export default function LeaderboardPage() {
                         <p
                           className="
                             text-xs
-                            text-gray-700
+                            text-tcd-primary
                           "
                         >
 
@@ -814,7 +814,7 @@ export default function LeaderboardPage() {
   <p
     className="
       text-xs
-      text-gray-700
+      text-tcd-primary
     "
   >
     Achievement Score
@@ -846,7 +846,7 @@ export default function LeaderboardPage() {
                         <p
                           className="
                             text-xs
-                            text-gray-700
+                            text-tcd-primary
                           "
                         >
 

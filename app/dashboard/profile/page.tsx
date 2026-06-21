@@ -521,7 +521,7 @@ setStats({
 
             </h2>
 
-            <p className="text-gray-700 mt-2">
+            <p className="text-tcd-primary mt-2">
 
               Conclusion Daily Learner
 
@@ -564,7 +564,7 @@ setStats({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 
                 <div>
-                  <p className="text-gray-700">
+                  <p className="text-tcd-primary">
                     Full Name
                   </p>
                   <p className="font-semibold">
@@ -576,7 +576,7 @@ setStats({
                 </div>
 
                 <div>
-                  <p className="text-gray-700">
+                  <p className="text-tcd-primary">
                     Email
                   </p>
                   <p className="font-semibold">
@@ -588,7 +588,7 @@ setStats({
                 </div>
 
                 <div>
-                  <p className="text-gray-700">
+                  <p className="text-tcd-primary">
                     Mobile
                   </p>
                   <p className="font-semibold">
@@ -600,7 +600,7 @@ setStats({
                 </div>
 
                 <div>
-                  <p className="text-gray-700">
+                  <p className="text-tcd-primary">
                     Date of Birth
                   </p>
                   <p className="font-semibold">
@@ -673,7 +673,7 @@ setStats({
     <span
       className="
         text-sm
-        text-gray-700
+        text-tcd-primary
       "
     >
       Progress to {nextPrestige}
@@ -736,7 +736,7 @@ setStats({
         className="w-10 h-10 mb-2"
       />
 
-      <p className="text-gray-700 text-sm">
+      <p className="text-tcd-primary text-sm">
         Prestige
       </p>
 
@@ -761,7 +761,7 @@ setStats({
         className="w-10 h-10 mb-2"
       />
 
-      <p className="text-gray-700 text-sm">
+      <p className="text-tcd-primary text-sm">
         Achievement Score
       </p>
 
@@ -786,7 +786,7 @@ setStats({
         className="w-10 h-10 mb-2"
       />
 
-      <p className="text-gray-700 text-sm">
+      <p className="text-tcd-primary text-sm">
         Achievements
       </p>
 
@@ -811,7 +811,7 @@ setStats({
         className="w-10 h-10 mb-2"
       />
 
-      <p className="text-gray-700 text-sm">
+      <p className="text-tcd-primary text-sm">
         XP / Level
       </p>
 
@@ -840,7 +840,7 @@ setStats({
         className="w-10 h-10 mb-2"
       />
 
-      <p className="text-gray-700 text-sm">
+      <p className="text-tcd-primary text-sm">
         Study Streak
       </p>
 
@@ -868,7 +868,7 @@ setStats({
   alt="Exams"
   className="w-10 h-10 mb-3"
 /></div>
-            <p className="text-gray-700">
+            <p className="text-tcd-primary">
               Exams Attempted
             </p>
             <h3 className="text-2xl font-black text-tcd-blue mt-3">
@@ -884,7 +884,7 @@ setStats({
   alt="Accuracy"
   className="w-10 h-10 mb-3"
 /></div>
-            <p className="text-gray-700">
+            <p className="text-tcd-primary">
               Accuracy
             </p>
             <h3 className="text-2xl font-black text-tcd-gold mt-3">
@@ -898,7 +898,7 @@ setStats({
   alt="Highest Score"
   className="w-10 h-10 mb-3"
 /></div>
-            <p className="text-gray-700">
+            <p className="text-tcd-primary">
               Highest Score
             </p>
             <h3 className="text-2xl font-black text-green-600 mt-3">
@@ -914,7 +914,7 @@ setStats({
   alt="TCD Credits"
   className="w-10 h-10 mb-3"
 /></div>
-            <p className="text-gray-700">
+            <p className="text-tcd-primary">
               Lifetime TCD
             </p>
             <h3 className="text-2xl font-black text-tcd-blue mt-3">
@@ -937,7 +937,7 @@ setStats({
 />
     </div>
 
-    <p className="text-gray-700">
+    <p className="text-tcd-primary">
       Current Streak
     </p>
 
@@ -959,7 +959,7 @@ setStats({
 />
     </div>
 
-    <p className="text-gray-700">
+    <p className="text-tcd-primary">
       Longest Streak
     </p>
 
@@ -986,7 +986,7 @@ setStats({
   <h2 className="text-2xl font-black text-tcd-blue mb-4">
     Latest Achievements
   </h2>
-<p className="text-gray-700 mb-4">
+<p className="text-tcd-primary mb-4">
   Your most recently unlocked milestones.
 </p>
   <div
@@ -1035,7 +1035,7 @@ setStats({
             <p
               className="
                 text-sm
-                text-gray-700
+                text-tcd-primary
                 mt-2
               "
             >
@@ -1097,13 +1097,13 @@ setStats({
 
     </p>
 
-    <p className="text-sm text-gray-700">
+    <p className="text-sm text-tcd-primary">
 
       {cert.certificate_number}
 
     </p>
 
-    <p className="text-sm text-gray-700 mt-1">
+    <p className="text-sm text-tcd-primary mt-1">
 
       Issued:
       {` `}

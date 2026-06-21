@@ -100,7 +100,7 @@ function LiveEventFeed() {
 
           </h2>
 
-          <p className="text-xs text-gray-700 mt-1">
+          <p className="text-xs text-tcd-primary mt-1">
 
             Real-time exam activity
 
@@ -148,7 +148,7 @@ function LiveEventFeed() {
 
       {/* FOOTER */}
 
-      <div className="flex items-center justify-between mt-5 text-xs text-gray-700">
+      <div className="flex items-center justify-between mt-5 text-xs text-tcd-primary">
 
         <span>
           Updates every 5 sec

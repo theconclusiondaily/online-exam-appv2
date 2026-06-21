@@ -71,7 +71,7 @@ export default function StudyStreakCard({
           <p
             className="
               text-sm
-              text-gray-700
+              text-tcd-primary
             "
           >
             Consistent learning builds mastery
@@ -99,7 +99,7 @@ export default function StudyStreakCard({
         <div
           className="
             mt-2
-            text-gray-700
+            text-tcd-primary
           "
         >
           Current Study Streak
@@ -120,7 +120,7 @@ export default function StudyStreakCard({
           "
         >
 
-          <span className="text-gray-700">
+          <span className="text-tcd-primary">
             Progress to Next Milestone
           </span>
 
@@ -176,7 +176,7 @@ export default function StudyStreakCard({
           "
         >
 
-          <span className="text-gray-600">
+          <span className="text-brand">
             Longest Streak
           </span>
 
@@ -203,7 +203,7 @@ export default function StudyStreakCard({
           "
         >
 
-          <span className="text-gray-600">
+          <span className="text-brand">
             Next Milestone
           </span>
 

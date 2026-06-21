@@ -347,7 +347,7 @@ const [liveUpdate,
 
   </div>
 
-  <p className="text-gray-600 mt-2">
+  <p className="text-brand mt-2">
 
     Total Participants:
     {" "}
@@ -419,7 +419,7 @@ const [liveUpdate,
 
 </h2>
 
-                    <p className="text-gray-600 mt-2 font-semibold">
+                    <p className="text-brand mt-2 font-semibold">
 
   {attempt.profiles?.name ?? "Unknown User"}
 
@@ -448,7 +448,7 @@ const [liveUpdate,
 
                     <div className="mt-4">
 
-  <p className="text-sm text-gray-700">
+  <p className="text-sm text-tcd-primary">
 
     Score
 
@@ -464,7 +464,7 @@ const [liveUpdate,
       {attempt.percentage || 0}%
 
     </div>
-<div className="mt-2 text-sm text-gray-600">
+<div className="mt-2 text-sm text-brand">
 
   🎯 Accuracy:
   {" "}
@@ -472,7 +472,7 @@ const [liveUpdate,
 
 </div>
 
-<div className="text-sm text-gray-600">
+<div className="text-sm text-brand">
 
   ⏱️ Time:
   {" "}
@@ -500,7 +500,7 @@ const [liveUpdate,
 
           {attempts.length === 0 && (
 
-            <div className="bg-white border rounded-2xl p-6 text-center text-gray-700">
+            <div className="bg-white border rounded-2xl p-6 text-center text-tcd-primary">
 
               No participants yet
 

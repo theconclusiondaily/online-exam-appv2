@@ -10,14 +10,14 @@ export default function Navbar() {
           Teacher Panel
         </h1>
 
-        <p className="text-gray-700 text-sm">
+        <p className="text-tcd-primary text-sm">
           Welcome back
         </p>
       </div>
 
       <div className="flex items-center gap-3">
         <button className="relative">
-          <Bell className="w-6 h-6 text-gray-700" />
+          <Bell className="w-6 h-6 text-tcd-primary" />
 
           <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500"></span>
         </button>

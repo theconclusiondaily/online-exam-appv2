@@ -81,7 +81,7 @@ export function getLeague(
       name: "Silver",
 
       color:
-        "text-gray-700",
+        "text-tcd-primary",
 
       bg:
         "bg-gray-100",

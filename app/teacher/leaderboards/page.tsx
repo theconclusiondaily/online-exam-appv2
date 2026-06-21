@@ -239,7 +239,7 @@ export default function TeacherLeaderboardsPage() {
 
             <div className="bg-white border rounded-2xl p-6">
 
-              <p className="text-gray-700 text-sm mb-2">
+              <p className="text-tcd-primary text-sm mb-2">
 
                 Participants
 
@@ -255,7 +255,7 @@ export default function TeacherLeaderboardsPage() {
 
             <div className="bg-white border rounded-2xl p-6">
 
-              <p className="text-gray-700 text-sm mb-2">
+              <p className="text-tcd-primary text-sm mb-2">
 
                 Average Score
 
@@ -315,7 +315,7 @@ export default function TeacherLeaderboardsPage() {
 
                         </p>
 
-                        <p className="text-sm text-gray-700">
+                        <p className="text-sm text-tcd-primary">
 
                           Score
 

@@ -350,7 +350,7 @@ export default function ActiveOpportunitiesPage() {
 
               </div>
 
-              <p className="text-gray-700">
+              <p className="text-tcd-primary">
 
                 Live Opportunities
 
@@ -390,7 +390,7 @@ export default function ActiveOpportunitiesPage() {
 
               </div>
 
-              <p className="text-gray-700">
+              <p className="text-tcd-primary">
 
                 Competitive Growth
 
@@ -430,7 +430,7 @@ export default function ActiveOpportunitiesPage() {
 
               </div>
 
-              <p className="text-gray-700">
+              <p className="text-tcd-primary">
 
                 Reward Ecosystem
 
@@ -522,7 +522,7 @@ export default function ActiveOpportunitiesPage() {
 
             </h2>
 
-            <p className="text-gray-700 text-lg">
+            <p className="text-tcd-primary text-lg">
 
               Participate in live
               exams, challenge

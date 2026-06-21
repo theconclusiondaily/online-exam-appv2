@@ -497,7 +497,7 @@ select-none
 
         <div className="text-center mt-5">
 
-          <p className="text-gray-300 mt-6">
+          <p className="text-tcd-muted mt-6">
   This certificate is awarded to
 </p>
 
@@ -548,7 +548,7 @@ inline-block w-48 h-[2px] bg-[#D4AF37]"  />
   <div className="w-72 h-[2px] bg-[#D4AF37]" />
 
 </div>
-<p className="text-gray-300 mt-2">
+<p className="text-tcd-muted mt-2">
   For successfully participating in
 </p>
 
@@ -625,7 +625,7 @@ hover:border-[#D4AF37]/50
   src="/icons/tcd-medal.svg"
   className="w-6 h-6 mx-auto mb-3"
 />
-  <p className="text-gray-300">
+  <p className="text-tcd-muted">
     Score
   </p>
 
@@ -671,7 +671,7 @@ hover:border-[#D4AF37]/50
   src="/icons/tcd-crown.svg"
   className="w-6 h-6 mx-auto mb-3"
 />
-  <p className="text-gray-300">
+  <p className="text-tcd-muted">
     Prestige
   </p>
 
@@ -719,7 +719,7 @@ hover:border-[#D4AF37]/50
   src="/icons/tcd-star.svg"
   className="w-6 h-6 mx-auto mb-3"
 />
-  <p className="text-gray-300">
+  <p className="text-tcd-muted">
     Percentage
   </p>
 
@@ -767,7 +767,7 @@ hover:border-[#D4AF37]/50
     className="w-6 h-6 mx-auto mb-3"
   />
 
-  <p className="text-gray-300">
+  <p className="text-tcd-muted">
 
     Verified
 
@@ -886,7 +886,7 @@ object-contain
   className="
     text-xs
 
-    text-gray-500
+    text-brand-light
 
     italic
 
@@ -974,7 +974,7 @@ object-contain
     className="
       text-[10px]
 
-      text-gray-400
+      text-[#243B6B]/70
 
       text-center
     "
@@ -1113,7 +1113,7 @@ object-contain
 
   </h3>
 
-  <p className="text-gray-300 mt-2">
+  <p className="text-tcd-muted mt-2">
 
     This achievement is now part of your permanent TCD academic record.
 

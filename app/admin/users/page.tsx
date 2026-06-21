@@ -142,7 +142,7 @@ export default function UsersPage() {
 
                     </h2>
 
-                    <p className="text-gray-600">
+                    <p className="text-brand">
 
                       Role:
                       {" "}
@@ -150,7 +150,7 @@ export default function UsersPage() {
 
                     </p>
 
-                    <p className="text-gray-600">
+                    <p className="text-brand">
 
                       Institute:
                       {" "}

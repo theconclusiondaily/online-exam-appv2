@@ -83,7 +83,7 @@ export default function StatsGrid({
           Performance Overview
         </h2>
 
-        <p className="text-gray-700 mt-1">
+        <p className="text-tcd-primary mt-1">
           Track your learning growth and mastery.
         </p>
 
@@ -157,7 +157,7 @@ export default function StatsGrid({
             <p
               className="
                 text-sm
-                text-gray-700
+                text-tcd-primary
                 font-medium
               "
             >
@@ -184,7 +184,7 @@ export default function StatsGrid({
             <p
               className="
                 mt-3
-                text-gray-700
+                text-tcd-primary
                 text-sm
               "
             >
@@ -223,7 +223,7 @@ export default function StatsGrid({
 
           <div className="flex justify-between">
 
-            <span className="text-gray-700">
+            <span className="text-tcd-primary">
               Correct Answers
             </span>
 
@@ -255,7 +255,7 @@ export default function StatsGrid({
 
           <div className="flex justify-between">
 
-            <span className="text-gray-700">
+            <span className="text-tcd-primary">
               Incorrect Answers
             </span>
 

@@ -210,7 +210,7 @@ const completedStudents =
 
   </h1>
 
-  <p className="text-gray-600 mt-2">
+  <p className="text-brand mt-2">
 
     Live realtime monitoring of students
 
@@ -273,7 +273,7 @@ const completedStudents =
 
           </h2>
 
-          <p className="text-gray-700">
+          <p className="text-tcd-primary">
 
             Students will appear here during live exams
 
@@ -349,7 +349,7 @@ const completedStudents =
 
                   </h2>
 
-                  <p className="text-gray-700 mt-1">
+                  <p className="text-tcd-primary mt-1">
 
                     User ID:
                     {" "}

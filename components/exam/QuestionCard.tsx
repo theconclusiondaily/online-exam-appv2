@@ -48,7 +48,7 @@ function QuestionCard({
 
           </h2>
 
-          <div className="text-gray-700">
+          <div className="text-tcd-primary">
 
             {currentQuestion + 1}
             {" / "}

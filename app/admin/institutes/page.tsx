@@ -256,7 +256,7 @@ setJoinCode("");
 
                       </h3>
 
-                                            <p className="text-gray-600 mb-2">
+                                            <p className="text-brand mb-2">
 
                         {institute.city}
 
@@ -264,7 +264,7 @@ setJoinCode("");
  <p className="text-sm font-semibold text-blue-600 mb-2">
     Join Code: {institute.join_code}
   </p>
-                      <div className="flex flex-wrap gap-2 text-sm text-gray-600">
+                      <div className="flex flex-wrap gap-2 text-sm text-brand">
 
                         <div>
 
@@ -320,7 +320,7 @@ setJoinCode("");
 
               {institutes.length === 0 && (
 
-                <div className="text-center text-gray-700 py-10">
+                <div className="text-center text-tcd-primary py-10">
 
                   No institutes yet
 

@@ -275,7 +275,7 @@ cancelled: false,
             TCD Arena Exam
           </p>
 
-          <p className="text-sm text-gray-700">
+          <p className="text-sm text-tcd-primary">
             Public Competitive Challenge
           </p>
 
@@ -319,7 +319,7 @@ cancelled: false,
             Institute Exam
           </p>
 
-          <p className="text-sm text-gray-700">
+          <p className="text-sm text-tcd-primary">
             Institute Restricted Exam
           </p>
 
@@ -374,7 +374,7 @@ cancelled: false,
               Daily Challenge
             </p>
 
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-tcd-primary">
               Daily competitive challenge
             </p>
 
@@ -416,7 +416,7 @@ cancelled: false,
               Weekly Challenge
             </p>
 
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-tcd-primary">
               Weekly arena competition
             </p>
 
@@ -458,7 +458,7 @@ cancelled: false,
               Monthly Challenge
             </p>
 
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-tcd-primary">
               Long-format competitive challenge
             </p>
 
@@ -503,7 +503,7 @@ cancelled: false,
               Current Affairs Challenge
             </p>
 
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-tcd-primary">
               News & current events challenge
             </p>
 
@@ -548,7 +548,7 @@ cancelled: false,
               Scholarship Challenge
             </p>
 
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-tcd-primary">
               Scholarship-oriented competition
             </p>
 
