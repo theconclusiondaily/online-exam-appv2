@@ -2455,7 +2455,7 @@ to-[#EEF3FB]">
             </p>
 
             <p className="text-3xl font-black text-[#243B6B]">
-              {examInfo?.duration || 30}
+              {examInfo?.duration ?? 0}
             </p>
 
             <p className="text-sm text-brand-light">
@@ -2471,7 +2471,7 @@ to-[#EEF3FB]">
             </p>
 
             <p className="text-3xl font-black text-[#243B6B]">
-              {examInfo?.total_questions || 30}
+              {examInfo?.total_questions ?? 0}
             </p>
 
             <p className="text-sm text-brand-light">

@@ -66,7 +66,7 @@ function ExamTopStats({
 
         Violations:
         {" "}
-        {violations}/2
+        {violations}/10
 
       </div>
 
