@@ -234,51 +234,41 @@ const [loading,
   const [userId,
     setUserId] =
     useState("");
-    const [cameraPosition, setCameraPosition] =
-  useState({
-    x: 0,
-    y: 180,
-  });
-  const cameraRef =
-  useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] =
-  useState(false);
-
-const dragOffset =
-  useRef({
-    x: 0,
-    y: 0,
-  });
+  const [
+  cameraCorner,
+  setCameraCorner
+] = useState<
+  "top-right" |
+  "top-left" |
+  "bottom-right" |
+  "bottom-left"
+>("bottom-right");
 const savingRef = useRef(false);
 useEffect(() => {
 
   const saved =
     localStorage.getItem(
-      `camera-position-${examId}`
+      "tcd-camera-corner"
     );
 
   if (saved) {
 
-    setCameraPosition(
-      JSON.parse(saved)
+    setCameraCorner(
+      saved as any
     );
-
-  } else {
-
-    setCameraPosition({
-
-      x:
-        window.innerWidth > 1024
-          ? window.innerWidth - 220
-          : window.innerWidth - 110,
-
-      y: 180,
-
-    });
 
   }
 
-}, [examId]);
+}, []);
+
+useEffect(() => {
+
+  localStorage.setItem(
+    "tcd-camera-corner",
+    cameraCorner
+  );
+
+}, [cameraCorner]);
 const [
   sessionToken,
   setSessionToken
@@ -349,7 +339,21 @@ const [levelUp,
     const [studentName,
   setStudentName] =
   useState("");
+const cameraPositionClass = {
 
+  "top-right":
+    "top-4 right-4",
+
+  "top-left":
+    "top-4 left-4",
+
+  "bottom-right":
+    "bottom-4 right-4",
+
+  "bottom-left":
+    "bottom-4 left-4",
+
+}[cameraCorner];
   useEffect(() => {
 
     setMounted(true);
@@ -846,61 +850,31 @@ console.log(
   "REALTIME EVENT:",
   payload
 );
-      if (
-
-  data.warning_message &&
-
-  data.warning_sent_at
-
+     if (
+  data.warning_message
 ) {
 
-  const warningAge =
+  alert(
+    data.warning_message
+  );
 
-    Date.now() -
-
-    new Date(
-      data.warning_sent_at
-    ).getTime();
-
-  if (
-    warningAge < 60000
-  ) {
-
-    setAdminWarning(
-      data.warning_message
-    );
-
-  }
+  setAdminWarning(
+    data.warning_message
+  );
 
 }
 
-         if (
-  data.force_submit
+  if (
+  data.force_submit === true
 ) {
 
   alert(
     "Teacher force submitted your exam"
   );
 
-  await supabase
-
-    .from(
-      "exam_live_status"
-    )
-
-    .update({
-
-      force_submit:
-        false,
-
-    })
-
-    .eq(
-      "user_id",
-      userId
-    );
-
   await submitExam();
+
+  return;
 
 }
 
@@ -975,81 +949,9 @@ useEffect(() => {
 
   submitted,
 ]);
-useEffect(() => {
 
- function handleMove(
-  e: PointerEvent
-) {
 
-  if (!isDragging) return;
 
-  const x =
-    e.clientX -
-    dragOffset.current.x;
-
-  const y =
-    e.clientY -
-    dragOffset.current.y;
-
-  setCameraPosition({
-    x,
-    y,
-  });
-
-}
-
-  function handleUp(e: PointerEvent) {
-
-  if (!isDragging) return;
-
-  const x =
-    e.clientX - dragOffset.current.x;
-
-  const y =
-    e.clientY - dragOffset.current.y;
-
-  setCameraPosition({
-    x,
-    y,
-  });
-
-  localStorage.setItem(
-    `camera-position-${examId}`,
-    JSON.stringify({
-      x,
-      y,
-    })
-  );
-
-  setIsDragging(false);
-
-}
-
-  window.addEventListener(
-    "pointermove",
-    handleMove
-  );
-
-  window.addEventListener(
-    "pointerup",
-    handleUp
-  );
-
-  return () => {
-
-    window.removeEventListener(
-      "pointermove",
-      handleMove
-    );
-
-    window.removeEventListener(
-      "pointerup",
-      handleUp
-    );
-
-  };
-
-}, [isDragging]);
   useExamAutosave({
 
     answers,
@@ -1125,7 +1027,7 @@ if (
 
 }
  toast.error(
-  `${reason}. Violations: ${updated}/2`
+  `${reason}. Violations: ${updated}/10`
 );
 
   if (updated >= 10) {
@@ -2627,7 +2529,7 @@ to-[#EEF3FB]">
 
             <div className="flex items-center gap-3">
               <img src="/icons/security.svg" className="w-5 h-5" alt="" />
-              <span>Two violations will automatically submit the exam.</span>
+              <span>Ten violations will automatically submit the exam.</span>
             </div>
 
             <div className="flex items-center gap-3">
@@ -2795,63 +2697,85 @@ to-[#EEF3FB] p-5"
       </div>
 
 <div
-ref={cameraRef}
-  style={{
-  position: "absolute",
-  transform: `translate3d(${cameraPosition.x}px, ${cameraPosition.y}px, 0)`,
-  zIndex: 9999,
-}}
+className={`
+fixed
+${cameraPositionClass}
+z-[9999]
 
-  onPointerDown={(e) => {
+w-20
+h-20
 
-    setIsDragging(true);
+lg:w-40
+lg:h-40
 
-    dragOffset.current = {
-      x:
-        e.clientX -
-        cameraPosition.x,
-
-      y:
-        e.clientY -
-        cameraPosition.y,
-    };
-
-  }}
-
-
-
-  className="
-    w-20
-    h-20
-
-    lg:w-40
-    lg:h-40
-
-    overflow-hidden
-
-    rounded-2xl
-
-    border
-    border-[#D4AF37]
+overflow-hidden
+rounded-2xl
+border
+border-[#D4AF37]
 
 shadow-[0_0_25px_rgba(212,175,55,0.25)]
 
-    shadow-2xl
-
-    bg-black
-
-    cursor-move
-
-    select-none
-  "
+bg-black
+`}
 >
 
- <StudentCameraStream
-  stream={cameraStream}
-  videoRef={videoRef}
-/>
+  <StudentCameraStream
+    stream={cameraStream}
+    videoRef={videoRef}
+  />
 
 </div>
+
+<button
+onClick={() => {
+
+  const positions = [
+
+    "bottom-right",
+
+    "bottom-left",
+
+    "top-left",
+
+    "top-right",
+
+  ];
+
+  const current =
+    positions.indexOf(
+      cameraCorner
+    );
+
+  setCameraCorner(
+    positions[
+      (current + 1) %
+      positions.length
+    ] as any
+  );
+
+}}
+className="
+fixed
+
+bottom-28
+right-4
+
+z-[10000]
+
+w-12
+h-12
+
+rounded-full
+
+bg-[#243B6B]
+
+text-white
+
+font-black
+"
+>
+↔
+</button>
 
       <div className="mt-2 mb-4 overflow-x-auto scrollbar-hide">
 

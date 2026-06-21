@@ -168,7 +168,7 @@ const [snapshots, setSnapshots] =
 
               student_id:
                 item.student_id,
-
+exam_id: item.exam_id,
               name:
                 item.users?.name,
 
@@ -276,76 +276,53 @@ Record<string,string> = {};
 
 }
 async function sendWarning(
-  studentId: string
-) {
+  studentId: string,
+  examId: string
+){
 
-  await supabase
+const { data, error } = await supabase
+  .from("exam_live_status")
+  .update({
+    warning_message: "Please keep your face visible.",
+    warning_sent_at: new Date().toISOString(),
+  })
+  .eq("user_id", studentId)
+  .eq("submitted", false)
+  .select();
 
-    .from(
-      "exam_live_status"
-    )
+console.log(
+  "WARNING DATA",
+  data
+);
 
-    .update({
-
-      warning_message:
-        "Please keep your face visible.",
-
-      warning_sent_at:
-        new Date().toISOString(),
-
-    })
-
-    .eq(
-      "user_id",
-      studentId
-    );
-
+console.log(
+  "WARNING ERROR",
+  error
+);
 }
 async function forceSubmit(
-  studentId: string
-) {
+  studentId: string,
+  examId: string
+){
 
-  const confirmed =
-    confirm(
-      "Force submit this student's exam?"
-    );
+ const { data, error } = await supabase
+  .from("exam_live_status")
+  .update({
+    force_submit: true,
+  })
+  .eq("user_id", studentId)
+  .eq("submitted", false)
+  .select();
 
-  if (!confirmed) {
-    return;
-  }
+console.log(
+  "FORCE DATA",
+  data
+);
 
-  const { error } =
-    await supabase
-
-      .from(
-        "exam_live_status"
-      )
-
-      .update({
-
-        force_submit:
-          true,
-
-      })
-
-      .eq(
-        "user_id",
-        studentId
-      );
-
-  if (error) {
-
-    console.error(
-      error
-    );
-
-    return;
-  }
-
-  alert(
-    "Exam force submitted"
-  );
-
+console.log(
+  "FORCE ERROR",
+  error
+);
 }
   return (
 
@@ -929,8 +906,9 @@ async function forceSubmit(
 
   onClick={() =>
     sendWarning(
-      event.student_id
-    )
+  event.student_id,
+  event.exam_id
+)
   }
 
   className={`
@@ -978,9 +956,10 @@ async function forceSubmit(
   }
 
   onClick={() =>
-    forceSubmit(
-      event.student_id
-    )
+   forceSubmit(
+  event.student_id,
+  event.exam_id
+)
   }
 
   className={`

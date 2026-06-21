@@ -45,22 +45,24 @@ export default function DashboardLayout({
             }
           />
 
-          <div
-            className="
-              fixed
-              top-0
-              left-0
+         <div
+  className="
+    fixed
+    top-0
+    left-0
 
-              w-72
-              h-full
+    w-72
+    h-full
 
-              bg-white
+    overflow-y-auto
 
-              z-50
+    bg-white
 
-              shadow-2xl
-            "
-          >
+    z-50
+
+    shadow-2xl
+  "
+>
             <button
               className="
                 absolute
@@ -74,7 +76,9 @@ export default function DashboardLayout({
               <X size={22} />
             </button>
 
-            <StudentSidebar mobile />
+           <div className="pt-10">
+  <StudentSidebar mobile />
+</div>
           </div>
         </>
       )}
@@ -114,16 +118,19 @@ export default function DashboardLayout({
       </div>
 
       {/* Main Content */}
-      <main
-        className="
-          flex-1
-          min-w-0
-          overflow-y-auto
+     <main
+  className="
+    flex-1
+    min-w-0
+    overflow-y-auto
 
-          pt-16
-          lg:pt-0
-        "
-      >
+    pt-16
+    pb-24
+
+    lg:pt-0
+    lg:pb-0
+  "
+>
         <SessionGuard>
           {children}
         </SessionGuard>
