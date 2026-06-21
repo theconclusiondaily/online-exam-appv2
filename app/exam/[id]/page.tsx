@@ -2471,7 +2471,7 @@ to-[#EEF3FB]">
             </p>
 
             <p className="text-3xl font-black text-[#243B6B]">
-              {examInfo?.total_questions ?? 0}
+              {examInfo?.totalQuestions || 0}
             </p>
 
             <p className="text-sm text-brand-light">
@@ -2908,10 +2908,10 @@ font-black
   "
 >
             {
-  language === "hi" &&
-  currentQuestionData?.question_hi
+  language === "hi"
 
-    ? currentQuestionData.question_hi
+    ? currentQuestionData?.question_text_hi ||
+      currentQuestionData?.question
 
     : currentQuestionData?.question
 }
@@ -2926,24 +2926,32 @@ font-black
     currentQuestionData?.option_c,
     currentQuestionData?.option_d,
   ].filter(Boolean)
-).map((option: string, index: number) => (
+).map((option: string, index: number) => {
 
+  const optionKey =
+    option === currentQuestionData.option_a
+      ? "A"
+      : option === currentQuestionData.option_b
+      ? "B"
+      : option === currentQuestionData.option_c
+      ? "C"
+      : "D";
+
+  return (
                   <button
                     key={`${option}-${index}`}
 
                     onClick={() =>
-                      selectAnswer(
-                        currentQuestionData.id,
-                        option
-                      )
-                    }
+  selectAnswer(
+    currentQuestionData.id,
+    optionKey
+  )
+}
 
                     className={`w-full text-left p-3 rounded-xl border text-lg font-medium transition-colors
 
                       ${
-                        answers[
-  currentQuestionData.id
-]=== option
+                        answers[currentQuestionData.id] === optionKey
 
                           ? "bg-[#243B6B] text-white border-[#243B6B] shadow-lg"
 
@@ -2952,11 +2960,36 @@ font-black
                     `}
                   >
 
-                    {option}
+                    <span className="font-bold mr-2">
+  {optionKey}.
+</span>
+
+{language === "hi" ? (
+
+  optionKey === "A"
+    ? currentQuestionData.option_a_hi ||
+      currentQuestionData.option_a
+
+    : optionKey === "B"
+    ? currentQuestionData.option_b_hi ||
+      currentQuestionData.option_b
+
+    : optionKey === "C"
+    ? currentQuestionData.option_c_hi ||
+      currentQuestionData.option_c
+
+    : currentQuestionData.option_d_hi ||
+      currentQuestionData.option_d
+
+) : (
+
+  option
+
+)}
 
                   </button>
                 )
-              )}
+})}
 
           </div>
 

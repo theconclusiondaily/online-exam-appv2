@@ -13,7 +13,25 @@ export default function QuestionsPage() {
   const [questions,
     setQuestions] =
     useState<any[]>([]);
+const [questionHi,
+  setQuestionHi] =
+  useState("");
 
+const [optionAHi,
+  setOptionAHi] =
+  useState("");
+
+const [optionBHi,
+  setOptionBHi] =
+  useState("");
+
+const [optionCHi,
+  setOptionCHi] =
+  useState("");
+
+const [optionDHi,
+  setOptionDHi] =
+  useState("");
   const [exams,
     setExams] =
     useState<any[]>([]);
@@ -154,15 +172,29 @@ const [tags,
   .from("questions")
 
   .insert([
-    {
-      exam_id: selectedExam,
+  {
+    exam_id: selectedExam,
 
-      question,
+    question,
+    question_text_hi:
+      questionHi,
 
-      option_a: optionA,
-      option_b: optionB,
-      option_c: optionC,
-      option_d: optionD,
+    option_a: optionA,
+    option_b: optionB,
+    option_c: optionC,
+    option_d: optionD,
+
+    option_a_hi:
+      optionAHi,
+
+    option_b_hi:
+      optionBHi,
+
+    option_c_hi:
+      optionCHi,
+
+    option_d_hi:
+      optionDHi,
 
       correct_answer:
         correctAnswer,
@@ -215,6 +247,11 @@ await supabase
     setOptionC("");
     setOptionD("");
     setCorrectAnswer("");
+    setQuestionHi("");
+setOptionAHi("");
+setOptionBHi("");
+setOptionCHi("");
+setOptionDHi("");
     setSubject("");
     setChapter("");
     setTopic("");
@@ -299,8 +336,7 @@ alert(
   )
 );
       console.log(results.data);
-
-      const formattedQuestions =
+const formattedQuestions =
   results.data.map(
     (row: any) => ({
 
@@ -310,20 +346,53 @@ alert(
       question:
         row.question?.trim(),
 
+      question_text_hi:
+        row.question_text_hi?.trim(),
+
       option_a:
         row.option_a?.trim(),
+
+      option_a_hi:
+        row.option_a_hi?.trim(),
 
       option_b:
         row.option_b?.trim(),
 
+      option_b_hi:
+        row.option_b_hi?.trim(),
+
       option_c:
         row.option_c?.trim(),
+
+      option_c_hi:
+        row.option_c_hi?.trim(),
 
       option_d:
         row.option_d?.trim(),
 
+      option_d_hi:
+        row.option_d_hi?.trim(),
+
       correct_answer:
         row.correct_answer?.trim(),
+
+      subject:
+        row.subject?.trim(),
+
+      chapter:
+        row.chapter?.trim(),
+
+      topic:
+        row.topic?.trim(),
+
+      difficulty:
+        row.difficulty?.trim() || "medium",
+
+      marks:
+        Number(row.marks) || 4,
+
+      negative_marks:
+        Number(row.negative_marks) || 1,
     })
   );
 
@@ -577,7 +646,16 @@ await fetchExams();
               }
               className="w-full border rounded-2xl p-4 h-32"
             />
-
+<textarea
+  placeholder="Question (Hindi)"
+  value={questionHi}
+  onChange={(e) =>
+    setQuestionHi(
+      e.target.value
+    )
+  }
+  className="w-full border rounded-2xl p-4 h-32"
+/>
             <input
               type="text"
               placeholder="Option A"
@@ -589,7 +667,17 @@ await fetchExams();
               }
               className="w-full border rounded-2xl p-4"
             />
-
+<input
+  type="text"
+  placeholder="Option A (Hindi)"
+  value={optionAHi}
+  onChange={(e) =>
+    setOptionAHi(
+      e.target.value
+    )
+  }
+  className="w-full border rounded-2xl p-4"
+/>
             <input
               type="text"
               placeholder="Option B"
@@ -601,7 +689,17 @@ await fetchExams();
               }
               className="w-full border rounded-2xl p-4"
             />
-
+<input
+  type="text"
+  placeholder="Option B (Hindi)"
+  value={optionAHi}
+  onChange={(e) =>
+    setOptionAHi(
+      e.target.value
+    )
+  }
+  className="w-full border rounded-2xl p-4"
+/>
             <input
               type="text"
               placeholder="Option C"
@@ -613,7 +711,17 @@ await fetchExams();
               }
               className="w-full border rounded-2xl p-4"
             />
-
+<input
+  type="text"
+  placeholder="Option C (Hindi)"
+  value={optionAHi}
+  onChange={(e) =>
+    setOptionAHi(
+      e.target.value
+    )
+  }
+  className="w-full border rounded-2xl p-4"
+/>
             <input
               type="text"
               placeholder="Option D"
@@ -625,7 +733,17 @@ await fetchExams();
               }
               className="w-full border rounded-2xl p-4"
             />
-
+<input
+  type="text"
+  placeholder="Option D (Hindi)"
+  value={optionAHi}
+  onChange={(e) =>
+    setOptionAHi(
+      e.target.value
+    )
+  }
+  className="w-full border rounded-2xl p-4"
+/>
             <input
               type="text"
               placeholder="Correct Answer"
@@ -699,9 +817,23 @@ await fetchExams();
 
                 <div className="flex justify-between gap-2 mb-4">
 
-                  <h3 className="font-bold text-lg leading-relaxed">
-                    Q{index + 1}. {q.question}
-                  </h3>
+                  <div>
+
+  <h3 className="font-bold text-lg leading-relaxed">
+    Q{index + 1}. {q.question}
+  </h3>
+
+  {q.question_text_hi && (
+
+    <p className="mt-2 text-blue-700">
+
+      {q.question_text_hi}
+
+    </p>
+
+  )}
+
+</div>
 
                   <button
                     onClick={() =>

@@ -66,23 +66,32 @@ function QuestionCard({
 
         <div className="space-y-4">
 
-          {[
-            question.option_a,
-            question.option_b,
-            question.option_c,
-            question.option_d,
-          ].map((
-  option,
-  index
-) => (
+        {[
+  {
+    key: "A",
+    text: question.option_a,
+  },
+  {
+    key: "B",
+    text: question.option_b,
+  },
+  {
+    key: "C",
+    text: question.option_c,
+  },
+  {
+    key: "D",
+    text: question.option_d,
+  },
+].map((option) => (
 
-            <button
-  key={`${option}-${index}`}
+       <button
+  key={option.key}
 
   onClick={() =>
     selectAnswer(
       question.id,
-      option
+      option.key
     )
   }
 
@@ -90,7 +99,7 @@ function QuestionCard({
 
     ${
       selectedAnswer ===
-      option
+      option.key
 
         ? "bg-blue-500 text-white border-blue-500"
 
@@ -99,7 +108,13 @@ function QuestionCard({
   `}
 >
 
-              {option}
+              <>
+  <span className="font-bold mr-2">
+    {option.key}.
+  </span>
+
+  {option.text}
+</>
 
             </button>
 

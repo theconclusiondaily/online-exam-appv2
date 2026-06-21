@@ -458,6 +458,22 @@ if (mappingInsertError) {
 
   return;
 }
+const totalQuestions =
+  selectedQuestions.length;
+
+await supabase
+
+  .from("exams")
+
+  .update({
+    total_questions:
+      totalQuestions,
+  })
+
+  .eq(
+    "id",
+    examIdToUse
+  );
 }
 router.push("/admin");
   }
