@@ -172,8 +172,15 @@ const qrCode =
 relative
 overflow-hidden
 
-w-[210mm]
-h-[297mm]
+w-full
+
+max-w-[210mm]
+
+aspect-[210/297]
+
+min-h-[700px]
+
+md:min-h-[900px]
 
 mx-auto
 
@@ -524,7 +531,7 @@ inline-block w-48 h-[2px] bg-[#D4AF37]"  />
         ? "text-3xl md:text-3xl"
         : student?.name?.length > 20
         ? "text-3xl md:text-5xl"
-        : "text-5xl md:text-6xl"
+        : "text-2xl md:text-5xl lg:text-6xl"
     }
   `}
 >
@@ -808,15 +815,16 @@ hover:border-[#D4AF37]/50
   className="
     grid
 
-    grid-cols-2
+    grid-cols-1
+    md:grid-cols-2
 
     items-end
 
-    gap-12
+    gap-8
+    md:gap-12
 
     mt-6
   "
-
 >
 
   {/* Signature */}
@@ -827,10 +835,8 @@ hover:border-[#D4AF37]/50
       src="/signature.png"
       alt="Founder Signature"
       className="
-h-48
-md:h-52
-
-object-contain
+h-28
+md:h-48
 "
     />
 

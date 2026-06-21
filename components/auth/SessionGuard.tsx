@@ -49,11 +49,17 @@ if (isDemo) {
     ) {
 
 
-      await supabase.auth.signOut();
+      localStorage.removeItem(
+  "tcd_session_token"
+);
 
-      router.replace(
-        "/login"
-      );
+sessionStorage.clear();
+
+await supabase.auth.signOut();
+
+router.replace(
+  "/login"
+);
     }
 
    async function checkSession() {
@@ -85,11 +91,9 @@ if (isDemo) {
         "tcd_session_token"
       );
 
-      if (!localToken) {
+   if (!localToken) {
 
-  console.warn(
-    "Session token missing"
-  );
+  await forceLogout();
 
   return;
 }
@@ -110,14 +114,12 @@ if (isDemo) {
 )
           .single();
 
-       if (
+      if (
   error ||
   !activeSession
 ) {
 
-  console.warn(
-    "Active session not found"
-  );
+  await forceLogout();
 
   return;
 }

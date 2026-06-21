@@ -488,7 +488,26 @@ value={password}
   </button>
 
 </div>
-
+<p
+  className="
+    text-xs
+    text-tcd-primary
+    leading-relaxed
+    mt-2
+  "
+>
+  Password must contain:
+  <br />
+  • Minimum 8 characters
+  <br />
+  • One uppercase letter (A-Z)
+  <br />
+  • One lowercase letter (a-z)
+  <br />
+  • One number (0-9)
+  <br />
+  • One special character (@, #, $, etc.)
+</p>
 <Turnstile
   siteKey={
     process.env

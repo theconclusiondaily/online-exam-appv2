@@ -457,7 +457,7 @@ if (isDemo) {
 
     duration: 30,
 
-    total_questions: 10,
+    totalQuestions: 10,
   });
 
   setLoading(false);
@@ -617,7 +617,13 @@ if (existingAttempt) {
 } = await fetchExam(
   examId
 );
-
+const { count } = await supabase
+  .from("exam_questions")
+  .select("*", {
+    count: "exact",
+    head: true,
+  })
+  .eq("exam_id", examId);
 if (
   examData?.exam_scope !== "PUBLIC" &&
   !instituteIds.includes(
@@ -635,9 +641,10 @@ if (
 
   return;
 }
-      setExamInfo(
-        examData
-      );
+      setExamInfo({
+  ...examData,
+  totalQuestions: count || 0,
+});
 
      
 
@@ -963,7 +970,7 @@ useEffect(() => {
     examId,
 
     questionsLength:
-  examInfo?.total_questions || 30,
+  examInfo?.totalQuestions || 0,
 
   });
 

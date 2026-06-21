@@ -586,7 +586,35 @@ if (
     </p>
 
   </Link>
+<Link
+  href="/admin/proctoring"
+  className="
+    group
+    bg-gold
+    border
+    border-[#243B6B]/10
+    rounded-[28px]
+    p-6
+    hover:border-[#D4AF37]
+   hover:shadow-2xl
+      hover:-translate-y-2
+    transition-all
+  "
+>
+  <img
+    src="/icons/security.svg"
+    alt=""
+    className="w-10 h-10 mb-4"
+  />
 
+  <h3 className="text-xl font-black text-[#243B6B]">
+    Live Proctoring
+  </h3>
+
+  <p className="text-brand-light mt-2">
+    Monitor students, violations and realtime activity
+  </p>
+</Link>
   {/* Create Exam */}
 
   <Link

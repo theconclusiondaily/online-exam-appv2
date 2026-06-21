@@ -4,7 +4,7 @@ import {
   useEffect,
   useState,
 } from "react";
-
+import Link from "next/link";
 import { supabase }
 from "@/lib/supabase/client";
 function getFaceStatus(
@@ -385,7 +385,36 @@ console.log(
           >
             Real-Time Examination Integrity Monitoring
           </p>
+<Link
+  href="/admin"
+  className="
+    inline-flex
+    items-center
 
+    mt-5
+
+    px-5
+    py-3
+
+    rounded-2xl
+
+    bg-white/10
+
+    border
+
+    border-white/20
+
+    text-white
+
+    font-bold
+
+    hover:bg-white/20
+
+    transition
+  "
+>
+  ← Back to Admin Dashboard
+</Link>
         </div>
 
       </div>
