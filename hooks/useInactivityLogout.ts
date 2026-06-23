@@ -13,10 +13,12 @@ export default function useInactivityLogout() {
 
     let timeout: NodeJS.Timeout;
 
-  const logout = async () => {
+const logout = async () => {
+
 console.log(
   "AUTO LOGOUT TRIGGERED"
 );
+
   if (
     window.location.pathname.includes(
       "/exam"
@@ -24,6 +26,10 @@ console.log(
   ) {
     return;
   }
+
+  localStorage.clear();
+
+  sessionStorage.clear();
 
   await supabase.auth.signOut();
 

@@ -12,7 +12,7 @@ export default function PrintButton() {
     try {
       const dataUrl = await toPng(node, {
         cacheBust: true,
-        pixelRatio: 3,
+        pixelRatio: 4,
         backgroundColor: "#ffffff",
       });
 

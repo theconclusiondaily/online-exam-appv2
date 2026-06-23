@@ -2,6 +2,8 @@ export function getLeagueProgress(
   xp: number
 ) {
 
+  xp = Math.max(0, xp);
+
   const leagues = [
 
     {
@@ -37,9 +39,14 @@ export function getLeagueProgress(
     {
       name: "Elite",
       min: 5000,
-      max: Infinity,
+      max: 9999,
     },
 
+    {
+      name: "Legendary",
+      min: 10000,
+      max: Infinity,
+    },
   ];
 
   const currentLeague =

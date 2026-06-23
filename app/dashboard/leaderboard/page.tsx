@@ -461,7 +461,7 @@ export default function LeaderboardPage() {
 <p
   className="
     text-sm
-    text-brand
+    text-[#E8EEF9]
 
     mb-4
   "

@@ -157,10 +157,14 @@ const qrCode =
   <div
   id="certificate-wrapper"
    className="
-    w-[90%]
-    mx-auto
-    pl-2
-    pr-4
+    w-full
+max-w-full
+
+px-2
+sm:px-3
+md:px-0
+
+mx-auto
   "
 >
   
@@ -195,10 +199,11 @@ rounded-none
 
 shadow-none
 
-p-6
-
 print:w-[210mm]
 print:h-[297mm]
+p-2 sm:p-3
+sm:p-4
+md:p-6
 print:p-8
 "
       >
@@ -244,8 +249,9 @@ print:p-8
     top-6
     left-6
 
-    px-4
-    py-3
+    px-2 py-2
+sm:px-3 sm:py-2
+md:px-4 md:py-3
 
     rounded-2xl
 
@@ -281,7 +287,9 @@ font-black
 
 tracking-wider
 
-text-lg
+text-xs
+sm:text-sm
+md:text-lg
     "
   >
     {certificate.certificate_number}
@@ -295,8 +303,9 @@ text-lg
     top-6
     right-6
 
-    px-4
-    py-3
+    px-2 py-2
+sm:px-3 sm:py-2
+md:px-4 md:py-3
 
     rounded-2xl
 
@@ -318,7 +327,9 @@ font-black
 
 tracking-wider
 
-text-lg
+text-xs
+sm:text-sm
+md:text-lg
 "
   >
     ISSUED ON
@@ -332,7 +343,9 @@ font-black
 
 tracking-wider
 
-text-lg
+text-xs
+sm:text-sm
+md:text-lg
 "
   >
     {new Date(
@@ -347,9 +360,14 @@ text-lg
     src="/logo.png"
     alt="TCD Watermark"
    className="
-w-[560px]
+w-[220px]
+h-[220px]
 
-h-[560px]
+sm:w-[320px]
+sm:h-[320px]
+
+md:w-[560px]
+md:h-[560px]
 
 object-contain
 
@@ -485,7 +503,9 @@ select-none
 
   <h1
     className="
-      text-4xl
+      text-lg sm:text-xl md:text-2xl
+sm:text-3xl
+md:text-4xl
 
       font-black
 
@@ -528,10 +548,10 @@ inline-block w-48 h-[2px] bg-[#D4AF37]"  />
 
     ${
       student?.name?.length > 30
-        ? "text-3xl md:text-3xl"
-        : student?.name?.length > 20
-        ? "text-3xl md:text-5xl"
-        : "text-2xl md:text-5xl lg:text-6xl"
+  ? "text-xl sm:text-2xl md:text-4xl"
+  : student?.name?.length > 20
+  ? "text-2xl sm:text-3xl md:text-5xl"
+  : "text-3xl sm:text-4xl md:text-5xl lg:text-6xl"
     }
   `}
 >
@@ -579,10 +599,10 @@ inline-block w-48 h-[2px] bg-[#D4AF37]"  />
 
     ${
       (exam?.title?.length ?? 0) > 60
-        ? "text-xl md:text-2xl"
+        ? "text-lg sm:text-xl md:text-2xl"
         : (exam?.title?.length ?? 0) > 40
-        ? "text-2xl md:text-3xl"
-        : "text-3xl md:text-4xl"
+        ? "text-xl sm:text-2xl md:text-3xl"
+        : "text-2xl sm:text-3xl md:text-4xl"
     }
   `}
 >
@@ -591,7 +611,8 @@ inline-block w-48 h-[2px] bg-[#D4AF37]"  />
 <div
   className="
     grid
-   grid-cols-2 md:grid-cols-4
+   grid-cols-2 
+   md:grid-cols-4
 
     gap-6
 
@@ -611,7 +632,7 @@ backdrop-blur-md
 
 rounded-3xl
 
-p-3
+p-2 sm:p-3
 
 border
 
@@ -638,7 +659,7 @@ hover:border-[#D4AF37]/50
 
   <p
     className="
-      text-2xl
+      text-lg sm:text-xl md:text-2xl
 
       font-black
 
@@ -657,7 +678,7 @@ backdrop-blur-md
 
 rounded-3xl
 
-p-3
+p-2 sm:p-3
 
 border
 
@@ -684,7 +705,7 @@ hover:border-[#D4AF37]/50
 
   <p
     className="
-      text-2xl
+      text-lg sm:text-xl md:text-2xl
 
       font-black
 
@@ -705,7 +726,7 @@ backdrop-blur-md
 
 rounded-3xl
 
-p-3
+p-2 sm:p-3
 
 border
 
@@ -732,7 +753,7 @@ hover:border-[#D4AF37]/50
 
   <p
     className="
-      text-2xl
+      text-lg sm:text-xl md:text-2xl
 
       font-black
 
@@ -751,7 +772,7 @@ backdrop-blur-md
 
 rounded-3xl
 
-p-3
+p-2 sm:p-3
 
 border
 
@@ -835,7 +856,8 @@ hover:border-[#D4AF37]/50
       src="/signature.png"
       alt="Founder Signature"
       className="
-h-28
+h-20
+sm:h-24
 md:h-48
 "
     />
@@ -946,14 +968,16 @@ md:h-48
 
         rounded-[20px]
 
-        p-3
+        p-2 sm:p-3
       "
     >
 
       <img
         src={qrCode}
         alt="Verification QR"
-        className="w-24 h-24"
+        className="w-16 h-16
+sm:w-20 sm:h-20
+md:w-24 md:h-24"
       />
 
     </div>
@@ -991,8 +1015,9 @@ md:h-48
 </div>
 <div
   className="
-    w-28
-    h-28
+    w-20 h-20
+sm:w-24 sm:h-24
+md:w-28 md:h-28
 
     rounded-full
 

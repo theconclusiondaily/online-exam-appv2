@@ -46,6 +46,7 @@ import {
 } from "@/lib/getLevelTitle";
 import AchievementPopup
 from "@/components/dashboard/AchievementPopup";
+import TCDLoader from "@/components/common/TCDLoader";
 import {
   getExamStatus
 } from "@/lib/getExamStatus";
@@ -220,28 +221,36 @@ const [
   showRewardPopup,
   setShowRewardPopup
 ] = useState(false);
-const [
-
-  userXP,
-  setUserXP
-] = useState(0);
-const [
-  userLevel,
-  setUserLevel
-] = useState(0);
+const [userXP, setUserXP] = useState(0);
+const [userLevel, setUserLevel] = useState(0);
 const [
   rewardAmount,
   setRewardAmount
 ] = useState(0);
 const league =
-  getLeague(
-    userXP
-  );
+  getLeague(userXP ?? 0);
 
-  const leagueProgress =
+const leagueProgress =
   getLeagueProgress(
-    userXP
+    userXP ?? 0
   );
+  console.log("USER XP =", userXP);
+
+const debugLeague =
+  getLeague(userXP);
+
+const debugProgress =
+  getLeagueProgress(userXP);
+
+console.log(
+  "LEAGUE =",
+  debugLeague
+);
+
+console.log(
+  "PROGRESS =",
+  debugProgress
+);
 const levelTitle =
   getLevelTitle(
     userLevel
@@ -663,13 +672,23 @@ console.log(
   levelData?.level
 );
 setUserXP(
-  levelData?.xp || 0
+  Math.max(
+    0,
+    levelData?.xp || 0
+  )
 );
 
 setUserLevel(
   levelData?.level || 0
 );
 
+if (!levelData) {
+
+  console.error(
+    "USER LEVEL RECORD MISSING"
+  );
+
+}
 
 
 if (walletData) {
@@ -1509,20 +1528,8 @@ const handleClaimReward =
   // LOADING
 
   if (loading) {
-
-    return (
-
-      <main className="min-h-screen flex items-center justify-center bg-gray-50">
-
-        <div className="text-2xl font-bold">
-
-          Loading Dashboard...
-
-        </div>
-
-      </main>
-    );
-  }
+  return <TCDLoader />;
+}
 
   return (
   <main className="min-h-screen bg-gray-50 p-3 md:p-4">
@@ -1753,7 +1760,9 @@ const handleClaimReward =
 
   {TCDIcons.rank}
 
-  {league.name} League
+{userXP === null
+  ? "Loading..."
+  : league.name}League
 
 </div>
 <div
@@ -1773,7 +1782,7 @@ const handleClaimReward =
 
       text-xs
 
-      text-tcd-primary
+      text-white/70
 
       mb-2
     "
@@ -1781,15 +1790,17 @@ const handleClaimReward =
 
     <span>
 
-      {league.name}
+     {userXP === null
+  ? "Loading..."
+  : league.name}
 
     </span>
 
     <span>
 
-      {
-        leagueProgress.nextLeague
-      }
+     {userXP === null
+  ? "..."
+  : leagueProgress.nextLeague}
 
     </span>
 
@@ -1839,9 +1850,9 @@ const handleClaimReward =
     "
   >
 
-    {
-      leagueProgress.remaining
-    } XP to {" "}
+    {userXP === null
+  ? "..."
+  : leagueProgress.remaining}XP to {" "}
     {
       leagueProgress.nextLeague
     }
@@ -1865,11 +1876,9 @@ const handleClaimReward =
         </h2>
 
         <p
-          className="
-            text-tcd-primary
+          
+            className="text-white/70"
 
-            text-sm
-          "
         >
 
           Compete with top
@@ -2078,8 +2087,8 @@ const handleClaimReward =
     alt="TCD"
 
     className="
-      w-64
-      h-64
+      w-96
+      h-96
 
       md:w-80
       md:h-80
@@ -2154,6 +2163,8 @@ const handleClaimReward =
 </div>
 {/* PRESTIGE CARD */}
 
+
+      
 <div
   className="
     bg-white

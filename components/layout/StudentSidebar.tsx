@@ -226,9 +226,12 @@ async function handleLogout() {
       .toUpperCase()
   : "U"}
     </div>
-
+     
     <p className="font-semibold">
   {userName.split(" ")[0]}
+</p>
+       <p className="text-xs text-tcd-primary mb-1">
+        Profile
 </p>
 
   </Link>
