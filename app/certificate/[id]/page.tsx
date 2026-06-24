@@ -180,10 +180,9 @@ w-full
 
 max-w-[210mm]
 
-aspect-[210/297]
+md:aspect-[210/297]
 
 min-h-[700px]
-
 md:min-h-[900px]
 
 mx-auto
@@ -503,7 +502,7 @@ select-none
 
   <h1
     className="
-      text-lg sm:text-xl md:text-2xl
+      text-2xl
 sm:text-3xl
 md:text-4xl
 
@@ -524,7 +523,7 @@ md:text-4xl
 
         <div className="text-center mt-5">
 
-          <p className="text-tcd-muted mt-6">
+          <p className="text-[#E8EEF9] mt-6">
   This certificate is awarded to
 </p>
 
@@ -575,7 +574,7 @@ inline-block w-48 h-[2px] bg-[#D4AF37]"  />
   <div className="w-72 h-[2px] bg-[#D4AF37]" />
 
 </div>
-<p className="text-tcd-muted mt-2">
+<p className="text-[#E8EEF9] mt-2">
   For successfully participating in
 </p>
 
@@ -653,7 +652,7 @@ hover:border-[#D4AF37]/50
   src="/icons/tcd-medal.svg"
   className="w-6 h-6 mx-auto mb-3"
 />
-  <p className="text-tcd-muted">
+  <p className="text-[#E8EEF9]">
     Score
   </p>
 
@@ -699,7 +698,7 @@ hover:border-[#D4AF37]/50
   src="/icons/tcd-crown.svg"
   className="w-6 h-6 mx-auto mb-3"
 />
-  <p className="text-tcd-muted">
+  <p className="text-[#E8EEF9]">
     Prestige
   </p>
 
@@ -747,7 +746,7 @@ hover:border-[#D4AF37]/50
   src="/icons/tcd-star.svg"
   className="w-6 h-6 mx-auto mb-3"
 />
-  <p className="text-tcd-muted">
+  <p className="text-[#E8EEF9]">
     Percentage
   </p>
 
@@ -795,7 +794,7 @@ hover:border-[#D4AF37]/50
     className="w-6 h-6 mx-auto mb-3"
   />
 
-  <p className="text-tcd-muted">
+  <p className="text-[#E8EEF9]">
 
     Verified
 
@@ -864,7 +863,8 @@ md:h-48
 
    <div
   className="
-    w-88
+    w-full
+    max-w-[350px]
 
     h-[2px]
 
@@ -1144,7 +1144,7 @@ md:w-28 md:h-28
 
   </h3>
 
-  <p className="text-tcd-muted mt-2">
+  <p className="text-[#E8EEF9] mt-2">
 
     This achievement is now part of your permanent TCD academic record.
 
