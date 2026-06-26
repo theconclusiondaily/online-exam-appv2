@@ -234,6 +234,7 @@ const leagueProgress =
   getLeagueProgress(
     userXP ?? 0
   );
+  useEffect(() => {
   console.log("USER XP =", userXP);
 
 const debugLeague =
@@ -251,6 +252,7 @@ console.log(
   "PROGRESS =",
   debugProgress
 );
+}, [userXP]);
 const levelTitle =
   getLevelTitle(
     userLevel
@@ -540,7 +542,7 @@ if (!walletData) {
       user.id
     )
 
-    .single();
+    .maybeSingle();
 
   walletData =
     newWallet;
@@ -632,63 +634,57 @@ if (
 }
 
 const {
-  data: levelData,
+  data: fetchedLevelData,
   error: levelError,
 } = await supabase
-
   .from("user_levels")
-
   .select("xp, level")
+  .eq("user_id", user.id)
+  .maybeSingle();
 
-  .eq(
-    "user_id",
-    user.id
-  )
+let levelData = fetchedLevelData;
 
-  .single();
+if (!levelData) {
 
-console.log(
-  "LEVEL ERROR:",
-  levelError
-);
+  const {
+    error: insertError,
+  } = await supabase
+    .from("user_levels")
+    .insert({
 
-console.log(
-  "LEVEL DATA:",
-  levelData
-);
+      user_id: user.id,
 
-console.log(
-  "LEVEL DATA:",
-  levelData
-);
+      xp: 0,
 
-console.log(
-  "XP:",
-  levelData?.xp
-);
+      level: 0,
 
-console.log(
-  "LEVEL:",
-  levelData?.level
-);
+      updated_at: new Date().toISOString(),
+
+    });
+
+  console.log(
+    "LEVEL INSERT ERROR:",
+    insertError
+  );
+
+  levelData = {
+    xp: 0,
+    level: 0,
+  };
+}
+
 setUserXP(
   Math.max(
     0,
-    levelData?.xp || 0
+    levelData.xp
   )
 );
 
 setUserLevel(
-  levelData?.level || 0
+  levelData.level
 );
 
-if (!levelData) {
 
-  console.error(
-    "USER LEVEL RECORD MISSING"
-  );
-
-}
 
 
 if (walletData) {

@@ -244,7 +244,19 @@ if (!existingProfile) {
       "da8cf1d6-9415-42f0-8336-c8586885cd6a"
 
   });
-await supabase
+if (profileError) {
+
+  console.error("PROFILE ERROR:", profileError);
+  console.log(profileError);
+
+  alert(profileError.message);
+
+  return;
+}
+
+const {
+  error: instituteError,
+} = await supabase
   .from("user_institutes")
   .upsert({
 
@@ -254,39 +266,122 @@ await supabase
       "da8cf1d6-9415-42f0-8336-c8586885cd6a"
 
   });
-  if (profileError) {
 
-    console.error(
-      "PROFILE ERROR:",
-      profileError
-    );
+if (instituteError) {
 
-    alert(
-      "Failed to create profile."
-    );
+  console.error(
+    "INSTITUTE ERROR:",
+    instituteError
+  );
 
-    return;
-  }
+}
+ await supabase
+  .from("referral_codes")
+  .upsert({
 
-  await supabase
-    .from("referral_codes")
-    .insert({
+    user_id: user.id,
 
-      user_id: user.id,
+    referral_code: generatedCode,
 
-      referral_code:
-        generatedCode,
+    total_referrals: 0,
 
-      total_referrals: 0,
+    total_rewards: 0,
 
-      total_rewards: 0,
+  });
 
-    });
+}
+// CREATE USER LEVEL IF MISSING
 
- await processReferral(
-  user.id,
-  user.user_metadata?.referred_by
-);
+const { data: existingLevel } = await supabase
+  .from("user_levels")
+  .select("id")
+  .eq("user_id", user.id)
+  .maybeSingle();
+
+if (!existingLevel) {
+
+  const {
+  error: levelInsertError,
+} = await supabase
+  .from("user_levels")
+  .insert({
+
+    user_id: user.id,
+
+    xp: 0,
+
+    level: 0,
+
+    updated_at: new Date().toISOString(),
+
+  });
+
+if (levelInsertError) {
+
+  console.error(
+    "LEVEL INSERT ERROR:",
+    levelInsertError
+  );
+
+  alert(
+    JSON.stringify(levelInsertError)
+  );
+
+  return;
+
+}
+
+}
+
+// CREATE WALLET IF MISSING
+
+const { data: existingWallet } = await supabase
+  .from("tcd_wallets")
+  .select("user_id")
+  .eq("user_id", user.id)
+  .maybeSingle();
+
+if (!existingWallet) {
+
+const {
+  error: walletInsertError,
+} = await supabase
+  .from("tcd_wallets")
+  .insert({
+
+    user_id: user.id,
+
+    current_balance: 0,
+
+    lifetime_earned: 0,
+
+    updated_at: new Date().toISOString(),
+
+  });
+
+if (walletInsertError) {
+
+  console.error(
+    "WALLET INSERT ERROR:",
+    walletInsertError
+  );
+
+}
+ try {
+
+  await processReferral(
+    user.id,
+    user.user_metadata?.referred_by
+  );
+
+} catch (err) {
+
+  console.error(
+    "PROCESS REFERRAL ERROR:",
+    err
+  );
+
+}
 }  
 
 const {
