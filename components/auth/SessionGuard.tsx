@@ -55,7 +55,9 @@ if (isDemo) {
 
 sessionStorage.clear();
 
-await supabase.auth.signOut();
+await supabase.auth.signOut({
+  scope: "global",
+});
 
 router.replace(
   "/login"

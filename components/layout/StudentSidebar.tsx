@@ -124,8 +124,16 @@ if (user) {
   setUnreadCount(count || 0);
 }
 async function handleLogout() {
-  await supabase.auth.signOut();
-  window.location.href = "/login";
+
+  localStorage.removeItem("tcd_session_token");
+
+  sessionStorage.clear();
+
+  await supabase.auth.signOut({
+    scope: "global",
+  });
+
+  window.location.replace("/login");
 }
   return (
    <aside

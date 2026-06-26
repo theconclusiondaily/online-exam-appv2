@@ -27,13 +27,15 @@ console.log(
     return;
   }
 
-  localStorage.clear();
+ localStorage.removeItem("tcd_session_token");
 
-  sessionStorage.clear();
+sessionStorage.clear();
 
-  await supabase.auth.signOut();
+await supabase.auth.signOut({
+  scope: "global",
+});
 
-  window.location.href = "/login";
+window.location.replace("/login");
 };
 
     const resetTimer = () => {

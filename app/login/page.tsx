@@ -157,18 +157,18 @@ if (!captchaToken) {
       return;
     }
 const normalizedEmail = email.trim().toLowerCase();
-await supabase.auth.signInWithPassword({
-  email: normalizedEmail,
-  password,
-});
-   const { error } = await supabase.auth.signInWithPassword({
-  email,
-  password,
-});
+
+const { error } =
+  await supabase.auth.signInWithPassword({
+    email: normalizedEmail,
+    password,
+  });
 
 if (error) {
   if (
-    error.message.toLowerCase().includes("email not confirmed")
+    error.message
+      .toLowerCase()
+      .includes("email not confirmed")
   ) {
     alert(
       "Please verify your email before logging in. You can use the 'Resend Verification' button below."
