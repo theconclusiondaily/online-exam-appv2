@@ -14,7 +14,7 @@ import {
 import dynamic from "next/dynamic";
 
 import { toast } from "sonner";
-
+import MathText from "@/components/common/MathText";
 import { supabase } from "@/lib/supabase/client";
 import TCDLoader from "@/components/common/TCDLoader";
 import ExamTopStats from "@/components/exam/ExamTopStats";
@@ -25,6 +25,7 @@ import useAntiCheat from "@/hooks/useAntiCheat";
 import useLiveStudents from "@/hooks/useLiveStudents";
 import StudentCameraStream
 from "@/components/exam/StudentCameraStream";
+import { MathJax } from "better-react-mathjax";
 import {
   getFaceDetector
 } from "@/lib/faceDetection";
@@ -2901,28 +2902,15 @@ font-black
 </div>
 </div>
 
-          <p
-  className="
-    text-2xl
+         
+ <div className="text-2xl leading-loose font-medium text-[#243B6B] mb-10">
+ <MathJax dynamic>
+  {language === "hi"
+    ? currentQuestionData?.question_text_hi || currentQuestionData?.question
+    : currentQuestionData?.question}
+</MathJax>
+</div>
 
-    leading-loose
-
-    font-medium
-
-    text-[#243B6B]
-
-    mb-10
-  "
->
-            {
-  language === "hi"
-
-    ? currentQuestionData?.question_text_hi ||
-      currentQuestionData?.question
-
-    : currentQuestionData?.question
-}
-          </p>
 
           <div className="space-y-4">
 
@@ -2971,28 +2959,21 @@ font-black
   {optionKey}.
 </span>
 
-{language === "hi" ? (
-
-  optionKey === "A"
-    ? currentQuestionData.option_a_hi ||
-      currentQuestionData.option_a
-
-    : optionKey === "B"
-    ? currentQuestionData.option_b_hi ||
-      currentQuestionData.option_b
-
-    : optionKey === "C"
-    ? currentQuestionData.option_c_hi ||
-      currentQuestionData.option_c
-
-    : currentQuestionData.option_d_hi ||
-      currentQuestionData.option_d
-
-) : (
-
-  option
-
-)}
+<MathText
+  text={
+    language === "hi"
+      ? (
+          optionKey === "A"
+            ? currentQuestionData.option_a_hi || currentQuestionData.option_a
+            : optionKey === "B"
+            ? currentQuestionData.option_b_hi || currentQuestionData.option_b
+            : optionKey === "C"
+            ? currentQuestionData.option_c_hi || currentQuestionData.option_c
+            : currentQuestionData.option_d_hi || currentQuestionData.option_d
+        )
+      : option
+  }
+/>
 
                   </button>
                 )

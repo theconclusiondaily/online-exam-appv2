@@ -1330,20 +1330,11 @@ setRanks(rankMap);
 
 
       }
-      if (!profileData?.institute_id) {
-  setLiveExams([]);
-  setUpcomingExams([]);
-setLoading(false);
-} 
-else {
-      // CURRENT TIME
+    // CURRENT TIME
 
-    
+const now = new Date().toISOString();
 
-      // LIVE EXAMS
-
-  const now =
-  new Date().toISOString();
+// LIVE EXAMS
 
 const {
   data: allLiveExams,
@@ -1356,35 +1347,20 @@ const {
   .order("start_time", {
     ascending: true,
   });
-
+console.log("NOW:", now);
+console.log("ALL LIVE EXAMS:", allLiveExams);
 const filteredLiveExams =
   (allLiveExams || []).filter(
     (exam) =>
       exam.exam_scope === "PUBLIC" ||
-      instituteIds.includes(
-        exam.institute_id
-      )
+      instituteIds.includes(exam.institute_id)
   );
-const arenaLiveExams =
-  filteredLiveExams.filter(
-    (exam: any) =>
-      exam.exam_scope ===
-      "PUBLIC"
-  );
+console.log("FILTERED LIVE EXAMS:", filteredLiveExams);
+setLiveExams(filteredLiveExams);
+console.log("SETTING LIVE EXAMS:", filteredLiveExams.length);
+// UPCOMING EXAMS
 
-const instituteLiveExams =
-  filteredLiveExams.filter(
-    (exam: any) =>
-      exam.exam_scope ===
-      "INSTITUTE"
-  );
-setLiveExams(
-  filteredLiveExams
-);
-
-      // UPCOMING EXAMS
-
-      const {
+const {
   data: allUpcomingExams,
 } = await supabase
   .from("exams")
@@ -1399,28 +1375,12 @@ const filteredUpcomingExams =
   (allUpcomingExams || []).filter(
     (exam) =>
       exam.exam_scope === "PUBLIC" ||
-      instituteIds.includes(
-        exam.institute_id
-      )
-  );
-const arenaUpcomingExams =
-  filteredUpcomingExams.filter(
-    (exam: any) =>
-      exam.exam_scope ===
-      "PUBLIC"
+      instituteIds.includes(exam.institute_id)
   );
 
-const instituteUpcomingExams =
-  filteredUpcomingExams.filter(
-    (exam: any) =>
-      exam.exam_scope ===
-      "INSTITUTE"
-  );
-setUpcomingExams(
-  filteredUpcomingExams
-);
-      setLoading(false);
-    }
+setUpcomingExams(filteredUpcomingExams);
+
+setLoading(false);
     
   }
  useEffect(() => {

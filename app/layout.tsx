@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
-
+import { MathJaxContext } from "better-react-mathjax";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 
 const geistSans = Geist({
@@ -30,15 +30,36 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-        <AuthProvider>
-          <Toaster
-  richColors
-  position="top-right"
-/>
-          {children}
-        </AuthProvider>
-      </body>
+     <body className="min-h-full flex flex-col">
+  <MathJaxContext
+    config={{
+      loader: {
+        load: ["[tex]/physics"],
+      },
+      tex: {
+        inlineMath: [
+          ["$", "$"],
+          ["\\(", "\\)"],
+        ],
+        displayMath: [
+          ["$$", "$$"],
+          ["\\[", "\\]"],
+        ],
+        packages: {
+          "[+]": ["physics"],
+        },
+      },
+    }}
+  >
+    <AuthProvider>
+      <Toaster
+        richColors
+        position="top-right"
+      />
+      {children}
+    </AuthProvider>
+  </MathJaxContext>
+</body>
     </html>
   );
 }

@@ -137,15 +137,46 @@ export default async function VerifyPage({
         >
           VERIFIED
         </h1>
+<div className="mt-5">
 
-        <p className="text-tcd-muted mt-2">
+  <span
+    className="
+      inline-flex
+      items-center
+      gap-2
+
+      px-5
+      py-2
+
+      rounded-full
+
+      bg-green-500/20
+
+      border
+
+      border-green-400
+
+      text-green-300
+
+      font-bold
+    "
+  >
+    <span className="w-2.5 h-2.5 rounded-full bg-green-400"></span>
+
+    Official Certificate Verified
+
+  </span>
+
+</div>
+        <p className="text-white/80 mt-2">
           This certificate is authentic and issued by
           The Conclusion Daily.
         </p>
 
         <div
           className="
-            mt-10
+            
+          mt-10
 
             grid
 
@@ -190,7 +221,99 @@ export default async function VerifyPage({
               certificate.certificate_number
             }
           />
+          <Info
+  label="Issued On"
+  value={new Date(certificate.issued_at).toLocaleDateString("en-GB")}
+/>
+
         </div>
+        <div
+  className="
+    mt-10
+
+    rounded-2xl
+
+    border
+
+    border-[#D4AF37]/30
+
+    bg-white/5
+
+    p-5
+  "
+>
+
+  <h3
+    className="
+      text-[#E6C15A]
+
+      font-bold
+
+      text-lg
+    "
+  >
+    Digital Verification
+  </h3>
+
+  <p className="mt-3 text-white/80 leading-7">
+
+    This certificate has been digitally verified against
+    the official records of
+
+    <span className="font-bold text-[#E6C15A]">
+      {"  "}THE CONCLUSION DAILY{"  "}
+    </span>
+
+    and is authentic.
+
+  </p>
+
+</div>
+<div
+  className="
+    mt-10
+
+    border-t
+
+    border-[#D4AF37]/30
+
+    pt-6
+
+    text-center
+  "
+>
+
+  <img
+    src="/logo.png"
+    className="w-14 h-14 mx-auto"
+    alt=""
+  />
+
+  <p className="mt-4 text-white/60">
+
+    Need help verifying this certificate?
+    Contact Us on
+
+  </p>
+
+  <a
+    href="mailto:support@theconclusiondaily.com"
+    className="
+      text-[#E6C15A]
+
+      font-bold
+
+      hover:underline
+    "
+  >
+    admin@theconclusiondaily.com
+  </a>
+
+  <p className="mt-4 text-white/40 text-sm">
+    © 2026 THE CONCLUSION DAILY
+  </p>
+
+</div>
       </div>
     </main>
   );
@@ -217,7 +340,7 @@ function Info({
         p-4
       "
     >
-      <p className="text-sm text-[#243B6B]/70">
+      <p className="text-sm text-white/60">
         {label}
       </p>
 
@@ -234,6 +357,9 @@ function Info({
       >
         {value}
       </p>
+      
     </div>
+    
   );
+  
 }

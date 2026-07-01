@@ -1,7 +1,22 @@
-import CreateExamClientWrapper from "./CreateExamClientWrapper";
+"use client";
 
-export const dynamic = "force-dynamic";
+import ExamBuilderContainer
+from "@/components/exam-builder/ExamBuilderContainer";
 
-export default function Page() {
-  return <CreateExamClientWrapper />;
+export default function CreateExamPage() {
+
+  return (
+
+    <main className="min-h-screen bg-gray-50 p-8">
+
+      <div className="max-w-7xl mx-auto">
+
+        <ExamBuilderContainer />
+
+      </div>
+
+    </main>
+
+  );
+
 }

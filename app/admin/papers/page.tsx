@@ -1,391 +1,190 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-} from "react";
-
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Plus, RefreshCw } from "lucide-react";
 
-import {
-  useRouter,
-} from "next/navigation";
+import { QuestionPaper } from "@/components/paper-builder/types";
+import { getPapers } from "@/components/paper-builder/services/paperService";
 
-import { supabase }
-from "@/lib/supabase/client";
+import PaperStats from "@/components/paper-builder/PaperStats";
+import PaperFilters from "@/components/paper-builder/PaperFilters";
+import PaperTable from "@/components/paper-builder/PaperTable";
+import PaperCard from "@/components/paper-builder/PaperCard";
+export default function PaperListPage() {
 
-export default function PapersPage() {
+  const [papers, setPapers] =
+    useState<QuestionPaper[]>([]);
 
-  const router = useRouter();
+  const [loading, setLoading] =
+    useState(true);
 
-  const [title,
-    setTitle] =
+  const [search, setSearch] =
     useState("");
 
-  const [subject,
-    setSubject] =
+  const [subject, setSubject] =
     useState("");
 
-  const [paperClass,
-    setPaperClass] =
+  const [status, setStatus] =
     useState("");
 
-  const [duration,
-    setDuration] =
-    useState("");
+  async function loadPapers() {
 
-  const [totalQuestions,
-    setTotalQuestions] =
-    useState("");
+    try {
 
-  const [papers,
-    setPapers] =
-    useState<any[]>([]);
+      setLoading(true);
 
-  // FETCH PAPERS
+      const data =
+        await getPapers();
 
-  async function fetchPapers() {
-
-    const {
-      data,
-      error,
-    } = await supabase
-      .from("question_papers")
-      .select("*")
-      .order("created_at", {
-        ascending: false,
-      });
-
-    console.log(data);
-    console.log(error);
-
-    if (data) {
       setPapers(data);
-    }
-  }
 
-  // ADMIN CHECK
+    } catch (err) {
+
+      console.error(err);
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  }
 
   useEffect(() => {
 
-    async function initializePage() {
-
-      const {
-        data: { user },
-      } = await supabase
-        .auth
-        .getUser();
-
-      if (!user) {
-
-        router.push("/");
-
-        return;
-      }
-
-      const adminEmails = [
-
-        "admin@theconclusiondaily.com",
-
-        "kumawat.rrahul@gmail.com",
-
-        "theconclusiondaily@gmail.com",
-
-      ];
-
-      if (
-        !adminEmails.includes(
-          user.email || ""
-        )
-      ) {
-
-        alert(
-          "Access Denied"
-        );
-
-        router.push("/dashboard");
-
-        return;
-      }
-
-      fetchPapers();
-    }
-
-    initializePage();
+    loadPapers();
 
   }, []);
 
-  // CREATE PAPER
+  const filtered = papers.filter((paper) => {
 
-  async function createPaper() {
+    const matchesSearch =
+      paper.title
+        ?.toLowerCase()
+        .includes(search.toLowerCase());
 
-    if (
-      !title ||
+    const matchesSubject =
       !subject ||
-      !paperClass ||
-      !duration ||
-      !totalQuestions
-    ) {
+      paper.subject === subject;
 
-      alert(
-        "Fill all fields"
-      );
+    const matchesStatus =
+      !status ||
+      paper.status === status;
 
-      return;
-    }
+    return (
+      matchesSearch &&
+      matchesSubject &&
+      matchesStatus
+    );
 
-    const {
-      error,
-    } = await supabase
-      .from("question_papers")
-      .insert([
-        {
-          title,
-          subject,
-          class: paperClass,
-          duration:
-            Number(duration),
-          total_questions:
-            Number(
-              totalQuestions
-            ),
-        },
-      ]);
-
-    console.log(error);
-
-    if (!error) {
-
-      alert(
-        "Question Paper Created"
-      );
-
-      setTitle("");
-      setSubject("");
-      setPaperClass("");
-      setDuration("");
-      setTotalQuestions("");
-
-      fetchPapers();
-    }
-  }
+  });
 
   return (
 
-    <main className="min-h-screen p-4 md:p-5 bg-gray-50">
+    <div className="p-8">
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Header */}
 
-        {/* NAVBAR */}
+      <div className="flex justify-between items-center mb-8">
 
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4">
+        <div>
 
-          <div className="flex justify-between items-center mb-4">
+          <h1 className="text-3xl font-bold text-[#0F3D91]">
 
-  <h1 className="text-2xl font-bold">
+            Question Papers
 
-    Question Papers
+          </h1>
 
-  </h1>
+          <p className="text-slate-500 mt-2">
 
-  <a
-    href="/admin"
-    className="bg-black text-white px-4 py-2 rounded-xl"
-  >
+            Build reusable papers for exams
 
-    Dashboard
-
-  </a>
-
-</div>
-
-          <div className="flex flex-wrap gap-3">
-
-            <Link
-              href="/admin"
-              className="bg-white border px-4 py-2 rounded-xl"
-            >
-              Dashboard
-            </Link>
-
-            <Link
-              href="/admin/questions"
-              className="bg-white border px-4 py-2 rounded-xl"
-            >
-              Questions
-            </Link>
-
-            <Link
-              href="/admin/users"
-              className="bg-white border px-4 py-2 rounded-xl"
-            >
-              Users
-            </Link>
-
-            <Link
-              href="/admin/leaderboards"
-              className="bg-white border px-4 py-2 rounded-xl"
-            >
-              Leaderboards
-            </Link>
-
-            <Link
-              href="/admin/papers"
-              className="bg-black text-white px-4 py-2 rounded-xl"
-            >
-              Question Papers
-            </Link>
-
-          </div>
+          </p>
 
         </div>
 
-        {/* CREATE PAPER */}
+        <div className="flex gap-3">
 
-        <div className="bg-white border rounded-2xl p-6 mb-10">
+          <button
 
-          <h2 className="text-2xl font-bold mb-3">
-            Create Question Paper
-          </h2>
+            onClick={loadPapers}
 
-          <div className="grid gap-2">
+            className="border rounded-xl px-4 py-3 flex items-center gap-2 hover:bg-slate-50"
 
-            <input
-              type="text"
-              placeholder="Paper Title"
-              value={title}
-              onChange={(e) =>
-                setTitle(
-                  e.target.value
-                )
-              }
-              className="border p-3 rounded-xl"
-            />
+          >
 
-            <input
-              type="text"
-              placeholder="Subject"
-              value={subject}
-              onChange={(e) =>
-                setSubject(
-                  e.target.value
-                )
-              }
-              className="border p-3 rounded-xl"
-            />
+            <RefreshCw size={18} />
 
-            <input
-              type="text"
-              placeholder="Class"
-              value={paperClass}
-              onChange={(e) =>
-                setPaperClass(
-                  e.target.value
-                )
-              }
-              className="border p-3 rounded-xl"
-            />
+            Refresh
 
-            <input
-              type="number"
-              placeholder="Duration (Minutes)"
-              value={duration}
-              onChange={(e) =>
-                setDuration(
-                  e.target.value
-                )
-              }
-              className="border p-3 rounded-xl"
-            />
+          </button>
 
-            <input
-              type="number"
-              placeholder="Total Questions"
-              value={totalQuestions}
-              onChange={(e) =>
-                setTotalQuestions(
-                  e.target.value
-                )
-              }
-              className="border p-3 rounded-xl"
-            />
+          <Link
 
-            <button
-              onClick={createPaper}
-              className="bg-black text-white px-6 py-3 rounded-xl"
-            >
-              Create Paper
-            </button>
+            href="/admin/papers/new"
 
-          </div>
+            className="bg-[#0F3D91] text-white rounded-xl px-5 py-3 flex items-center gap-2 hover:bg-[#0C3278]"
 
-        </div>
+          >
 
-        {/* PAPERS LIST */}
+            <Plus size={18} />
 
-        <div className="space-y-4">
+            New Paper
 
-          {papers.map((paper) => (
-
-            <div
-              key={paper.id}
-              className="bg-white border rounded-2xl p-6"
-            >
-
-              <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2">
-
-                <div>
-
-                  <h2 className="text-2xl font-bold">
-                    {paper.title}
-                  </h2>
-
-                  <p className="text-brand mt-2">
-                    Subject:
-                    {" "}
-                    {paper.subject}
-                  </p>
-
-                  <p className="text-brand">
-                    Class:
-                    {" "}
-                    {paper.class}
-                  </p>
-
-                </div>
-
-                <div className="text-right">
-
-                  <p className="font-bold text-lg">
-                    {paper.duration}
-                    {" "}
-                    mins
-                  </p>
-
-                  <p className="text-tcd-primary">
-                    Duration
-                  </p>
-
-                  <p className="font-bold text-lg mt-3">
-                    {paper.total_questions}
-                  </p>
-
-                  <p className="text-tcd-primary">
-                    Questions
-                  </p>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          ))}
+          </Link>
 
         </div>
 
       </div>
 
-    </main>
+      <PaperStats
+
+        total={papers.length}
+
+        drafts={
+          papers.filter(
+            p => p.status === "Draft"
+          ).length
+        }
+
+        published={
+          papers.filter(
+            p => p.status === "Published"
+          ).length
+        }
+
+        archived={
+          papers.filter(
+            p => p.status === "Archived"
+          ).length
+        }
+
+      />
+
+      <PaperFilters
+
+        search={search}
+        setSearch={setSearch}
+
+        subject={subject}
+        setSubject={setSubject}
+
+        status={status}
+        setStatus={setStatus}
+
+      />
+
+      <PaperTable
+
+        papers={filtered}
+
+        loading={loading}
+
+      />
+
+    </div>
+
   );
+
 }
