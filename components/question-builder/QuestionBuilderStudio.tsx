@@ -29,13 +29,15 @@ export default function QuestionBuilderStudio() {
 
           metadata={<MetadataBar />}
 
-          editor={
-            <RichEditor
-              label="Question (English)"
-              value=""
-              onChange={() => {}}
-            />
-          }
+        editor={
+  <QuestionEditor
+    questionEn=""
+    setQuestionEn={() => {}}
+    questionHi=""
+    setQuestionHi={() => {}}
+    setActiveField={() => {}}
+  />
+}
 
           preview={
             <QuestionPreview
@@ -44,15 +46,17 @@ export default function QuestionBuilderStudio() {
             />
           }
 
-          options={
-            <OptionEditor
-              optionsEn={["","","",""]}
-              optionsHi={["","","",""]}
-              setOptionsEn={()=>{}}
-              setOptionsHi={()=>{}}
-              setActiveField={()=>{}}
-            />
-          }
+         options={
+  <OptionEditor
+    optionsEn={["", "", "", ""]}
+    optionsHi={["", "", "", ""]}
+    updateOptionEn={() => {}}
+    updateOptionHi={() => {}}
+    correctAnswer=""
+    setCorrectAnswer={() => {}}
+    setActiveField={() => {}}
+  />
+}
 
           explanation={
             <div className="bg-white rounded-3xl h-96" />

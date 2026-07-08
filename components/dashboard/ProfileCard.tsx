@@ -7,12 +7,13 @@ import {
 
 import { supabase }
 from "@/lib/supabase/client";
-
+import { getWallet } from "@/services/wallet.service";
 export default function ProfileCard() {
 
   const [profile, setProfile] =
     useState<any>(null);
-
+const [wallet, setWallet] =
+  useState<any>(null);
   useEffect(() => {
 
     async function loadProfile() {
@@ -37,6 +38,11 @@ export default function ProfileCard() {
         .single();
 
       setProfile(data);
+      const {
+  data: walletData,
+} = await getWallet(user.id);
+
+setWallet(walletData);
     }
 
     loadProfile();
@@ -116,7 +122,35 @@ export default function ProfileCard() {
         </div>
 
       </div>
+<div className="mt-6 bg-gray-50 rounded-2xl p-4">
+  <h3 className="font-bold mb-3">
+    Wallet
+  </h3>
 
+  <div className="grid grid-cols-2 gap-4">
+
+    <div>
+      <p className="text-sm text-gray-500">
+        Available
+      </p>
+
+      <p className="text-xl font-bold">
+        ₹ {(wallet?.available_balance ?? 0) / 100}
+      </p>
+    </div>
+
+    <div>
+      <p className="text-sm text-gray-500">
+        Bonus
+      </p>
+
+      <p className="text-xl font-bold">
+        ₹ {(wallet?.bonus_balance ?? 0) / 100}
+      </p>
+    </div>
+
+  </div>
+</div>
       {/* BADGES */}
 
       <div>

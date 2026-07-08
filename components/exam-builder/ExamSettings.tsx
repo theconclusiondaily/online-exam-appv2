@@ -58,7 +58,32 @@ export default function ExamSettings({
             className="w-full border rounded-2xl p-3"
           />
         </div>
+<div>
 
+  <label className="font-semibold block mb-2">
+    Entry Fee (₹)
+  </label>
+
+  <input
+    type="number"
+    min={0}
+    step={1}
+    value={exam.entry_fee / 100}
+    onChange={(e) =>
+      updateField(
+        "entry_fee",
+        Math.round(Number(e.target.value) * 100)
+      )
+    }
+    className="w-full border rounded-2xl p-3"
+    placeholder="0"
+  />
+
+  <p className="text-sm text-gray-500 mt-1">
+    Enter 0 for free exams.
+  </p>
+
+</div>
       </div>
 
       <div className="mt-6">

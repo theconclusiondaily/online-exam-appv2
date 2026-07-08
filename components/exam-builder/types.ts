@@ -21,6 +21,8 @@ export interface ExamForm {
 
   duration: number;
 
+  entry_fee: number;
+
   reward_pool: number;
 
   scholarship_enabled: boolean;

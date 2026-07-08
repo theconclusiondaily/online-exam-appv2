@@ -1,5 +1,5 @@
-import Sidebar from "@/components/dashboard/Sidebar";
-import Navbar from "@/components/dashboard/Navbar";
+import Sidebar from "@/components/teacher/Sidebar";
+import Navbar from "@/components/teacher/Navbar";
 
 export default function TeacherLayout({
   children,

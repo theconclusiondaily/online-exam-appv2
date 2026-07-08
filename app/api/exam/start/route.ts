@@ -123,8 +123,10 @@ if (submittedSession) {
   published,
   start_time,
   end_time,
-  institute_id
+  institute_id,
+  entry_fee
 `)
+
       .eq("id", examId)
       .maybeSingle();
 
@@ -180,7 +182,78 @@ if (
         { status: 403 }
       );
     }
+    
+// ======================================
+// ENTRY FEE VALIDATION
+// ======================================
 
+if (exam.entry_fee > 0) {
+
+  const {
+    data: wallet,
+    error: walletError,
+  } = await supabase
+    .from("tcd_wallets")
+    .select("available_balance")
+    .eq("user_id", user.id)
+    .single();
+
+  if (walletError || !wallet) {
+
+    return NextResponse.json(
+      {
+        error: "Wallet not found",
+      },
+      {
+        status: 404,
+      }
+    );
+
+  }
+
+  if (wallet.available_balance < exam.entry_fee) {
+
+    return NextResponse.json(
+      {
+        error:
+          "Insufficient wallet balance",
+      },
+      {
+        status: 400,
+      }
+    );
+
+  }
+
+  const {
+    error: debitError,
+  } = await supabase.rpc(
+    "debit_wallet",
+    {
+      p_user_id: user.id,
+      p_amount: exam.entry_fee,
+      p_transaction_type: "ENTRY_FEE",
+      p_exam_id: exam.id,
+    }
+  );
+
+  if (debitError) {
+
+    console.error(debitError);
+
+    return NextResponse.json(
+      {
+        error:
+          "Unable to deduct entry fee",
+      },
+      {
+        status: 500,
+      }
+    );
+
+  }
+
+}
     // CREATE SESSION TOKEN
     const sessionToken = crypto.randomUUID();
 

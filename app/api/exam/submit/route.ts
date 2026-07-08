@@ -598,7 +598,35 @@ if (existingAttempt) {
       "ATTEMPT ERROR:",
       attemptError
     );
+const { error: leaderboardError } = await supabase
+  .from("leaderboard")
+  .upsert(
+    {
+      user_id: user.id,
+      exam_id: examId,
+      score: totalScore,
+      correct_answers: correctCount,
+      wrong_answers: wrongCount,
+      percentile: percentage, // We'll improve this later
+      time_taken: timeTaken,
+    },
+    {
+      onConflict: "exam_id,user_id",
+    }
+  );
 
+if (leaderboardError) {
+  console.error("LEADERBOARD ERROR:", leaderboardError);
+
+  return NextResponse.json(
+    {
+      error: leaderboardError.message,
+    },
+    {
+      status: 500,
+    }
+  );
+}
     if (attemptError) {
   return NextResponse.json(
     {

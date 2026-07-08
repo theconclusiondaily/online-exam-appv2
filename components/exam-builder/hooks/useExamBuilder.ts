@@ -20,6 +20,8 @@ export function useExamBuilder() {
 
       duration: 60,
 
+      entry_fee: 0,
+
       reward_pool: 0,
 
       scholarship_enabled: false,

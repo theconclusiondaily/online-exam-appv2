@@ -20,7 +20,7 @@ import {
 } from "@/lib/examStatus";
 import DashboardHero
 from "@/components/dashboard/DashboardHero";
-import WalletCard from "@/components/dashboard/WalletCard";
+import WalletCard from "@/components/wallet/WalletCard";
 import DailyRewardCard from "@/components/dashboard/DailyRewardCard";
 import AchievementCard from "@/components/dashboard/AchievementCard";
 import StudyStreakCard from "@/components/dashboard/StudyStreakCard";
@@ -2077,15 +2077,6 @@ const handleClaimReward =
   >
 
     <WalletCard
-      balance={
-        wallet?.current_balance || 0
-      }
-      lifetime={
-        wallet?.lifetime_earned || 0
-      }
-      lastEarned={
-        lastEarned?.credits || 0
-      }
     />
 
     <div

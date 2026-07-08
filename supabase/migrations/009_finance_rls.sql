@@ -1,0 +1,18 @@
+-- ============================================================================
+-- 009_finance_rls.sql
+-- THE CONCLUSION DAILY (TCD)
+-- Finance Security & Row Level Security
+--
+-- NOTE:
+-- This migration will be generated after the finance schema and functions
+-- are finalized and verified.
+--
+-- It will include:
+-- 1. Enable RLS on finance tables
+-- 2. Wallet policies
+-- 3. Transaction policies
+-- 4. Withdrawal request policies
+-- 5. Razorpay payout policies
+-- 6. Function GRANT/REVOKE statements
+-- 7. Service role permissions
+-- ============================================================================
