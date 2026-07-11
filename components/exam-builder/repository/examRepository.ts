@@ -1,6 +1,11 @@
 import { supabase } from "@/lib/supabase/client";
 import { EXAM_STATUS } from "../services/examStatus";
-
+import { getExamStatus } from "@/lib/examLifecycle";
+import {
+  canPublish,
+  canCancel,
+  canDelete,
+} from "@/lib/examRules";
 export const examRepository = {
 
   async getAll() {
@@ -51,66 +56,159 @@ export const examRepository = {
     return data;
   },
 
- async publish(id: string) {
+async publish(id: string) {
 
-  const { data, error } = await supabase
+  const {
+    data: exam,
+    error: loadError,
+  } = await supabase
+    .from("exams")
+    .select(`
+  start_time,
+  end_time,
+  cancelled,
+  results_finalized
+`)
+    .eq("id", id)
+    .single();
+
+  if (loadError) {
+    throw loadError;
+  }
+const check = canPublish(exam);
+
+if (!check.allowed) {
+  throw new Error(check.message);
+}
+  const status = getExamStatus(
+    exam.start_time,
+    exam.end_time,
+    false
+  );
+
+  const {
+    data,
+    error,
+  } = await supabase
     .from("exams")
     .update({
+
       published: true,
+
       cancelled: false,
-      status: "Published",
+
+      status,
+
     })
     .eq("id", id)
-    .select();
+    .select()
+    .single();
 
-  console.log("Publish Result:", data);
-  console.log("Publish Error:", error);
-
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   return data;
 },
 
   async cancel(id: string) {
-    const { error } = await supabase
-      .from("exams")
-      .update({
-        cancelled: true,
-        status: EXAM_STATUS.CANCELLED,
-      })
-      .eq("id", id);
+const {
+  data: exam,
+  error: loadError,
+} = await supabase
+  .from("exams")
+  .select(`
+    results_finalized,
+    cancelled
+  `)
+  .eq("id", id)
+  .single();
 
-    if (error) throw error;
-  },
+if (loadError) {
+  throw loadError;
+}
+const check = canCancel(exam);
 
-  async archive(id: string) {
-    const { error } = await supabase
-      .from("exams")
-      .update({
-        status: EXAM_STATUS.ARCHIVED,
-      })
-      .eq("id", id);
-
-    if (error) throw error;
-  },
-
-  async delete(id: string) {
-    const { error } = await supabase
-      .from("exams")
-      .delete()
-      .eq("id", id);
-
-    if (error) throw error;
-  },
-async getPublished() {
-
+if (!check.allowed) {
+  throw new Error(check.message);
+}
   const { data, error } = await supabase
     .from("exams")
-    .select("*")
-    .eq("published", true)
-    .order("start_time", {
-      ascending: true,
-    });
+    
+    .update({
+      published: false,
+      cancelled: true,
+      status: EXAM_STATUS.CANCELLED,
+    })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return data;
+
+},
+
+  
+
+  async delete(id: string) {
+
+  // -----------------------------------
+  // Prevent deleting exams with attempts
+  // -----------------------------------
+
+  const {
+    count: attemptCount,
+    error: attemptError,
+  } = await supabase
+    .from("exam_attempts")
+    .select("*", {
+      head: true,
+      count: "exact",
+    })
+    .eq("exam_id", id);
+
+  if (attemptError) {
+    throw attemptError;
+  }
+const check = canDelete(
+  attemptCount ?? 0
+);
+
+if (!check.allowed) {
+  throw new Error(check.message);
+}
+
+  // -----------------------------------
+  // Delete Exam
+  // -----------------------------------
+
+  const { error } = await supabase
+    .from("exams")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    throw error;
+  }
+
+},
+async getPublished() {
+
+  const { data, error } =
+    await supabase
+      .from("exams")
+      .select("*")
+      .eq("published", true)
+      .eq("cancelled", false)
+      .in("status", [
+        EXAM_STATUS.SCHEDULED,
+        EXAM_STATUS.LIVE,
+      ])
+      .order("start_time", {
+        ascending: true,
+      });
 
   if (error) throw error;
 

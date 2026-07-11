@@ -286,17 +286,50 @@ if (editId) {
 const { data: exam } =
   await supabase
     .from("exams")
-    .select("published")
+    .select(`
+      published,
+      cancelled,
+      results_finalized,
+      status
+    `)
     .eq("id", editId)
     .maybeSingle();
 
-if (exam?.published) {
+if (!exam) {
 
-  alert(
-  "Published exams cannot be edited"
-);
+  alert("Exam not found.");
 
   return;
+
+}
+
+if (exam.cancelled) {
+
+  alert("Cancelled exams cannot be edited.");
+
+  return;
+
+}
+
+if (exam.results_finalized) {
+
+  alert("Finalized exams cannot be edited.");
+
+  return;
+
+}
+
+if (
+  exam.status === "live" ||
+  exam.status === "completed"
+) {
+
+  alert(
+    "Live or completed exams cannot be edited."
+  );
+
+  return;
+
 }
   const result = await supabase
     .from("exams")

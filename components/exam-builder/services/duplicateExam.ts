@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase/client";
 import { getExam } from "./getExam";
-
+import { EXAM_STATUS } from "@/components/exam-builder/services/examStatus";
 export async function duplicateExam(id: string) {
 
   const exam = await getExam(id);
@@ -11,7 +11,7 @@ export async function duplicateExam(id: string) {
 
   exam.title = `${exam.title} (Copy)`;
   exam.published = false;
-  exam.status = "Draft";
+  exam.status = EXAM_STATUS.DRAFT;
 
   const { data, error } = await supabase
     .from("exams")

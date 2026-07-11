@@ -1,18 +1,14 @@
 export const EXAM_STATUS = {
 
-  DRAFT: "Draft",
+  DRAFT: "draft",
 
-  PUBLISHED: "Published",
+  SCHEDULED: "scheduled",
 
-  SCHEDULED: "Scheduled",
+  LIVE: "live",
 
-  LIVE: "Live",
+  COMPLETED: "completed",
 
-  COMPLETED: "Completed",
-
-  CANCELLED: "Cancelled",
-
-  ARCHIVED: "Archived",
+  CANCELLED: "cancelled",
 
 } as const;
 

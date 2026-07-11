@@ -15,9 +15,6 @@ import { TCDIcons }
 from "@/components/ui/tcd-icons";
 import { supabase }
 from "@/lib/supabase/client";
-import {
-  updateExamStatuses,
-} from "@/lib/examStatus";
 import DashboardHero
 from "@/components/dashboard/DashboardHero";
 import WalletCard from "@/components/wallet/WalletCard";
@@ -47,9 +44,6 @@ import {
 import AchievementPopup
 from "@/components/dashboard/AchievementPopup";
 import TCDLoader from "@/components/common/TCDLoader";
-import {
-  getExamStatus
-} from "@/lib/getExamStatus";
 import {
   demoDashboard,
   demoAchievements,
@@ -275,10 +269,7 @@ const levelTitle =
  
 
     async function loadDashboard() 
-    { await updateExamStatuses();
-
-
-
+    { 
    const {
   data: { user },
 } = await supabase.auth.getUser();
@@ -1332,7 +1323,7 @@ setRanks(rankMap);
       }
     // CURRENT TIME
 
-const now = new Date().toISOString();
+
 
 // LIVE EXAMS
 
@@ -1342,12 +1333,12 @@ const {
   .from("exams")
   .select("*")
   .eq("published", true)
-  .lte("start_time", now)
-  .gte("end_time", now)
+  .eq("cancelled", false)
+  .eq("status", "live")
   .order("start_time", {
     ascending: true,
   });
-console.log("NOW:", now);
+
 console.log("ALL LIVE EXAMS:", allLiveExams);
 const filteredLiveExams =
   (allLiveExams || []).filter(
@@ -1366,7 +1357,8 @@ const {
   .from("exams")
   .select("*")
   .eq("published", true)
-  .gt("start_time", now)
+  .eq("cancelled", false)
+  .eq("status", "scheduled")
   .order("start_time", {
     ascending: true,
   });
