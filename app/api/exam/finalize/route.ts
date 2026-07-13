@@ -74,10 +74,12 @@ if (profile.role !== "admin") {
       .from("exams")
 
       .select(`
-        id,
-        end_time,
-        results_finalized
-      `)
+  id,
+  end_time,
+  results_finalized,
+  cancelled,
+  status
+`)
 
       .eq("id", examId)
 
@@ -95,6 +97,31 @@ if (profile.role !== "admin") {
       );
 
     }
+    if (exam.cancelled) {
+
+  return NextResponse.json(
+    {
+      error: "Cancelled exams cannot be finalized.",
+    },
+    {
+      status: 400,
+    }
+  );
+
+}
+
+if (exam.status !== "completed") {
+
+  return NextResponse.json(
+    {
+      error: "Only completed exams can be finalized.",
+    },
+    {
+      status: 400,
+    }
+  );
+
+}
 
     // ==========================================
     // Exam still running?

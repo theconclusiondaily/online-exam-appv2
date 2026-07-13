@@ -342,7 +342,7 @@ Compete.
 Achieve Greatness.
             </h1>
 
-            <p className="mt-6 text-lg text-tcd-muted max-w-2xl">
+            <p className="mt-6 text-lg text-[#D4AF37] max-w-2xl">
               Notes, PYQs, Practice Sheets, Live Exams, Rankings,
               Achievements and TCD Credits — all in one powerful ecosystem.
             </p>
@@ -477,7 +477,7 @@ Achieve Greatness.
         Why Students Choose TCD
       </h2>
 
-      <p className="mt-4 text-lg text-tcd-muted max-w-3xl mx-auto">
+      <p className="mt-4 text-lg text-[#D4AF37] max-w-3xl mx-auto">
         Everything you need to learn, compete, grow and achieve greatness —
         all inside one powerful ecosystem.
       </p>
@@ -539,7 +539,7 @@ Achieve Greatness.
 
           </h3>
 
-          <p className="mt-3 text-tcd-muted leading-relaxed">
+          <p className="mt-3 text-white leading-relaxed">
 
             {feature.description}
 
@@ -573,7 +573,7 @@ Achieve Greatness.
 
       </h2>
 
-      <p className="mt-4 text-lg text-tcd-muted">
+      <p className="mt-4 text-lg text-[#D4AF37]">
 
         Earn prestigious badges and showcase your mastery.
 
@@ -686,7 +686,7 @@ Achieve Greatness.
             a Top Ranker?
           </h2>
 
-          <p className="mt-8 text-xl text-tcd-muted">
+          <p className="mt-8 text-xl text-[#D4AF37]">
             Join thousands of aspirants already competing on
             The Conclusion Daily.
           </p>

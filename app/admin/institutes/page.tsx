@@ -6,7 +6,7 @@ import {
 } from "react";
 
 import AdminGuard from "@/components/AdminGuard";
-
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { supabase }
 from "@/lib/supabase/client";
 
@@ -138,7 +138,10 @@ setJoinCode("");
         <div className="max-w-6xl mx-auto">
 
           <div className="flex justify-between items-center mb-4">
-
+<AdminPageHeader
+  title="Institutes"
+  description="Manage partner institutes."
+/>
             <h1 className="text-2xl font-bold">
 
               Institutes

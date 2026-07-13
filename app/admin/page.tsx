@@ -129,23 +129,23 @@ const exams =
         attemptsCount || 0
       );
 
-      // LIVE EXAMS
+   // LIVE EXAMS
 
-      const now =
-        new Date()
-          .toISOString();
+const {
+  data: liveExamData,
+  error: liveExamError,
+} = await supabase
+  .from("exams")
+  .select("id")
+  .eq("published", true)
+  .eq("cancelled", false)
+  .eq("status", "live");
 
-      const {
-        data: liveExamData,
-      } = await supabase
-        .from("exams")
-        .select("*")
-        .lte("start_time", now)
-        .gte("end_time", now);
+if (liveExamError) {
+  throw liveExamError;
+}
 
-      setLiveExams(
-        liveExamData?.length || 0
-      );
+setLiveExams(liveExamData?.length ?? 0);
 
 
 

@@ -1,11 +1,13 @@
 "use client";
 interface Props {
   onSave: () => void;
+  onPublish: () => void;
 }
 import { Save, Send } from "lucide-react";
 
 export default function PaperHeader({
   onSave,
+  onPublish,
 }: Props) {
   return (
     <div className="rounded-3xl bg-[#0F3D91] text-white p-8">
@@ -40,13 +42,13 @@ export default function PaperHeader({
 
           </button>
 
-          <button className="bg-yellow-400 text-black px-6 py-3 rounded-xl font-semibold flex items-center gap-2">
-
-            <Send size={18} />
-
-            Publish
-
-          </button>
+         <button
+  onClick={onPublish}
+  className="bg-yellow-400 text-black px-6 py-3 rounded-xl font-semibold flex items-center gap-2"
+>
+  <Send size={18} />
+  Publish
+</button>
 
         </div>
 

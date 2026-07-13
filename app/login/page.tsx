@@ -335,54 +335,23 @@ if (levelInsertError) {
 
 // CREATE WALLET IF MISSING
 
-const { data: existingWallet } = await supabase
-  .from("tcd_wallets")
-  .select("user_id")
-  .eq("user_id", user.id)
-  .maybeSingle();
-
-if (!existingWallet) {
-
 const {
-  error: walletInsertError,
-} = await supabase
-  .from("tcd_wallets")
-  .insert({
+  error: initError,
+} = await supabase.rpc(
+  "initialize_new_user",
+  {
+    p_user_id: user.id,
+  }
+);
 
-    user_id: user.id,
-
-    current_balance: 0,
-
-    lifetime_earned: 0,
-
-    updated_at: new Date().toISOString(),
-
-  });
-
-if (walletInsertError) {
+if (initError) {
 
   console.error(
-    "WALLET INSERT ERROR:",
-    walletInsertError
+    "USER INITIALIZATION ERROR:",
+    initError
   );
 
 }
- try {
-
-  await processReferral(
-    user.id,
-    user.user_metadata?.referred_by
-  );
-
-} catch (err) {
-
-  console.error(
-    "PROCESS REFERRAL ERROR:",
-    err
-  );
-
-}
-}  
 
 const {
   data: existingReferral,

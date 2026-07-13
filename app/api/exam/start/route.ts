@@ -124,6 +124,7 @@ if (submittedSession) {
   start_time,
   end_time,
   institute_id,
+  exam_scope,
   entry_fee
 `)
 
@@ -139,20 +140,27 @@ if (submittedSession) {
         { status: 404 }
       );
     }
-if (
-  exam.institute_id !==
-  profileData.institute_id
-) {
+// Allow all PUBLIC exams
 
-  return NextResponse.json(
-    {
-      error:
-        "Unauthorized institute access",
-    },
-    {
-      status: 403,
-    }
-  );
+if (exam.exam_scope !== "PUBLIC") {
+
+  if (
+    exam.institute_id !==
+    profileData.institute_id
+  ) {
+
+    return NextResponse.json(
+      {
+        error:
+          "Unauthorized institute access",
+      },
+      {
+        status: 403,
+      }
+    );
+
+  }
+
 }
     const now = new Date();
 

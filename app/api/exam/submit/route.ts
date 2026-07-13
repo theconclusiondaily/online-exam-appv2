@@ -81,11 +81,15 @@ const {
   .from("exams")
 
   .select(`
-    id,
-    institute_id,
-    start_time,
-    end_time
-  `)
+  id,
+  duration,
+  published,
+  start_time,
+  end_time,
+  institute_id,
+  exam_scope,
+  entry_fee
+`)
 
   .eq("id", examId)
 
@@ -100,20 +104,29 @@ if (examError || !exam) {
     }
   );
 }
-  if (
-  exam?.institute_id !==
-  profileData.institute_id
-) {
+  // PUBLIC exams are open to all authenticated users.
+// Institute exams require the student to belong
+// to the same institute.
 
-  return NextResponse.json(
-    {
-      error:
-        "Unauthorized institute access",
-    },
-    {
-      status: 403,
-    }
-  );
+if (exam.exam_scope !== "PUBLIC") {
+
+  if (
+    exam.institute_id !==
+    profileData.institute_id
+  ) {
+
+    return NextResponse.json(
+      {
+        error:
+          "Unauthorized institute access",
+      },
+      {
+        status: 403,
+      }
+    );
+
+  }
+
 }
 const now = new Date();
 

@@ -1,5 +1,8 @@
 import { EXAM_STATUS } from "@/components/exam-builder/services/examStatus";
-
+type RuleResult = {
+  allowed: boolean;
+  message?: string;
+};
 export function canPublish(exam: any) {
 
   if (exam.cancelled) {
@@ -83,6 +86,50 @@ export function canDelete(
       allowed: false,
       message:
         "Cannot delete an exam that has participants.",
+    };
+  }
+
+  return {
+    allowed: true,
+  };
+
+}
+export function canFinalize(
+  exam: any
+): RuleResult {
+
+  if (exam.cancelled) {
+    return {
+      allowed: false,
+      message: "Cancelled exams cannot be finalized.",
+    };
+  }
+
+  if (exam.results_finalized) {
+    return {
+      allowed: false,
+      message: "Results are already finalized.",
+    };
+  }
+
+  return {
+    allowed: true,
+  };
+
+}
+export function canCancelPaidExam(
+  entryFee: number,
+  participantCount: number
+): RuleResult {
+
+  if (
+    entryFee > 0 &&
+    participantCount > 0
+  ) {
+    return {
+      allowed: false,
+      message:
+        "Paid exams with participants cannot be cancelled until refunds are processed.",
     };
   }
 

@@ -119,7 +119,6 @@ console.log(
 }, []);
 
 useEffect(() => {
-
   if (!editId) return;
 
   async function loadExam() {
@@ -366,7 +365,18 @@ end_time:
   error = result.error;
 
 } else {
+console.log("startTime input:", startTime);
+console.log("endTime input:", endTime);
 
+console.log(
+  "startTime ISO:",
+  new Date(startTime).toISOString()
+);
+
+console.log(
+  "endTime ISO:",
+  new Date(endTime).toISOString()
+);
   const result = await supabase
     .from("exams")
     .insert({

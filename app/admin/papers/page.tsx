@@ -10,7 +10,7 @@ import { getPapers } from "@/components/paper-builder/services/paperService";
 import PaperStats from "@/components/paper-builder/PaperStats";
 import PaperFilters from "@/components/paper-builder/PaperFilters";
 import PaperTable from "@/components/paper-builder/PaperTable";
-import PaperCard from "@/components/paper-builder/PaperCard";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 export default function PaperListPage() {
 
   const [papers, setPapers] =
@@ -83,7 +83,10 @@ export default function PaperListPage() {
   return (
 
     <div className="p-8">
-
+<AdminPageHeader
+  title="Create Paper"
+  description="Create and manage question papers."
+/>
       {/* Header */}
 
       <div className="flex justify-between items-center mb-8">

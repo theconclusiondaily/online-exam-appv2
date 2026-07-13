@@ -66,36 +66,89 @@ if (!profileData?.institute_id) {
     } = await req.json();
 const {
   data: exam,
+  error: examError,
 } = await supabase
 
   .from("exams")
 
   .select(`
     id,
-    institute_id
+    duration,
+    published,
+    start_time,
+    end_time,
+    institute_id,
+    exam_scope,
+    entry_fee
   `)
 
-  .eq(
-    "id",
-    examId
-  )
+  .eq("id", examId)
 
   .single();
+if (examError || !exam) {
 
-  if (
-  exam?.institute_id !==
-  profileData.institute_id
-) {
+
 
   return NextResponse.json(
+
     {
-      error:
-        "Unauthorized institute access",
+
+      error: "Exam not found",
+
     },
+
     {
-      status: 403,
+
+      status: 404,
+
     }
+
   );
+
+
+
+}
+
+
+
+if (exam.exam_scope !== "PUBLIC") {
+
+
+
+  if (
+
+    exam.institute_id !==
+
+    profileData.institute_id
+
+  ) {
+
+
+
+    return NextResponse.json(
+
+      {
+
+        error:
+
+          "Unauthorized institute access",
+
+      },
+
+      {
+
+        status: 403,
+
+      }
+
+    );
+
+
+
+  }
+
+
+
 }
     const {
       data: session,

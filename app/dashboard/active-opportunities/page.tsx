@@ -16,9 +16,8 @@ from "@/components/dashboard/LiveExamsSection";
 import { TCDIcons }
 from "@/components/ui/tcd-icons";
 import TCDLoader from "@/components/common/TCDLoader";
-import {
-  getExamStatus
-} from "@/lib/getExamStatus";
+import { updateExamStatuses }
+from "@/lib/examStatus";
 export default function ActiveOpportunitiesPage() {
 
   const [loading,
@@ -91,7 +90,7 @@ export default function ActiveOpportunitiesPage() {
       setLiveExams([]);
       return;
     }
-
+await updateExamStatuses();
     // FETCH ONLY SAME INSTITUTE EXAMS
 
     const {
@@ -105,20 +104,9 @@ export default function ActiveOpportunitiesPage() {
         *
       `)
 
-      .eq(
-        "published",
-        true
-      )
-
-      .eq(
-        "institute_id",
-        profile.institute_id
-      )
-
-      .gte(
-        "end_time",
-        now
-      )
+          .eq("published", true)
+.eq("cancelled", false)
+.eq("status", "live")
 
       .order(
         "start_time",
@@ -135,6 +123,10 @@ export default function ActiveOpportunitiesPage() {
 
       return;
     }
+console.log("PROFILE", profile);
+
+console.log("ALL EXAMS", data);
+
 
     setLiveExams(
       data || []

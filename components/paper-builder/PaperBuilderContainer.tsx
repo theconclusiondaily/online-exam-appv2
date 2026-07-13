@@ -46,22 +46,60 @@ export default function PaperBuilderContainer() {
       alert("Failed to save paper.");
     }
   }
+async function handlePublish() {
 
+  try {
+
+    // Always save latest selected questions first
+    await handleSave();
+
+    const response = await fetch(
+      "/api/papers/publish",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: paperId,
+        }),
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.error);
+    }
+
+    alert("Paper published successfully.");
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert("Failed to publish paper.");
+
+  }
+
+}
   return (
     <div className="p-8 space-y-8">
 
-      <PaperHeader
-        onSave={handleSave}
-      />
+     <PaperHeader
+  onSave={handleSave}
+  onPublish={handlePublish}
+/>
 
       <div className="grid grid-cols-2 gap-8">
 <div className="mt-8">
 
   <PaperSavePanel
-    totalQuestions={paper.totalQuestions}
-    totalMarks={paper.totalMarks}
-    onSave={handleSave}
-  />
+  totalQuestions={paper.totalQuestions}
+  totalMarks={paper.totalMarks}
+  onSave={handleSave}
+  onPublish={handlePublish}
+/>
 
 </div>
         {/* LEFT PANEL */}

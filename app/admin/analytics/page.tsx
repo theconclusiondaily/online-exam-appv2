@@ -6,7 +6,7 @@ import {
 } from "react";
 
 import AdminGuard from "@/components/AdminGuard";
-
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { supabase }
 from "@/lib/supabase/client";
 
@@ -200,7 +200,10 @@ export default function AnalyticsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           <div className="flex justify-between items-center mb-4">
-
+<AdminPageHeader
+  title="Analytics"
+  description="Manage Analytics"
+/>
   <h1 className="text-2xl font-bold">
 
     Analytics

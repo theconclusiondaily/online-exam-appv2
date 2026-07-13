@@ -24,7 +24,7 @@ export default function PaperSavePanel({
 
       <h2 className="text-2xl font-black text-tcd-blue mb-6">
 
-        Paper Summary
+        Paper Summary 
 
       </h2>
 
@@ -106,7 +106,10 @@ export default function PaperSavePanel({
         {onPublish && (
 
           <button
-            onClick={onPublish}
+            onClick={() => {
+  console.log("PUBLISH BUTTON CLICKED");
+  onPublish?.();
+}}
             disabled={!ready}
             className="
               flex-1

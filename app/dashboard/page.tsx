@@ -15,6 +15,7 @@ import { TCDIcons }
 from "@/components/ui/tcd-icons";
 import { supabase }
 from "@/lib/supabase/client";
+import { updateExamStatuses } from "@/lib/examStatus";
 import DashboardHero
 from "@/components/dashboard/DashboardHero";
 import WalletCard from "@/components/wallet/WalletCard";
@@ -50,8 +51,8 @@ import {
   demoActivities,
   demoAttempts,
 } from "@/lib/demo/demoDashboard";
+
 export default function DashboardPage() {
-useInactivityLogout();
   const router =
     useRouter();
 
@@ -407,7 +408,7 @@ if (isDemo) {
 
         return;
       }
-
+await updateExamStatuses();
 await supabase.rpc(
   "award_exam_achievements",
   {

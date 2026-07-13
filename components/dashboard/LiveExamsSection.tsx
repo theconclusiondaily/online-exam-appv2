@@ -8,72 +8,69 @@ interface Props {
 export default function LiveExamsSection({
   liveExams,
 }: Props) {
+  
 const arenaExams =
   liveExams.filter(
     (exam) =>
       exam.exam_scope ===
       "PUBLIC"
   );
+  const normalizeChallengeType = (
+  value?: string | null
+) => {
+  return (value || "")
+    .trim()
+    .toUpperCase();
+};
 const dailyChallenges =
-  arenaExams.filter(
-    (exam) =>
-      !exam.challenge_type ||
-      exam.challenge_type === "NONE" ||
-      exam.challenge_type === "DAILY"
-  );
+  arenaExams.filter((exam) => {
+
+    const type =
+      normalizeChallengeType(
+        exam.challenge_type
+      );
+
+    return (
+      type === "" ||
+      type === "NONE" ||
+      type === "DAILY"
+    );
+
+  });
 
 const weeklyChallenges =
   arenaExams.filter(
     (exam) =>
-      exam.challenge_type ===
-      "WEEKLY"
+      normalizeChallengeType(
+        exam.challenge_type
+      ) === "WEEKLY"
   );
 
 const monthlyChallenges =
   arenaExams.filter(
     (exam) =>
-      exam.challenge_type ===
-      "MONTHLY"
+      normalizeChallengeType(
+        exam.challenge_type
+      ) === "MONTHLY"
   );
 
 const currentAffairsChallenges =
   arenaExams.filter(
     (exam) =>
-      exam.challenge_type ===
-      "CURRENT_AFFAIRS"
+      normalizeChallengeType(
+        exam.challenge_type
+      ) === "CURRENT_AFFAIRS"
   );
 
 const scholarshipChallenges =
   arenaExams.filter(
     (exam) =>
-      exam.challenge_type ===
-      "SCHOLARSHIP"
+      normalizeChallengeType(
+        exam.challenge_type
+      ) === "SCHOLARSHIP"
   );
   
-  console.log(
-  "Daily",
-  dailyChallenges.length
-);
-
-console.log(
-  "Weekly",
-  weeklyChallenges.length
-);
-
-console.log(
-  "Monthly",
-  monthlyChallenges.length
-);
-
-console.log(
-  "Current Affairs",
-  currentAffairsChallenges.length
-);
-
-console.log(
-  "Scholarship",
-  scholarshipChallenges.length
-);
+  
 const instituteExams =
   liveExams.filter(
     (exam) =>
@@ -112,15 +109,18 @@ const completedExams =
         exam.end_time
       ) < now
   );
-  console.log(
-  "Arena Exams",
-  arenaExams
-);
+  
 
-console.log(
-  "Institute Exams",
-  instituteExams
-);
+liveExams.forEach((exam) => {
+  console.log({
+    title: exam.title,
+    exam_scope: exam.exam_scope,
+    challenge_type: exam.challenge_type,
+    status: exam.status,
+    published: exam.published,
+  });
+});
+
 
 const renderArenaSection = (
   title: string,

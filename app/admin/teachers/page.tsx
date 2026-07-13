@@ -9,6 +9,7 @@ import Link from "next/link";
 
 import AdminGuard
 from "@/components/AdminGuard";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import TCDLoader from "@/components/common/TCDLoader";
 import { supabase }
 from "@/lib/supabase/client";
@@ -115,7 +116,10 @@ export default function TeachersPage() {
           {/* HEADER */}
 
           <div className="flex justify-between items-center mb-10">
-
+<AdminPageHeader
+  title="Teachers"
+  description="Manage teacher accounts."
+/>
             <h1 className="text-2xl font-bold">
 
               Teacher Management

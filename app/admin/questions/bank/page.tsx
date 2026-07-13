@@ -19,6 +19,7 @@ import QuestionTable from "@/components/question-builder/question-bank/QuestionT
 import BulkToolbar from "@/components/question-builder/question-bank/BulkToolbar";
 import QuestionPreviewDrawer from "@/components/question-builder/question-bank/QuestionPreviewDrawer";
 import { deleteQuestions } from "@/components/question-builder/services/deleteQuestions";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import {
   bulkDelete,
   bulkPublish,
@@ -174,7 +175,10 @@ async function handleBulkArchive() {
 
   return (
     <div className="p-8">
-
+<AdminPageHeader
+  title="Question Bank"
+  description="Manage all questions in one place."
+/>
       {/* Header */}
 
       <div className="flex justify-between items-center mb-8">

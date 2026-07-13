@@ -72,7 +72,9 @@ export function useDashboardStats(): DashboardStatsData {
         supabase
           .from("exams")
           .select("*", { count: "exact", head: true })
-          .eq("status", "Live"),
+          .eq("status", "live")
+.eq("published", true)
+.eq("cancelled", false),
 
         supabase
           .from("exam_attempts")

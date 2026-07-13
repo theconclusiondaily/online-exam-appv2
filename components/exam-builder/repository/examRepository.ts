@@ -5,6 +5,7 @@ import {
   canPublish,
   canCancel,
   canDelete,
+  canCancelPaidExam,
 } from "@/lib/examRules";
 export const examRepository = {
 
@@ -32,31 +33,68 @@ export const examRepository = {
   },
 
   async create(exam: any) {
-    const { data, error } = await supabase
-      .from("exams")
-      .insert(exam)
-      .select()
-      .single();
 
-    if (error) throw error;
+  const payload = {
 
-    return data;
-  },
+    ...exam,
 
-  async update(id: string, exam: any) {
-    const { data, error } = await supabase
-      .from("exams")
-      .update(exam)
-      .eq("id", id)
-      .select()
-      .single();
+    start_time: exam.start_time
+      ? new Date(exam.start_time).toISOString()
+      : null,
 
-    if (error) throw error;
+    end_time: exam.end_time
+      ? new Date(exam.end_time).toISOString()
+      : null,
 
-    return data;
-  },
+  };
+
+  const { data, error } = await supabase
+    .from("exams")
+    .insert(payload)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return data;
+
+},
+
+  async update(
+  id: string,
+  exam: any
+) {
+
+  const payload = {
+
+    ...exam,
+
+    start_time: exam.start_time
+      ? new Date(exam.start_time).toISOString()
+      : null,
+
+    end_time: exam.end_time
+      ? new Date(exam.end_time).toISOString()
+      : null,
+
+  };
+
+  const { data, error } = await supabase
+    .from("exams")
+    .update(payload)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return data;
+
+},
 
 async publish(id: string) {
+
+  // Keep your existing validation
 
   const {
     data: exam,
@@ -64,51 +102,54 @@ async publish(id: string) {
   } = await supabase
     .from("exams")
     .select(`
-  start_time,
-  end_time,
-  cancelled,
-  results_finalized
-`)
+      start_time,
+      end_time,
+      cancelled,
+      results_finalized
+    `)
     .eq("id", id)
     .single();
 
   if (loadError) {
     throw loadError;
   }
-const check = canPublish(exam);
 
-if (!check.allowed) {
-  throw new Error(check.message);
-}
-  const status = getExamStatus(
-    exam.start_time,
-    exam.end_time,
-    false
+  const check = canPublish(exam);
+
+  if (!check.allowed) {
+    throw new Error(check.message);
+  }
+
+  // Publish using PostgreSQL function
+
+  const { error } = await supabase.rpc(
+    "publish_exam",
+    {
+      p_exam_id: id,
+    }
   );
-
-  const {
-    data,
-    error,
-  } = await supabase
-    .from("exams")
-    .update({
-
-      published: true,
-
-      cancelled: false,
-
-      status,
-
-    })
-    .eq("id", id)
-    .select()
-    .single();
 
   if (error) {
     throw error;
   }
 
+  // Return updated exam
+
+  const {
+    data,
+    error: fetchError,
+  } = await supabase
+    .from("exams")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (fetchError) {
+    throw fetchError;
+  }
+
   return data;
+
 },
 
   async cancel(id: string) {
@@ -118,9 +159,10 @@ const {
 } = await supabase
   .from("exams")
   .select(`
-    results_finalized,
-    cancelled
-  `)
+results_finalized,
+cancelled,
+entry_fee
+`)
   .eq("id", id)
   .single();
 
@@ -131,6 +173,28 @@ const check = canCancel(exam);
 
 if (!check.allowed) {
   throw new Error(check.message);
+}
+const {
+  count,
+  error: attemptError,
+} = await supabase
+  .from("exam_attempts")
+  .select("*", {
+    head: true,
+    count: "exact",
+  })
+  .eq("exam_id", id);
+
+if (attemptError) {
+  throw attemptError;
+}
+const financeCheck = canCancelPaidExam(
+  exam.entry_fee ?? 0,
+  count ?? 0
+);
+
+if (!financeCheck.allowed) {
+  throw new Error(financeCheck.message);
 }
   const { data, error } = await supabase
     .from("exams")
