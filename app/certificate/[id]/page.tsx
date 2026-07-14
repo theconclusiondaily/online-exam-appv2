@@ -2,11 +2,24 @@ import { notFound } from "next/navigation";
 import { createClient }
 from "@/lib/supabase/server";
 import SetCertificateTitle from "@/components/certificate/SetCertificateTitle";
-import PrintButton from
-"@/components/certificate/PrintButton";
+import Link from "next/link";
 import QRCode from "qrcode";
-import DesktopCertificate from "@/components/certificate/DesktopCertificate";
-import MobileCertificate from "@/components/certificate/MobileCertificate";
+import CertificateCanvas
+from "@/components/certificate-v2/CertificateCanvas";
+
+import DownloadPdfButton
+from "@/components/certificate-v2/DownloadPdfButton";
+
+import DownloadImageButton
+from "@/components/certificate-v2/DownloadImageButton";
+
+import ShareButton
+from "@/components/certificate-v2/ShareButton";
+
+import {
+  CertificateData,
+  PrestigeLevel,
+} from "@/components/certificate-v2/types";
 export default async function CertificatePage({
   params,
 }: {
@@ -38,35 +51,7 @@ if (
 ) {
   notFound();
 }
-const {
-  data: attempt,
-} = await supabase
 
-  .from("exam_attempts")
-
-  .select(`
-    score,
-    percentage
-  `)
-
-  .eq(
-    "exam_id",
-    certificate.exam_id
-  )
-
-  .eq(
-    "user_id",
-    certificate.user_id
-  )
-
-  .order(
-    "submitted_at",
-    { ascending: false }
-  )
-
-  .limit(1)
-
-  .single();
 const {
   data: student,
 } = await supabase
@@ -91,7 +76,11 @@ const {
 
   .from("exams")
 
-  .select("title")
+  .select(`
+    title,
+    end_time,
+    review_delay_minutes
+  `)
 
   .eq(
     "id",
@@ -99,8 +88,23 @@ const {
   )
 
   .single();
+  const unlockTime = new Date(
+  exam!.end_time
+);
+
+unlockTime.setMinutes(
+  unlockTime.getMinutes() +
+  (exam!.review_delay_minutes ?? 30)
+);
+
+const certificateLocked =
+  new Date() < unlockTime;
+const appUrl =
+  process.env.NEXT_PUBLIC_APP_URL ??
+  "https://theconclusiondaily.com";
+
 const verificationUrl =
-  `https://theconclusiondaily.com/verify/${certificate.certificate_number}`;
+`${appUrl}/verify/${certificate.certificate_number}`;
 
 const qrCode =
   await QRCode.toDataURL(
@@ -112,65 +116,124 @@ const qrCode =
   );
   if (!certificate)
     notFound();
+if (certificateLocked) {
+
 
   return (
 
-    <main
-    
-            className="
-  min-h-screen
-  bg-[#243B6B]
-  flex
-  items-center
-  justify-center
-  p-6
+    <main className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
 
-  print:bg-white
-  print:p-0
-"
-    >
-      <SetCertificateTitle
+      <div className="max-w-lg bg-white rounded-3xl shadow-xl border p-8 text-center">
+
+        <h1 className="text-3xl font-black text-orange-600">
+
+          🔒 Certificate Locked
+
+        </h1>
+
+        <p className="mt-5 text-gray-600">
+
+          Your certificate will become available only after the exam has officially ended.
+
+        </p>
+
+        <div className="mt-6 rounded-2xl bg-orange-50 border p-5">
+
+          <p className="font-bold">
+
+            Available At
+
+          </p>
+
+          <p className="mt-2">
+
+            {unlockTime.toLocaleString("en-IN", {
+              timeZone: "Asia/Kolkata",
+            })}
+
+          </p>
+
+        </div>
+
+      </div>
+
+    </main>
+
+  );
+
+}
+const certificateData: CertificateData = {
+
+  id: certificate.id,
+
+  certificateNumber:
+    certificate.certificate_number,
+
+  issuedAt:
+    certificate.issued_at,
+
+  studentId:
+    certificate.user_id,
+
+  studentName:
+    student?.name ??
+    "Student",
+
+  prestige:
+    (student?.prestige_level ??
+      "Bronze") as PrestigeLevel,
+
+  examId:
+    certificate.exam_id,
+
+  examTitle:
+    exam?.title ??
+    "Exam",
+
+score:
+certificate.score ?? 0,
+
+percentage:
+certificate.percentage ?? 0,
+
+  rank:
+    certificate.rank ?? 0,
+
+  qrCode,
+
+};
+  return (
+
+    <main
+  className="
+    min-h-screen
+    bg-[#243B6B]
+    p-8
+    print:bg-white
+    print:p-0
+  "
+>
+<SetCertificateTitle
   studentName={student?.name || "Student"}
   examTitle={exam?.title || "Certificate"}
   issuedDate={new Date(certificate.issued_at).toLocaleDateString("en-GB")}
 />
-        <div
-  className="
-    p-[6px]
+<div className="max-w-7xl mx-auto">
 
-    rounded-[38px]
-
-    bg-gradient-to-br
-
-    from-[#FFF4B0]
-
-    via-[#D4AF37]
-
-    to-[#9A7315]
-
-    shadow-[0_0_60px_rgba(212,175,55,0.25)]
-
-    max-w-4xl
-
-    w-full
-  "
+<div
+className="
+grid
+lg:grid-cols-[820px_360px]
+gap-10
+items-start
+"
 >
-  <DesktopCertificate
-  certificate={certificate}
-  student={student}
-  exam={exam}
-  attempt={attempt}
-  qrCode={qrCode}
-/>
-<MobileCertificate
-    certificate={certificate}
-    student={student}
-    exam={exam}
-    attempt={attempt}
-    qrCode={qrCode}
-/>
-      </div>
-<div className="hidden lg:flex flex-col print:hidden">
+        <CertificateCanvas
+    data={certificateData}
+  />
+
+ 
+<div className=" flex flex-col gap-6 lg:flex print:hidden">
 <div
   className="
     mt-6
@@ -221,20 +284,31 @@ const qrCode =
   
   <div
     className="
-      flex
-     flex-col
-md:flex-row
+     grid grid-cols-1 gap-4
 
       justify-center
-
-      gap-4
     "
   >
 
-    <PrintButton />
+   <DownloadPdfButton
+  certificateNumber={
+    certificate.certificate_number
+  }
+/>
 
-    <a
-      href="/dashboard?tab=profile"
+<DownloadImageButton
+  certificateNumber={
+    certificate.certificate_number
+  }
+/>
+
+<ShareButton
+  certificateNumber={
+    certificate.certificate_number
+  }
+/>
+
+    <Link href="/dashboard"
       className="
         flex
         items-center
@@ -266,10 +340,9 @@ md:flex-row
 
       My Profile
 
-    </a>
+    </Link>
 
-    <a
-      href="/dashboard"
+    <Link href="/dashboard"
       className="
         flex
         items-center
@@ -305,15 +378,14 @@ md:flex-row
 
       Continue Learning
 
-    </a>
+    </Link>
 
   </div>
 
 
   <div className="flex justify-center mt-4">
 
-  <a
-    href="/dashboard"
+ <Link href="/dashboard"
     className="
       relative
 
@@ -357,20 +429,13 @@ md:flex-row
 
     Dashboard
 
-  </a>
+  </Link>
 
 </div>
 </div>
-<div
-  className="
-    absolute
-
-    bottom-6
-    right-14
-  "
->
+ </div>
 </div>
-    </main>
+</main>
 
   );
 }

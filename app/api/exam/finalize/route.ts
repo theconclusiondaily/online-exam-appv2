@@ -326,22 +326,29 @@ if (existingPrize) {
 
 }
 const {
-  data: attempts,
-  error: attemptsError,
+  data: rankedAttempts,
+  error: rankedAttemptsError,
 } = await supabase
-  .from("exam_attempts")
+  .from("leaderboard")
   .select(`
     user_id,
     score,
-    percentage
+    percentage,
+    time_taken
   `)
-  .eq("exam_id", examId);
+  .eq("exam_id", examId)
+  .order("score", {
+    ascending: false,
+  })
+  .order("time_taken", {
+    ascending: true,
+  });
 
-if (attemptsError) {
+if (rankedAttemptsError) {
 
   return NextResponse.json(
     {
-      error: attemptsError.message,
+      error: rankedAttemptsError.message,
     },
     {
       status: 500,
@@ -349,11 +356,11 @@ if (attemptsError) {
   );
 
 }
-if (!attempts || attempts.length === 0) {
+if (!rankedAttempts || rankedAttempts.length === 0) {
 
   return NextResponse.json(
     {
-      error: "No exam attempts found.",
+      error: "No ranked attempts found.",
     },
     {
       status: 400,
@@ -361,7 +368,17 @@ if (!attempts || attempts.length === 0) {
   );
 
 }
-for (const attempt of attempts) {
+for (
+  let i = 0;
+  i < rankedAttempts.length;
+  i++
+) {
+
+  const attempt =
+    rankedAttempts[i];
+
+  const rank =
+    i + 1;
 
   const {
     data: existingCertificate,
@@ -400,16 +417,40 @@ for (const attempt of attempts) {
 
   const { error: certificateError } = await supabase
   .from("certificates")
-  .insert({
-    user_id: attempt.user_id,
-    exam_id: examId,
-    certificate_type: "PARTICIPATION",
-    certificate_number: certificateNumber,
-    verification_code: verificationCode,
-    score: attempt.score,
-    percentage: attempt.percentage,
-    issued_at: new Date().toISOString(),
-  });
+ .insert({
+
+user_id:
+attempt.user_id,
+
+exam_id:
+examId,
+
+certificate_type:
+"PARTICIPATION",
+
+certificate_number:
+certificateNumber,
+
+verification_code:
+verificationCode,
+
+score:
+attempt.score,
+
+percentage:
+attempt.percentage,
+
+rank,
+
+prize_amount:
+  rank <= 3
+    ? Number(prizes[rank - 1] ?? 0)
+    : 0,
+
+issued_at:
+new Date().toISOString(),
+
+});
 
 if (certificateError) {
   return NextResponse.json(
@@ -425,7 +466,7 @@ if (certificateError) {
 }
 
 
-for (const attempt of attempts) {
+for (const attempt of rankedAttempts) {
 
   const { error } = await supabase.rpc(
     "award_participation_tcd",
@@ -487,9 +528,9 @@ for (const attempt of attempts) {
 
   winnersPaid: winners.length,
 
-  certificatesGenerated: attempts.length,
+  certificatesGenerated: rankedAttempts.length,
 
-  participationRewards: attempts.length,
+participationRewards: rankedAttempts.length,
 
   resultsFinalized: true,
 

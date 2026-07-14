@@ -21,8 +21,8 @@ export default function DashboardLayout({
 } = useInactivityLogout({
   shouldIgnore: (pathname) =>
     pathname.startsWith("/exam/") ||
-    pathname.startsWith("/admin/create-exam") ||
-    pathname.startsWith("/teacher/create-exam"),
+    pathname.startsWith("/admin/") ||
+    pathname.startsWith("/teacher/"),
 });
   const [sidebarOpen, setSidebarOpen] =
     useState(false);
