@@ -2,11 +2,16 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
-
-const WARNING_TIME = 25 * 60 * 1000; // 25 minutes
-const LOGOUT_DELAY = 5 * 60 * 1000; // 5 minutes after warning
-
-export default function useInactivityLogout() {
+interface UseInactivityLogoutOptions {
+  warningTime?: number;
+  logoutDelay?: number;
+  shouldIgnore?: (pathname: string) => boolean;
+}
+export default function useInactivityLogout({
+  warningTime = 10  * 1000,
+  logoutDelay = 10* 1000,
+  shouldIgnore,
+}: UseInactivityLogoutOptions = {}) {
   const [showWarning, setShowWarning] = useState(false);
 
   const warningTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -14,10 +19,11 @@ export default function useInactivityLogout() {
 
   const logout = useCallback(async () => {
     // Never logout while writing an exam
-    if (window.location.pathname.startsWith("/exam/")) {
-      return;
-    }
+  const pathname = window.location.pathname;
 
+if (shouldIgnore?.(pathname)) {
+  return;
+}
     localStorage.removeItem("tcd_session_token");
     sessionStorage.clear();
 
@@ -26,7 +32,7 @@ export default function useInactivityLogout() {
     });
 
     window.location.replace("/login");
-  }, []);
+  }, [shouldIgnore]);
 
   const clearTimers = useCallback(() => {
     if (warningTimeout.current) {
@@ -48,8 +54,8 @@ export default function useInactivityLogout() {
 
       logoutTimeout.current = setTimeout(() => {
         logout();
-      }, LOGOUT_DELAY);
-    }, WARNING_TIME);
+    }, logoutDelay);
+    }, warningTime);
   }, [clearTimers, logout]);
 
   useEffect(() => {

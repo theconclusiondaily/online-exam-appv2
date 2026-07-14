@@ -14,11 +14,16 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-   const {
+  const {
   showWarning,
   resetTimer,
   logout,
-} = useInactivityLogout();
+} = useInactivityLogout({
+  shouldIgnore: (pathname) =>
+    pathname.startsWith("/exam/") ||
+    pathname.startsWith("/admin/create-exam") ||
+    pathname.startsWith("/teacher/create-exam"),
+});
   const [sidebarOpen, setSidebarOpen] =
     useState(false);
 
