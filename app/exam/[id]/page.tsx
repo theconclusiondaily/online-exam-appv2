@@ -167,7 +167,10 @@ const [
   const [answers,
     setAnswers] =
     useState<any>({});
-
+const questionCacheRef =
+  useRef<Record<number, any>>({});
+  const prefetchingRef =
+  useRef<Set<number>>(new Set());
   const [currentQuestion,
     setCurrentQuestion] =
     useState(0);
@@ -1377,12 +1380,12 @@ async function fetchQuestionByIndex(
   return;
 }
 
-if (
-  questionCache[index]
-) {
+const cachedQuestion =
+  questionCacheRef.current[index];
 
+if (cachedQuestion) {
   setCurrentQuestionData(
-    questionCache[index]
+    cachedQuestion
   );
 
   setCurrentQuestion(index);
@@ -1463,7 +1466,10 @@ const shuffledQuestion = {
     question.option_d,
   ].sort(() => Math.random() - 0.5),
 };
-setQuestionCache(prev => ({
+questionCacheRef.current[index] =
+  shuffledQuestion;
+
+setQuestionCache((prev) => ({
   ...prev,
   [index]: shuffledQuestion,
 }));
@@ -1472,28 +1478,37 @@ setCurrentQuestionData(
 );
 
 setCurrentQuestion(index);
-setCurrentQuestionData(shuffledQuestion);
-
-    setCurrentQuestion(
-      index
-    );
-    if (
-  index + 1 <
-  totalQuestions
-) {
+// Only after displaying it,
+// prefetch the following question
+if (index + 1 < total) {
   prefetchQuestion(
     index + 1
   );
 }
+ 
   }
   
 }
 async function prefetchQuestion(
   index: number
 ) {
+  // Already cached
+  if (
+    questionCacheRef.current[index]
+  ) {
+    return;
+  }
+
+  // Already being fetched
+  if (
+    prefetchingRef.current.has(index)
+  ) {
+    return;
+  }
+
+  prefetchingRef.current.add(index);
 
   try {
-
     const response =
       await fetch(
         "/api/exam/question",
@@ -1507,8 +1522,7 @@ async function prefetchQuestion(
 
           body: JSON.stringify({
             examId,
-            questionIndex:
-              index,
+            questionIndex: index,
             sessionToken,
           }),
         }
@@ -1521,12 +1535,10 @@ async function prefetchQuestion(
       response.ok &&
       result.data
     ) {
-
       const question =
         result.data;
 
       const shuffledQuestion = {
-
         ...question,
 
         shuffledOptions: [
@@ -1540,17 +1552,22 @@ async function prefetchQuestion(
         ),
       };
 
-      setQuestionCache(prev => ({
-  ...prev,
-  [index]: shuffledQuestion,
-}));
+      questionCacheRef.current[index] =
+        shuffledQuestion;
+
+      setQuestionCache((prev) => ({
+        ...prev,
+        [index]: shuffledQuestion,
+      }));
     }
-
   } catch (error) {
-
     console.error(
       "PREFETCH ERROR:",
       error
+    );
+  } finally {
+    prefetchingRef.current.delete(
+      index
     );
   }
 }
@@ -1741,15 +1758,25 @@ const shuffledQuestion = {
   ),
 };
 
-setCurrentQuestionData(
-  shuffledQuestion
-);
+
+questionCacheRef.current[0] =
+  shuffledQuestion;
+
 setQuestionCache({
   0: shuffledQuestion,
 });
-  setCurrentQuestion(0);
-}
 
+setCurrentQuestionData(
+  shuffledQuestion
+);
+
+setCurrentQuestion(0);
+}
+if (
+  questionResult.totalQuestions > 1
+) {
+  prefetchQuestion(1);
+}
 setExamStarted(true);
 
 localStorage.setItem(
@@ -1969,7 +1996,86 @@ useEffect(() => {
   examStarted,
   cameraStream
 ]);
-  
+  async function flushPendingAnswers() {
+  if (!sessionToken) {
+    throw new Error("Session not initialized");
+  }
+
+  // Wait for an autosave already in progress
+  const startTime = Date.now();
+
+  while (savingAnswersRef.current) {
+    if (Date.now() - startTime > 15000) {
+      throw new Error(
+        "Answer saving timed out. Please check your connection."
+      );
+    }
+
+    await new Promise((resolve) =>
+      setTimeout(resolve, 100)
+    );
+  }
+
+  // Save anything still waiting in the queue
+  const queue = [...pendingSaves];
+
+  if (queue.length === 0) {
+    return;
+  }
+
+  savingAnswersRef.current = true;
+  setSavingAnswers(true);
+
+  try {
+    for (const item of queue) {
+      const response = await fetch(
+        "/api/exam/save-answer",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            examId,
+            questionId: item.questionId,
+            selectedOption: item.selectedOption,
+            sessionToken,
+          }),
+        }
+      );
+
+      const result = await response
+        .json()
+        .catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(
+          result?.error ||
+            "Unable to save latest answer."
+        );
+      }
+    }
+
+    // Remove only answers that were successfully flushed
+    setPendingSaves((current) =>
+      current.filter(
+        (currentItem) =>
+          !queue.some(
+            (savedItem) =>
+              savedItem.questionId ===
+                currentItem.questionId &&
+              savedItem.selectedOption ===
+                currentItem.selectedOption
+          )
+      )
+    );
+  } finally {
+    savingAnswersRef.current = false;
+    setSavingAnswers(false);
+  }
+}
 async function submitExam() {
 
   if (submitting || submitted) {
@@ -1979,29 +2085,24 @@ async function submitExam() {
   setSubmitting(true);
   setFinalizingExam(true);
 // Flush pending answer before submitting
-const startTime = Date.now();
-
-while (savingAnswersRef.current) {
-
-  if (
-    Date.now() - startTime >
-    15000
-  ) {
-
-    toast.error(
-      "Unable to save latest answers. Please check your connection and try again."
-    );
-
-    setSubmitting(false);
-    setFinalizingExam(false);
-
-    return;
-  }
-
-  await new Promise(
-    resolve =>
-      setTimeout(resolve, 100)
+try {
+  await flushPendingAnswers();
+} catch (error) {
+  console.error(
+    "FINAL ANSWER SAVE FAILED:",
+    error
   );
+
+  toast.error(
+    error instanceof Error
+      ? error.message
+      : "Unable to save latest answers."
+  );
+
+  setSubmitting(false);
+  setFinalizingExam(false);
+
+  return;
 }
 
   
@@ -3098,8 +3199,7 @@ hover:bg-[#C89A1F]
   ) && (
 
     <button
-      onClick={async () => {
-
+      onClick={() => {
   const nextIndex =
     currentQuestion + 1;
 
@@ -3109,9 +3209,36 @@ hover:bg-[#C89A1F]
     return;
   }
 
-  await fetchQuestionByIndex(
-  nextIndex
-);
+  // If already prefetched, switch instantly
+  const cachedQuestion =
+  questionCacheRef.current[nextIndex];
+
+if (cachedQuestion) {
+  setCurrentQuestionData(
+    cachedQuestion
+  );
+
+    setCurrentQuestion(
+      nextIndex
+    );
+
+    // Prepare the question after this one
+    if (
+      nextIndex + 1 <
+      totalQuestions
+    ) {
+      prefetchQuestion(
+        nextIndex + 1
+      );
+    }
+
+    return;
+  }
+
+  // Fallback if prefetch has not completed
+  fetchQuestionByIndex(
+    nextIndex
+  );
 }}
 
       className="
