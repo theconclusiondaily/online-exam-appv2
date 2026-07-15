@@ -239,45 +239,7 @@ if (sessionError || !session) {
       );
     }
 // Lock the session immediately to prevent race conditions
-
-const {
-  data: completedSession,
-  error: sessionUpdateError,
-} = await supabase
-
-  .from("exam_sessions")
-
-  .update({
-
-    status: "completed",
-
-    submitted_at: new Date().toISOString(),
-
-  })
-
-  .eq("id", session.id)
-
-  .eq("status", "active")
-
-  .select();
-
-if (
-  sessionUpdateError ||
-  !completedSession ||
-  completedSession.length === 0
-) {
-
-  return NextResponse.json(
-    {
-      error: "Exam already submitted.",
-    },
-    {
-      status: 409,
-    }
-  );
-
-}
-    
+   
 
     // Fetch answers
 
@@ -296,17 +258,7 @@ if (
         user.id
       );
 
-    if (answersError) {
-      return NextResponse.json(
-        {
-          error:
-            answersError.message,
-        },
-        {
-          status: 500,
-        }
-      );
-    }
+   
 
     const questionIds =
       answers?.map(
@@ -611,6 +563,18 @@ if (existingAttempt) {
       "ATTEMPT ERROR:",
       attemptError
     );
+
+     if (answersError) {
+      return NextResponse.json(
+        {
+          error:
+            answersError.message,
+        },
+        {
+          status: 500,
+        }
+      );
+    }
 const { error: leaderboardError } = await supabase
   .from("leaderboard")
   .upsert(
@@ -725,17 +689,24 @@ if (attemptData?.length) {
   }
 
 }
-await supabase
-
+const {
+  error: completeSessionError,
+} = await supabase
   .from("exam_sessions")
-
   .update({
-
+    status: "completed",
+    submitted_at: submittedAt.toISOString(),
     final_score: totalScore,
-
   })
+  .eq("id", session.id)
+  .eq("status", "active");
 
-  .eq("id", session.id);
+if (completeSessionError) {
+  console.error(
+    "SESSION COMPLETION ERROR:",
+    completeSessionError
+  );
+}
 
 // Check whether participation reward already exists
 

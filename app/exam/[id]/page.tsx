@@ -114,6 +114,7 @@ const [pendingSaves, setPendingSaves] =
     }[]
   >([]);
   const [savingAnswers, setSavingAnswers] = useState(false);
+  const savingAnswersRef = useRef(false);
   const examId = Array.isArray(
     params.id
   )
@@ -1857,9 +1858,10 @@ setSavingAnswers(true);
   // Prevent multiple save loops
   if (savingRef.current) return;
 
-  savingRef.current = true;
+ savingRef.current = true;
+savingAnswersRef.current = true;
 
-  setSavingAnswers(true);
+setSavingAnswers(true);
 
   try {
 
@@ -1870,22 +1872,36 @@ setSavingAnswers(true);
 
     for (const item of queue) {
 
-      await fetch(
-        "/api/exam/save-answer",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            examId,
-            questionId: item.questionId,
-            selectedOption: item.selectedOption,
-            sessionToken,
-          }),
-          
-        }
-      );
+      const response = await fetch(
+  "/api/exam/save-answer",
+  {
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json",
+    },
+
+    body: JSON.stringify({
+      examId,
+      questionId: item.questionId,
+      selectedOption: item.selectedOption,
+      sessionToken,
+    }),
+  }
+);
+
+if (!response.ok) {
+
+  const result =
+    await response
+      .json()
+      .catch(() => null);
+
+  throw new Error(
+    result?.error ||
+    "Failed to save answer"
+  );
+}
 
     }
 
@@ -1902,7 +1918,8 @@ setSavingAnswers(true);
 
     setSavingAnswers(false);
 
-    savingRef.current = false;
+savingAnswersRef.current = false;
+savingRef.current = false;
 
     
 
@@ -1954,35 +1971,37 @@ useEffect(() => {
 ]);
   
 async function submitExam() {
-setFinalizingExam(true);
-  if (submitting) {
+
+  if (submitting || submitted) {
     return;
   }
 
-  if (submitted) {
-    return;
-  }
-
-      setSubmitting(true);
+  setSubmitting(true);
+  setFinalizingExam(true);
 // Flush pending answer before submitting
 const startTime = Date.now();
 
-while (savingAnswers || pendingSaves.length > 0) {
+while (savingAnswersRef.current) {
 
-  if (Date.now() - startTime > 10000) {
+  if (
+    Date.now() - startTime >
+    15000
+  ) {
 
     toast.error(
-      "Unable to save latest answers. Please try again."
+      "Unable to save latest answers. Please check your connection and try again."
     );
 
-    return;
+    setSubmitting(false);
+    setFinalizingExam(false);
 
+    return;
   }
 
-  await new Promise(resolve =>
-    setTimeout(resolve, 100)
+  await new Promise(
+    resolve =>
+      setTimeout(resolve, 100)
   );
-
 }
 
   
@@ -2023,6 +2042,7 @@ if (!response.ok) {
   );
 
   setSubmitting(false);
+  setFinalizingExam(false);
 
   return;
 }
