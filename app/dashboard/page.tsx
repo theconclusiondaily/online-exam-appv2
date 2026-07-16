@@ -51,7 +51,9 @@ import {
   demoActivities,
   demoAttempts,
 } from "@/lib/demo/demoDashboard";
-
+import {
+  formatCredits,
+} from "@/lib/finance/formatter";
 export default function DashboardPage() {
   const router =
     useRouter();
@@ -190,14 +192,13 @@ const nextMilestone =
     totalWrong: 0,
 
   });
-  const [wallet,
-  setWallet] =
+  const [wallet, setWallet] =
   useState({
-
-    current_balance: 0,
-    last_exam_credits: 0,
-    lifetime_earned: 0,
-
+    available_balance: 0,
+    locked_balance: 0,
+    bonus_balance: 0,
+    lifetime_added: 0,
+    lifetime_won: 0,
   });
 const [
   dailyReward,
@@ -297,9 +298,18 @@ if (isDemo) {
     name: demoDashboard.user.name,
   });
 
-  setWallet(
-    demoDashboard.wallet
-  );
+  setWallet({
+  available_balance:
+    demoDashboard.wallet.current_balance ?? 0,
+
+  locked_balance: 0,
+  bonus_balance: 0,
+
+  lifetime_added: 0,
+
+  lifetime_won:
+    demoDashboard.wallet.lifetime_earned ?? 0,
+});
 
   setUserLevel(
     demoDashboard.level
@@ -1564,8 +1574,8 @@ const handleClaimReward =
   "Student"
 }
   balance={
-    wallet?.current_balance || 0
-  }
+  wallet?.available_balance ?? 0
+}
   studyStreak={
     streak?.current_streak || 0
   }
@@ -2225,7 +2235,9 @@ const handleClaimReward =
         </div>
 
         <p className="font-bold text-lg">
-          {wallet?.current_balance || 0}
+          {formatCredits(
+  wallet?.available_balance ?? 0
+)}
         </p>
 
       </div>
