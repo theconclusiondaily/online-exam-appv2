@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { razorpay } from "@/lib/razorpay/server";
 
@@ -96,10 +96,10 @@ export async function POST(
       `TCD-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
 
     const {
-      data: paymentOrder,
-      error: paymentOrderError,
-    } = await supabase
-      .from("payment_orders")
+  data: paymentOrder,
+  error: paymentOrderError,
+} = await supabaseAdmin
+  .from("payment_orders")
       .insert({
         user_id: user.id,
 
@@ -183,8 +183,8 @@ export async function POST(
         razorpayError
       );
 
-      await supabase
-        .from("payment_orders")
+      await supabaseAdmin
+  .from("payment_orders")
         .update({
           status:
             "FAILED",
@@ -213,9 +213,9 @@ export async function POST(
     // ==========================================
 
     const {
-      error: updateError,
-    } = await supabase
-      .from("payment_orders")
+  error: updateError,
+} = await supabaseAdmin
+  .from("payment_orders")
       .update({
         gateway_order_id:
           razorpayOrder.id,
