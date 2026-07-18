@@ -13,6 +13,61 @@ from "@/lib/supabase/client";
 import { TCDIcons }
 from "@/components/ui/tcd-icons";
 import TCDLoader from "@/components/common/TCDLoader";
+function getTransactionLabel(
+  type: string
+) {
+  const labels: Record<string, string> = {
+    ADD_MONEY: "Money Added",
+    ENTRY_FEE: "Exam Entry Fee",
+    PRIZE: "Prize Won",
+    REFUND: "Refund",
+    WITHDRAW_REQUEST: "Withdrawal Requested",
+    WITHDRAW_SUCCESS: "Withdrawal Completed",
+    WITHDRAW_REJECTED: "Withdrawal Rejected",
+    BONUS: "Bonus Reward",
+    REFERRAL: "Referral Reward",
+    ADMIN_CREDIT: "Wallet Credit",
+    ADMIN_DEBIT: "Wallet Debit",
+  };
+
+  return (
+    labels[type] ??
+    type
+      ?.replaceAll("_", " ")
+      .toLowerCase()
+      .replace(/\b\w/g, (char) =>
+        char.toUpperCase()
+      )
+  );
+}
+
+function isCreditTransaction(
+  type: string
+) {
+  return [
+    "ADD_MONEY",
+    "PRIZE",
+    "REFUND",
+    "BONUS",
+    "REFERRAL",
+    "ADMIN_CREDIT",
+  ].includes(type);
+}
+
+function formatWalletAmount(
+  amount: number
+) {
+  return new Intl.NumberFormat(
+    "en-IN",
+    {
+      style: "currency",
+      currency: "INR",
+      minimumFractionDigits: 2,
+    }
+  ).format(
+    Number(amount || 0) / 100
+  );
+}
 export default function TCDWalletPage() {
 
   const [wallet,
@@ -942,98 +997,135 @@ export default function TCDWalletPage() {
                   <div className="space-y-3">
 
                     {
-                      transactions.map(
-                        (
-                          tx,
-                          index
-                        ) => (
+                      transactions.map((tx) => {
+  const isCredit =
+    isCreditTransaction(
+      tx.transaction_type
+    );
 
-                          <div
-                            key={index}
-                            className="
-                              flex
-                              flex-col
-                              md:flex-row
+  return (
+    <div
+      key={tx.id}
+      className="
+        flex
+        flex-col
+        md:flex-row
+        md:items-center
+        md:justify-between
+        gap-3
+        bg-[#F7F9FC]
+        rounded-2xl
+        p-4
+      "
+    >
+      <div className="min-w-0">
 
-                              md:items-center
-                              md:justify-between
+        <div className="flex items-center gap-2">
 
-                              gap-2
+          <h3 className="font-bold text-gray-900">
+            {getTransactionLabel(
+              tx.transaction_type
+            )}
+          </h3>
 
-                              bg-[#F7F9FC]
+          {tx.transaction_status && (
+            <span
+              className={`
+                text-[10px]
+                font-bold
+                uppercase
+                px-2
+                py-1
+                rounded-full
 
-                              rounded-2xl
+                ${
+                  tx.transaction_status ===
+                  "SUCCESS"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-gray-200 text-gray-600"
+                }
+              `}
+            >
+              {tx.transaction_status}
+            </span>
+          )}
 
-                              p-3
-                            "
-                          >
+        </div>
 
-                            <div>
+        <p
+          className="
+            text-xs
+            text-tcd-primary
+            mt-1
+          "
+        >
+          {new Date(
+            tx.created_at
+          ).toLocaleString(
+            "en-IN"
+          )}
+        </p>
 
-                              <h3
-                                className="
-                                  font-bold
-                                "
-                              >
+        {tx.reference_number && (
+          <p
+            className="
+              text-[11px]
+              text-gray-400
+              mt-1
+              truncate
+              max-w-[280px]
+            "
+            title={
+              tx.reference_number
+            }
+          >
+            Ref:{" "}
+            {tx.reference_number}
+          </p>
+        )}
 
-                                {
-                                  tx.description
-                                }
+      </div>
 
-                              </h3>
+      <div
+        className="
+          md:text-right
+          shrink-0
+        "
+      >
+        <div
+          className={`
+            text-xl
+            font-black
 
-                              <p
-                                className="
-                                  text-xs
-                                  text-tcd-primary
+            ${
+              isCredit
+                ? "text-green-600"
+                : "text-red-600"
+            }
+          `}
+        >
+          {isCredit ? "+" : "-"}
+          {formatWalletAmount(
+            tx.amount
+          )}
+        </div>
 
-                                  mt-1
-                                "
-                              >
+        <p
+          className="
+            text-xs
+            text-tcd-primary
+            mt-1
+          "
+        >
+          {isCredit
+            ? "Credited"
+            : "Debited"}
+        </p>
 
-                                {
-                                  tx.transaction_type
-                                }
-
-                              </p>
-
-                            </div>
-
-                            <div className="text-right">
-
-                              <div
-                                className="
-                                  text-xl
-                                  font-black
-
-                                  text-green-600
-                                "
-                              >
-
-                                +{tx.credits}
-
-                              </div>
-
-                              <p
-                                className="
-                                  text-xs
-                                  text-tcd-primary
-                                "
-                              >
-
-                                {new Date(
-                                  tx.created_at
-                                ).toLocaleString(
-                                  "en-IN"
-                                )}
-
-                              </p>
-
-                            </div>
-
-                          </div>
-                        )
-                      )
+      </div>
+    </div>
+  );
+})
                     }
 
                   </div>

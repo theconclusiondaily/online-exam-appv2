@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
+import { toast } from "sonner";
 import TCDIcon from "@/components/brand/TCDIcon";
-
+import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import { getWallet } from "@/services/wallet.service";
 import {
@@ -150,7 +150,7 @@ export default function WalletCard() {
       !Number.isFinite(rupees) ||
       rupees < 1
     ) {
-      alert(
+      toast.error(
         "Please enter a valid amount of at least ₹1."
       );
 
@@ -302,20 +302,28 @@ export default function WalletCard() {
               false
             );
 
-            alert(
-              "Payment successful. Your TCD Wallet has been credited."
-            );
+           toast.success(
+  "Payment successful",
+  {
+    description:
+      "Your TCD Wallet has been credited successfully.",
+  }
+);
           } catch (error) {
             console.error(
               "PAYMENT VERIFY ERROR:",
               error
             );
 
-            alert(
-              error instanceof Error
-                ? error.message
-                : "Payment verification failed."
-            );
+            toast.error(
+  "Payment verification failed",
+  {
+    description:
+      error instanceof Error
+        ? error.message
+        : "Please try again.",
+  }
+);
           } finally {
             setPaymentLoading(
               false
@@ -364,11 +372,14 @@ export default function WalletCard() {
             false
           );
 
-          alert(
-            response.error
-              ?.description ||
-              "Payment failed."
-          );
+          toast.error(
+  "Payment failed",
+  {
+    description:
+      response.error?.description ||
+      "The payment could not be completed.",
+  }
+);
         }
       );
 
@@ -381,11 +392,15 @@ export default function WalletCard() {
 
       setPaymentLoading(false);
 
-      alert(
-        error instanceof Error
-          ? error.message
-          : "Unable to start payment."
-      );
+     toast.error(
+  "Unable to start payment",
+  {
+    description:
+      error instanceof Error
+        ? error.message
+        : "Please try again.",
+  }
+);
     }
   }
 
@@ -584,6 +599,25 @@ export default function WalletCard() {
             Withdraw
           </button>
         </div>
+        <Link
+  href="/dashboard/tcd-wallet"
+  className="
+    mt-4
+    w-full
+    flex
+    items-center
+    justify-center
+    rounded-xl
+    py-3
+    font-semibold
+    text-tcd-blue
+    bg-[#F7F9FC]
+    hover:bg-[#EEF3FF]
+    transition
+  "
+>
+  View Transaction History
+</Link>
       </div>
 
       {/* Add Money Modal */}
