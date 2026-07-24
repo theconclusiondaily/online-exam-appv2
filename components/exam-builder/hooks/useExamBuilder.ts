@@ -62,8 +62,21 @@ export function useExamBuilder() {
     }));
 
   }
+function formatDateTimeLocal(value?: string | null) {
+  if (!value) return "";
+
+  const date = new Date(value);
+  date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+
+  return date.toISOString().slice(0, 16);
+}
+
 function loadExam(examData: ExamForm) {
-  setExam(examData);
+  setExam({
+    ...examData,
+    start_time: formatDateTimeLocal(examData.start_time),
+    end_time: formatDateTimeLocal(examData.end_time),
+  });
 }
  const [step, setStep] = useState(1);
 

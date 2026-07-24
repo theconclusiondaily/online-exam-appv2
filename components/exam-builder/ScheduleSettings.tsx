@@ -33,17 +33,21 @@ export default function ScheduleSettings({
 
           </label>
 
-          <input
-            type="datetime-local"
-            value={exam.start_time}
-            onChange={(e) =>
-              updateField(
-                "start_time",
-                e.target.value
-              )
-            }
-            className="w-full border rounded-2xl p-3"
-          />
+       <input
+  type="datetime-local"
+  value={
+    exam.start_time
+      ? new Date(
+          new Date(exam.start_time).getTime() -
+          new Date().getTimezoneOffset() * 60000
+        )
+          .toISOString()
+          .slice(0, 16)
+      : ""
+  }
+  onChange={(e) => updateField("start_time", e.target.value)}
+  className="w-full border rounded-2xl p-3"
+/>
 
         </div>
 
@@ -55,17 +59,21 @@ export default function ScheduleSettings({
 
           </label>
 
-          <input
-            type="datetime-local"
-            value={exam.end_time}
-            onChange={(e) =>
-              updateField(
-                "end_time",
-                e.target.value
-              )
-            }
-            className="w-full border rounded-2xl p-3"
-          />
+        <input
+  type="datetime-local"
+  value={
+    exam.end_time
+      ? new Date(
+          new Date(exam.end_time).getTime() -
+          new Date().getTimezoneOffset() * 60000
+        )
+          .toISOString()
+          .slice(0, 16)
+      : ""
+  }
+  onChange={(e) => updateField("end_time", e.target.value)}
+  className="w-full border rounded-2xl p-3"
+/>
 
         </div>
 
