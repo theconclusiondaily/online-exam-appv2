@@ -54,16 +54,7 @@ export default function useLiveStudents(
           ).toISOString()
         );
 
-      console.log(
-        "LIVE STUDENTS:",
-        data
-      );
-
-      console.log(
-        "LIVE ERROR:",
-        error
-      );
-
+     
       if (
         error ||
         !data

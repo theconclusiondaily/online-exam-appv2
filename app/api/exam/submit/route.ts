@@ -309,15 +309,7 @@ if (allQuestionsError) {
     }
   );
 }
-console.log(
-  "ALL QUESTIONS COUNT:",
-  allQuestions?.length
-);
 
-console.log(
-  "ALL QUESTIONS:",
-  allQuestions
-);
 
 const {
   data: mappings,
@@ -392,15 +384,7 @@ for (
     wrongCount++;
   }
 }
-console.log(
-  "ANSWERS COUNT:",
-  answers?.length
-);
 
-console.log(
-  "ANSWERS:",
-  answers
-);
 const percentage =
   maxMarks > 0
     ? Number(
@@ -424,33 +408,12 @@ const accuracy =
       )
     : 0;
 
-console.log(
-  "TOTAL SCORE:",
-  totalScore
-);
 
-console.log(
-  "MAX MARKS:",
-  maxMarks
-);
-
-console.log(
-  "PERCENTAGE:",
-  percentage
-);
 
 
     // Final session check
 
-     console.log({
-  totalScore,
-  correctCount,
-  wrongCount,
-  percentage,
-  maxMarks,
-  totalQuestions:
-  totalQuestionsCount,
-});
+   
 const submittedAt =
   new Date();
 
@@ -554,15 +517,7 @@ if (existingAttempt) {
       })
       .select();
 
-    console.log(
-      "ATTEMPT DATA:",
-      attemptData
-    );
-
-    console.log(
-      "ATTEMPT ERROR:",
-      attemptError
-    );
+   
 
      if (answersError) {
       return NextResponse.json(
@@ -712,21 +667,35 @@ if (completeSessionError) {
 
 const {
   data: existingReward,
+  error: existingRewardError,
 } = await supabase
-
   .from("tcd_transactions")
-
   .select("id")
-
   .eq("user_id", user.id)
-
   .eq("exam_id", examId)
-
+  .eq(
+    "transaction_type",
+    "BONUS"
+  )
+  .eq(
+    "metadata->>reward_type",
+    "PARTICIPATION"
+  )
   .maybeSingle();
+
+if (existingRewardError) {
+  console.error(
+    "PARTICIPATION REWARD CHECK ERROR:",
+    existingRewardError
+  );
+}
 
 let rewardError = null;
 
-if (!existingReward) {
+if (
+  !existingReward &&
+  !existingRewardError
+) {
 
   const rewardResult =
     await supabase.rpc(
@@ -754,12 +723,22 @@ await supabase.rpc(
   }
 );
 
-await supabase.rpc(
+const {
+  data: achievementAwardData,
+  error: achievementAwardError,
+} = await supabase.rpc(
   "award_exam_achievements",
   {
     p_user_id: user.id,
   }
 );
+
+if (achievementAwardError) {
+  console.error(
+    "AWARD EXAM ACHIEVEMENTS ERROR:",
+    achievementAwardError
+  );
+}
 
 const {
   data: newAchievements,
@@ -800,11 +779,7 @@ const achievementReward =
     0
   ) || 0;
 
-console.log(
-  "EXAM ACHIEVEMENTS:",
-  achievementCount,
-  achievementReward
-);
+
 if (newAchievements?.length) {
 
   for (
@@ -877,10 +852,7 @@ if (rewardError) {
     "seen",
     false
   );
-console.log(
-  "RETURNING ATTEMPT:",
-  attemptData?.[0]?.id
-);
+
  return NextResponse.json({
   success: true,
 

@@ -7,6 +7,7 @@ import {
 import Link from "next/link";
 import { supabase }
 from "@/lib/supabase/client";
+import TCDLogo from "@/components/brand/TCDLogo";
 function getFaceStatus(
   faceCount: number
 ) {
@@ -367,7 +368,9 @@ console.log(
         </div>
 
         <div>
-
+<div className="mb-5">
+  <TCDLogo size={64} />
+</div>
           <h1
             className="
               text-4xl

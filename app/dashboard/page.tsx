@@ -23,8 +23,6 @@ import DailyRewardCard from "@/components/dashboard/DailyRewardCard";
 import AchievementCard from "@/components/dashboard/AchievementCard";
 import StudyStreakCard from "@/components/dashboard/StudyStreakCard";
 import LoginStreakCard from "@/components/dashboard/LoginStreakCard";
-import useInactivityLogout
-from "@/hooks/useInactivityLogout";
 import StatsGrid
 from "@/components/dashboard/StatsGrid";
 import LiveExamsSection
@@ -231,7 +229,7 @@ const leagueProgress =
     userXP ?? 0
   );
   useEffect(() => {
-  console.log("USER XP =", userXP);
+  
 
 const debugLeague =
   getLeague(userXP);
@@ -239,15 +237,7 @@ const debugLeague =
 const debugProgress =
   getLeagueProgress(userXP);
 
-console.log(
-  "LEAGUE =",
-  debugLeague
-);
 
-console.log(
-  "PROGRESS =",
-  debugProgress
-);
 }, [userXP]);
 const levelTitle =
   getLevelTitle(
@@ -300,7 +290,7 @@ if (isDemo) {
 
   setWallet({
   available_balance:
-    demoDashboard.wallet.current_balance ?? 0,
+    demoDashboard.wallet.available_balance ?? 0,
 
   locked_balance: 0,
   bonus_balance: 0,
@@ -308,7 +298,11 @@ if (isDemo) {
   lifetime_added: 0,
 
   lifetime_won:
-    demoDashboard.wallet.lifetime_earned ?? 0,
+    (
+  (demoDashboard.wallet.lifetime_added ?? 0) +
+  (demoDashboard.wallet.lifetime_won ?? 0) +
+  (demoDashboard.wallet.lifetime_refunded ?? 0)
+)
 });
 
   setUserLevel(
@@ -512,42 +506,20 @@ let {
 if (!walletData) {
 
   await supabase
-
-    .from(
-      "tcd_wallets"
-    )
-
+    .from("tcd_wallets")
     .insert({
-
-      user_id:
-        user.id,
-
-      current_balance:
-        0,
-
-      lifetime_earned:
-        0,
-
+      user_id: user.id,
     });
+
   const {
     data: newWallet,
   } = await supabase
-
-    .from(
-      "tcd_wallets"
-    )
-
+    .from("tcd_wallets")
     .select("*")
-
-    .eq(
-      "user_id",
-      user.id
-    )
-
+    .eq("user_id", user.id)
     .maybeSingle();
 
-  walletData =
-    newWallet;
+  walletData = newWallet;
 }
 if (walletData) {
   setWallet(walletData);
@@ -664,10 +636,7 @@ if (!levelData) {
 
     });
 
-  console.log(
-    "LEVEL INSERT ERROR:",
-    insertError
-  );
+  
 
   levelData = {
     xp: 0,
@@ -698,33 +667,19 @@ if (walletData) {
 const {
   data: lastTxn,
 } = await supabase
-
-  .from(
-    "tcd_transactions"
-  )
-
+  .from("tcd_transactions")
   .select(`
-    credits,
-    description
+    amount,
+    transaction_type
   `)
-
-  .eq(
-    "user_id",
-    user.id
-  )
-
-  .order(
-    "created_at",
-    {
-      ascending: false,
-    }
-  )
-
+  .eq("user_id", user.id)
+  .order("created_at", {
+    ascending: false,
+  })
   .limit(1)
-
   .maybeSingle();
 
-  setLastEarned(
+setLastEarned(
   lastTxn
 );
 const {
@@ -1350,16 +1305,14 @@ const {
     ascending: true,
   });
 
-console.log("ALL LIVE EXAMS:", allLiveExams);
+
 const filteredLiveExams =
   (allLiveExams || []).filter(
     (exam) =>
       exam.exam_scope === "PUBLIC" ||
       instituteIds.includes(exam.institute_id)
   );
-console.log("FILTERED LIVE EXAMS:", filteredLiveExams);
-setLiveExams(filteredLiveExams);
-console.log("SETTING LIVE EXAMS:", filteredLiveExams.length);
+
 // UPCOMING EXAMS
 
 const {

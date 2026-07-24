@@ -1,12 +1,10 @@
 import { supabase } from "@/lib/supabase/client";
 import { EXAM_STATUS } from "../services/examStatus";
-import { getExamStatus } from "@/lib/examLifecycle";
 import {
   canPublish,
   canCancel,
   canDelete,
-  canCancelPaidExam,
-} from "@/lib/examRules";
+  } from "@/lib/examRules";
 export const examRepository = {
 
   async getAll() {
@@ -152,76 +150,46 @@ async publish(id: string) {
 
 },
 
-  async cancel(id: string) {
-const {
-  data: exam,
-  error: loadError,
-} = await supabase
-  .from("exams")
-  .select(`
-results_finalized,
-cancelled,
-entry_fee
-`)
-  .eq("id", id)
-  .single();
-
-if (loadError) {
-  throw loadError;
-}
-const check = canCancel(exam);
-
-if (!check.allowed) {
-  throw new Error(check.message);
-}
-const {
-  count,
-  error: attemptError,
-} = await supabase
-  .from("exam_attempts")
-  .select("*", {
-    head: true,
-    count: "exact",
-  })
-  .eq("exam_id", id);
-
-if (attemptError) {
-  throw attemptError;
-}
-const financeCheck = canCancelPaidExam(
-  exam.entry_fee ?? 0,
-  count ?? 0
-);
-
-if (!financeCheck.allowed) {
-  throw new Error(financeCheck.message);
-}
-  const { data, error } = await supabase
+async cancel(id: string) {
+  const {
+    data: exam,
+    error: loadError,
+  } = await supabase
     .from("exams")
-    
-    .update({
-      published: false,
-      cancelled: true,
-      status: EXAM_STATUS.CANCELLED,
-    })
+    .select(`
+      results_finalized,
+      cancelled
+    `)
     .eq("id", id)
-    .select()
     .single();
 
-  if (error) throw error;
+  if (loadError) {
+    throw loadError;
+  }
+
+  const check = canCancel(exam);
+
+  if (!check.allowed) {
+    throw new Error(check.message);
+  }
+
+  const {
+    data,
+    error,
+  } = await supabase.rpc(
+    "cancel_exam",
+    {
+      p_exam_id: id,
+    }
+  );
+
+  if (error) {
+    throw error;
+  }
 
   return data;
-
 },
-
-  
-
-  async delete(id: string) {
-
-  // -----------------------------------
-  // Prevent deleting exams with attempts
-  // -----------------------------------
-
+async delete(id: string) {
   const {
     count: attemptCount,
     error: attemptError,
@@ -236,17 +204,14 @@ if (!financeCheck.allowed) {
   if (attemptError) {
     throw attemptError;
   }
-const check = canDelete(
-  attemptCount ?? 0
-);
 
-if (!check.allowed) {
-  throw new Error(check.message);
-}
+  const check = canDelete(
+    attemptCount ?? 0
+  );
 
-  // -----------------------------------
-  // Delete Exam
-  // -----------------------------------
+  if (!check.allowed) {
+    throw new Error(check.message);
+  }
 
   const { error } = await supabase
     .from("exams")
@@ -256,8 +221,8 @@ if (!check.allowed) {
   if (error) {
     throw error;
   }
-
 },
+
 async getPublished() {
 
   const { data, error } =

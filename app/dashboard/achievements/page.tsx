@@ -64,21 +64,30 @@ export default function AchievementsPage() {
 
     if (!user) return;
 
-    await supabase.rpc(
-      "update_login_streak",
-      {
-        p_user_id:
-          user.id,
-      }
-    );
+   const {
+  error: loginStreakError,
+} = await supabase.rpc(
+  "update_login_streak",
+  {
+    p_user_id: user.id,
+  }
+);
 
-    await supabase.rpc(
-      "award_exam_achievements",
-      {
-        p_user_id:
-          user.id,
-      }
-    );
+if (loginStreakError) {
+ }
+
+ const {
+  error: awardError,
+} = await supabase.rpc(
+  "award_exam_achievements",
+  {
+    p_user_id: user.id,
+  }
+);
+
+if (awardError) {
+ 
+}
 
     const {
       data:
@@ -103,23 +112,28 @@ export default function AchievementsPage() {
         }
       );
 
-    const {
-      data: unlockedData
-    } = await supabase
+  const {
+  data: unlockedData,
+  error: unlockedError,
+} = await supabase
+  .from("user_achievements")
+  .select(`
+    achievement_id,
+    unlocked_at
+  `)
+  .eq(
+    "user_id",
+    user.id
+  );
 
-      .from(
-        "user_achievements"
-      )
+if (unlockedError) {
+  console.error(
+    "LOAD USER ACHIEVEMENTS ERROR:",
+    unlockedError
+  );
+}
 
-      .select(`
-        achievement_id,
-        unlocked_at
-      `)
 
-      .eq(
-        "user_id",
-        user.id
-      );
 
     const {
       data: attempts
@@ -140,34 +154,44 @@ export default function AchievementsPage() {
       );
 
     const {
-      data: streakData
-    } = await supabase
+  data: streakData,
+  error: streakError,
+} = await supabase
+  .from("study_streaks")
+  .select("*")
+  .eq(
+    "user_id",
+    user.id
+  )
+  .maybeSingle();
 
-      .from(
-        "study_streaks"
-      )
+if (streakError) {
+  
+}
 
-      .select("*")
-      .single();
-
-    setStreak(
-      streakData
-    );
+setStreak(
+  streakData
+);
 
     const {
-      data: loginData
-    } = await supabase
+  data: loginData,
+  error: loginDataError,
+} = await supabase
+  .from("login_streaks")
+  .select("*")
+  .eq(
+    "user_id",
+    user.id
+  )
+  .maybeSingle();
 
-      .from(
-        "login_streaks"
-      )
+if (loginDataError) {
+  
+}
 
-      .select("*")
-      .single();
-
-    setLoginStreak(
-      loginData
-    );
+setLoginStreak(
+  loginData
+);
 
     const totalExams =
       attempts?.length || 0;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
+import Image from "next/image";
 import Link from "next/link";
 
 import {
@@ -121,19 +121,25 @@ export default function Sidebar() {
 
         {/* LOGO */}
 
-        <h1
-          className="
-            text-2xl
-            font-bold
+        
+<div className="flex flex-col items-center mb-8 pb-6 border-b border-white/10">
+  <Image
+    src="/logo.png"
+    alt="The Conclusion Daily"
+    width={72}
+    height={72}
+    priority
+    className="object-contain"
+  />
 
-            mb-8
+  <h2 className="mt-3 text-center font-bold tracking-wide">
+    THE CONCLUSION DAILY
+  </h2>
 
-            text-center
-          "
-        >
-          Exam SaaS
-        </h1>
-
+  <p className="mt-1 text-xs uppercase tracking-[0.3em] text-blue-300">
+    Hope & Faith
+  </p>
+</div>
         {/* NAVIGATION */}
 
         <nav className="space-y-3">

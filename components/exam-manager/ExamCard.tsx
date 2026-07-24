@@ -76,18 +76,58 @@ export default function ExamCard({
     </button>
   )}
 
-  {exam.status !== "cancelled" &&
-    exam.status !== "completed" && (
-      <button
-        onClick={async () => {
-          await cancelExam(exam.id);
+{exam.status !== "cancelled" &&
+  exam.status !== "completed" && (
+    <button
+      onClick={async () => {
+        const confirmed = confirm(
+          "Cancel this exam? All successful entry fees will be refunded automatically."
+        );
+
+        if (!confirmed) {
+          return;
+        }
+
+        try {
+          console.log(
+            "CANCELLING EXAM:",
+            exam.id
+          );
+
+          const result =
+            await cancelExam(
+              exam.id
+            );
+
+          console.log(
+            "CANCEL RESULT:",
+            result
+          );
+
+          alert(
+            "Exam cancelled successfully. Entry fees have been refunded."
+          );
+
           window.location.reload();
-        }}
-        className="bg-red-500 text-white px-4 py-2 rounded-xl"
-      >
-        Cancel
-      </button>
-  )}
+
+        } catch (error: any) {
+
+          console.error(
+            "CANCEL EXAM ERROR:",
+            error
+          );
+
+          alert(
+            error?.message ||
+            "Unable to cancel exam."
+          );
+        }
+      }}
+      className="bg-red-500 text-white px-4 py-2 rounded-xl"
+    >
+      Cancel
+    </button>
+)}
 
   <button
     onClick={async () => {

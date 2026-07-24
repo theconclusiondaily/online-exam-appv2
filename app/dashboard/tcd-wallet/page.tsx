@@ -431,9 +431,9 @@ export default function TCDWalletPage() {
                   "
                 >
 
-                  {
-                    wallet?.current_balance || 0
-                  }
+                  {formatWalletAmount(
+  wallet?.available_balance || 0
+)}
 
                 </h3>
 
@@ -529,15 +529,17 @@ export default function TCDWalletPage() {
                   "
                 >
 
-                  {
-                    wallet?.lifetime_earned || 0
-                  }
+                  {formatWalletAmount(
+  (wallet?.lifetime_added || 0) +
+  (wallet?.lifetime_won || 0) +
+  (wallet?.lifetime_refunded || 0)
+)}
 
                 </h3>
 
                 <p className="text-tcd-primary text-sm">
 
-                  Lifetime Earned
+                  Lifetime Wallet Activity
 
                 </p>
 
@@ -559,7 +561,7 @@ export default function TCDWalletPage() {
               "
             >
 
-              Total TCD Credits Earned
+              Total money added, won and refunded
 
             </div>
 

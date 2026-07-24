@@ -60,12 +60,12 @@ export default function ExamPreview({
 
         <PreviewItem
           title="Reward Pool"
-          value={`₹ ${exam.reward_pool}`}
+          value={`₹ ${(exam.reward_pool / 100).toFixed(2)}`}
         />
 
         <PreviewItem
           title="Prize Distribution"
-          value={`₹ ${totalDistribution}`}
+          value={`₹ ${(totalDistribution / 100).toFixed(2)}`}
         />
 
       </div>

@@ -123,21 +123,12 @@ setAchievementReward(
   savedReward
 );
 
-console.log(
-  "SESSION ACHIEVEMENTS:",
-  {
-    savedCount,
-    savedReward,
-  }
-);
+
 if (error) {
   console.error(error);
 }
 
-console.log(
-  "RESULT FOUND:",
-  attempt
-);
+
 
         if (error) {
           console.error(error);
@@ -342,20 +333,7 @@ if (
         entry.user_id ===
         user.id
     );
-console.log(
-  "USER ID:",
-  user.id
-);
 
-console.log(
-  "LEADERBOARD:",
-  leaderboard
-);
-
-console.log(
-  "CURRENT USER:",
-  currentUser
-);
   if (!currentUser) {
 
   setRank(null);
@@ -435,9 +413,7 @@ setTopperData(
         console.error(error);
       } finally {
 
-  console.log(
-    "FINALLY EXECUTED"
-  );
+  
 
   setLoading(false);
 }
@@ -654,13 +630,7 @@ const scoreGap =
 const isTopper =
   scoreGap === 0;
 
-console.log(
-  "RENDER VALUES:",
-  {
-    achievementCount,
-    achievementReward,
-  }
-);
+
 
  return (
   <main className="min-h-screen bg-gray-50 p-5">
@@ -670,7 +640,23 @@ console.log(
     {/* Header */}
 
       <div className="text-center mb-10">
+{/* TCD Brand */}
 
+<div className="flex flex-col items-center mb-6">
+  <img
+    src="/logo.png"
+    alt="The Conclusion Daily"
+    className="w-20 h-20 object-contain"
+  />
+
+  <h2 className="mt-3 text-lg font-black tracking-wide text-[#243B6B]">
+    THE CONCLUSION DAILY
+  </h2>
+
+  <p className="mt-1 text-xs font-semibold uppercase tracking-[0.3em] text-[#D4AF37]">
+    Hope & Faith
+  </p>
+</div>
         <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-full font-semibold mb-4">
           🎉 Exam Submitted Successfully
         </div>

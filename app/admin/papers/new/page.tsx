@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-
+import TCDLogo from "@/components/brand/TCDLogo";
 export default function NewPaperPage() {
 
   const router = useRouter();
@@ -68,7 +68,9 @@ export default function NewPaperPage() {
   return (
 
 <div className="max-w-4xl mx-auto p-8">
-
+<div className="mb-5">
+  <TCDLogo size={64} />
+</div>
 <h1 className="text-3xl font-bold text-[#0F3D91] mb-8">
 
 Create Question Paper

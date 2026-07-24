@@ -28,17 +28,20 @@ export default function RewardSettings({
             Reward Pool (₹)
           </label>
 
-          <input
-            type="number"
-            value={exam.reward_pool}
-            onChange={(e)=>
-              updateField(
-                "reward_pool",
-                Number(e.target.value)
-              )
-            }
-            className="w-full border rounded-2xl p-3"
-          />
+        {/* Reward Pool */}
+<input
+  type="number"
+  min={0}
+  step={1}
+  value={exam.reward_pool / 100}
+  onChange={(e) =>
+    updateField(
+      "reward_pool",
+      Math.round(Number(e.target.value) * 100)
+    )
+  }
+  className="w-full border rounded-2xl p-3"
+/>
         </div>
 
         <div>
@@ -46,17 +49,20 @@ export default function RewardSettings({
             Scholarship Pool (₹)
           </label>
 
-          <input
-            type="number"
-            value={exam.scholarship_pool}
-            onChange={(e)=>
-              updateField(
-                "scholarship_pool",
-                Number(e.target.value)
-              )
-            }
-            className="w-full border rounded-2xl p-3"
-          />
+          {/* Scholarship Pool */}
+<input
+  type="number"
+  min={0}
+  step={1}
+  value={exam.scholarship_pool / 100}
+  onChange={(e) =>
+    updateField(
+      "scholarship_pool",
+      Math.round(Number(e.target.value) * 100)
+    )
+  }
+  className="w-full border rounded-2xl p-3"
+/>
         </div>
 
       </div>
@@ -68,17 +74,20 @@ export default function RewardSettings({
             Rank 1
           </label>
 
-          <input
-            type="number"
-            value={exam.rank_1_amount}
-            onChange={(e)=>
-              updateField(
-                "rank_1_amount",
-                Number(e.target.value)
-              )
-            }
-            className="w-full border rounded-2xl p-3"
-          />
+         {/* Rank 1 */}
+<input
+  type="number"
+  min={0}
+  step={1}
+  value={exam.rank_1_amount / 100}
+  onChange={(e) =>
+    updateField(
+      "rank_1_amount",
+      Math.round(Number(e.target.value) * 100)
+    )
+  }
+  className="w-full border rounded-2xl p-3"
+/>
         </div>
 
         <div>
@@ -86,17 +95,20 @@ export default function RewardSettings({
             Rank 2
           </label>
 
-          <input
-            type="number"
-            value={exam.rank_2_amount}
-            onChange={(e)=>
-              updateField(
-                "rank_2_amount",
-                Number(e.target.value)
-              )
-            }
-            className="w-full border rounded-2xl p-3"
-          />
+        {/* Rank 2 */}
+<input
+  type="number"
+  min={0}
+  step={1}
+  value={exam.rank_2_amount / 100}
+  onChange={(e) =>
+    updateField(
+      "rank_2_amount",
+      Math.round(Number(e.target.value) * 100)
+    )
+  }
+  className="w-full border rounded-2xl p-3"
+/>
         </div>
 
         <div>
@@ -104,17 +116,20 @@ export default function RewardSettings({
             Rank 3
           </label>
 
-          <input
-            type="number"
-            value={exam.rank_3_amount}
-            onChange={(e)=>
-              updateField(
-                "rank_3_amount",
-                Number(e.target.value)
-              )
-            }
-            className="w-full border rounded-2xl p-3"
-          />
+         {/* Rank 3 */}
+<input
+  type="number"
+  min={0}
+  step={1}
+  value={exam.rank_3_amount / 100}
+  onChange={(e) =>
+    updateField(
+      "rank_3_amount",
+      Math.round(Number(e.target.value) * 100)
+    )
+  }
+  className="w-full border rounded-2xl p-3"
+/>
         </div>
 
       </div>
@@ -170,17 +185,19 @@ export default function RewardSettings({
 
           </label>
 
-          <input
-            type="number"
-            value={exam.tcd_reward_pool}
-            onChange={(e)=>
-              updateField(
-                "tcd_reward_pool",
-                Number(e.target.value)
-              )
-            }
-            className="w-full border rounded-2xl p-3"
-          />
+       <input
+  type="number"
+  min={0}
+  step={1}
+  value={exam.tcd_reward_pool / 100}
+  onChange={(e) =>
+    updateField(
+      "tcd_reward_pool",
+      Math.round(Number(e.target.value) * 100)
+    )
+  }
+  className="w-full border rounded-2xl p-3"
+/>
 
         </div>
 

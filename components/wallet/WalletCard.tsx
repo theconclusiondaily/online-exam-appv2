@@ -10,7 +10,7 @@ import {
   formatCredits,
   formatRupees,
 } from "@/lib/finance/formatter";
-
+import { useSearchParams } from "next/navigation";
 import type {
   Wallet,
 } from "@/services/finance.types";
@@ -20,8 +20,26 @@ declare global {
     Razorpay: any;
   }
 }
+interface PayoutAccount {
+  id: string;
+  accountType: "UPI" | "BANK";
+  accountHolderName: string;
+  upiId: string | null;
+  bankAccountNumber: string | null;
+  ifscCode: string | null;
+  isVerified: boolean;
+  isActive: boolean;
+}
 
+type PayoutAccountType =
+  | "UPI"
+  | "BANK";
 export default function WalletCard() {
+  const searchParams =
+  useSearchParams();
+
+const returnTo =
+  searchParams.get("returnTo");
   const [wallet, setWallet] =
     useState<Wallet | null>(null);
 
@@ -36,6 +54,57 @@ export default function WalletCard() {
 
   const [paymentLoading, setPaymentLoading] =
     useState(false);
+
+  const [
+  showWithdraw,
+  setShowWithdraw,
+] = useState(false);
+
+const [
+  payoutAccount,
+  setPayoutAccount,
+] =
+  useState<PayoutAccount | null>(
+    null
+  );
+
+const [
+  payoutLoading,
+  setPayoutLoading,
+] = useState(false);
+
+const [
+  withdrawAmount,
+  setWithdrawAmount,
+] = useState("");
+
+const [
+  accountType,
+  setAccountType,
+] =
+  useState<PayoutAccountType>(
+    "UPI"
+  );
+
+const [
+  accountHolderName,
+  setAccountHolderName,
+] = useState("");
+
+const [
+  upiId,
+  setUpiId,
+] = useState("");
+
+const [
+  bankAccountNumber,
+  setBankAccountNumber,
+] = useState("");
+
+const [
+  ifscCode,
+  setIfscCode,
+] = useState("");
 
   // ==========================================
   // Load wallet
@@ -78,10 +147,73 @@ export default function WalletCard() {
     }
   }
 
-  useEffect(() => {
-    loadWallet();
-  }, []);
+const shouldOpenAddMoney =
+  searchParams.get("addMoney") ===
+  "true";
 
+const requestedAmount =
+  searchParams.get("amount");
+
+useEffect(() => {
+  const amountInPaise =
+    Number(requestedAmount);
+
+  if (
+    shouldOpenAddMoney &&
+    Number.isFinite(
+      amountInPaise
+    ) &&
+    amountInPaise > 0
+  ) {
+    setAmount(
+      (
+        amountInPaise / 100
+      ).toFixed(2)
+    );
+
+    setShowAddMoney(true);
+  }
+}, [
+  shouldOpenAddMoney,
+  requestedAmount,
+]);
+
+  useEffect(() => {
+  loadWallet();
+  loadPayoutAccount();
+}, []);
+
+
+  async function loadPayoutAccount() {
+  try {
+    const response =
+      await fetch(
+        "/api/payout-accounts",
+        {
+          method: "GET",
+          cache: "no-store",
+        }
+      );
+
+    if (!response.ok) {
+      throw new Error(
+        "Unable to load payout account."
+      );
+    }
+
+    const data =
+      await response.json();
+
+    setPayoutAccount(
+      data.account ?? null
+    );
+  } catch (error) {
+    console.error(
+      "PAYOUT ACCOUNT LOAD ERROR:",
+      error
+    );
+  }
+}
   // ==========================================
   // Load Razorpay checkout script
   // ==========================================
@@ -309,6 +441,17 @@ export default function WalletCard() {
       "Your TCD Wallet has been credited successfully.",
   }
 );
+
+if (
+  returnTo &&
+  returnTo.startsWith("/")
+) {
+  window.location.href =
+    returnTo;
+
+  return;
+}
+
           } catch (error) {
             console.error(
               "PAYMENT VERIFY ERROR:",
@@ -423,7 +566,239 @@ export default function WalletCard() {
       </div>
     );
   }
+async function handleSavePayoutAccount() {
+  try {
+    setPayoutLoading(true);
 
+    const response =
+      await fetch(
+        "/api/payout-accounts",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify({
+            accountType,
+            accountHolderName,
+
+            upiId:
+              accountType === "UPI"
+                ? upiId
+                : undefined,
+
+            bankAccountNumber:
+              accountType === "BANK"
+                ? bankAccountNumber
+                : undefined,
+
+            ifscCode:
+              accountType === "BANK"
+                ? ifscCode
+                : undefined,
+          }),
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+          "Unable to save payout account."
+      );
+    }
+
+    setPayoutAccount(
+      data.account
+    );
+
+    toast.success(
+      "Payout account saved."
+    );
+
+    setAccountHolderName("");
+    setUpiId("");
+    setBankAccountNumber("");
+    setIfscCode("");
+
+  } catch (error) {
+    console.error(
+      "SAVE PAYOUT ACCOUNT ERROR:",
+      error
+    );
+
+    toast.error(
+      error instanceof Error
+        ? error.message
+        : "Unable to save payout account."
+    );
+
+  } finally {
+    setPayoutLoading(false);
+  }
+}
+
+async function handleWithdrawal() {
+  try {
+    if (!wallet) {
+      return;
+    }
+
+    if (!payoutAccount) {
+      toast.error(
+        "Add a payout account first."
+      );
+      return;
+    }
+
+    if (
+      !payoutAccount.isVerified
+    ) {
+      toast.error(
+        "Your payout account must be verified before withdrawal."
+      );
+      return;
+    }
+
+    const amountInRupees =
+      Number(withdrawAmount);
+
+    if (
+      !Number.isFinite(
+        amountInRupees
+      ) ||
+      amountInRupees < 300
+    ) {
+      toast.error(
+        "Minimum withdrawal is ₹300."
+      );
+      return;
+    }
+
+    const amountInPaise =
+      Math.round(
+        amountInRupees * 100
+      );
+const cashWithdrawableBalance =
+  wallet.available_balance -
+  wallet.bonus_balance;
+
+if (
+  amountInPaise >
+  cashWithdrawableBalance
+) {
+  toast.error(
+    "Bonus credits cannot be withdrawn. Your cash balance is insufficient."
+  );
+  return;
+}
+    if (
+      wallet.available_balance -
+        amountInPaise <
+      19900
+    ) {
+      toast.error(
+        "A minimum wallet balance of ₹199 must remain after withdrawal."
+      );
+      return;
+    }
+
+    setPayoutLoading(true);
+
+    const {
+      data: { user },
+    } =
+      await supabase.auth.getUser();
+
+    if (!user) {
+      throw new Error(
+        "Please sign in again."
+      );
+    }
+
+    const {
+      error,
+    } =
+      await supabase.rpc(
+        "request_withdrawal",
+        {
+          p_user_id:
+            user.id,
+
+          p_amount:
+            amountInPaise,
+        }
+      );
+
+    if (error) {
+      throw error;
+    }
+
+    toast.success(
+      "Withdrawal request submitted."
+    );
+
+    setWithdrawAmount("");
+    setShowWithdraw(false);
+
+    await loadWallet();
+
+  } catch (error: any) {
+    console.error(
+      "WITHDRAWAL ERROR:",
+      error
+    );
+
+    const message =
+      error?.message || "";
+
+    if (
+      message.includes(
+        "ACTIVE_WITHDRAWAL_ALREADY_EXISTS"
+      )
+    ) {
+      toast.error(
+        "You already have an active withdrawal request."
+      );
+    } else if (
+      message.includes(
+        "MINIMUM_WITHDRAW_AMOUNT_IS_300"
+      )
+    ) {
+      toast.error(
+        "Minimum withdrawal is ₹300."
+      );
+   } else if (
+  message.includes(
+    "INSUFFICIENT_CASH_BALANCE"
+  )
+) {
+  toast.error(
+    "Bonus credits cannot be withdrawn. Your cash balance is insufficient."
+  );
+} else if (
+  message.includes(
+    "MINIMUM_WALLET_BALANCE_MUST_REMAIN_199"
+  )
+) {
+  toast.error(
+    "A minimum wallet balance of ₹199 must remain after withdrawal."
+  );
+    } else {
+      toast.error(
+        "Unable to submit withdrawal request."
+      );
+    }
+
+  } finally {
+    setPayoutLoading(false);
+  }
+}
   return (
     <>
       <div
@@ -584,20 +959,23 @@ export default function WalletCard() {
             Add Money
           </button>
 
-          <button
-            className="
-              rounded-xl
-              border
-              border-tcd-blue
-              text-tcd-blue
-              py-3
-              font-semibold
-              hover:bg-gray-50
-              transition
-            "
-          >
-            Withdraw
-          </button>
+         <button
+  onClick={() =>
+    setShowWithdraw(true)
+  }
+  className="
+    rounded-xl
+    border
+    border-tcd-blue
+    text-tcd-blue
+    py-3
+    font-semibold
+    hover:bg-gray-50
+    transition
+  "
+>
+  Withdraw
+</button>
         </div>
         <Link
   href="/dashboard/tcd-wallet"
@@ -754,6 +1132,360 @@ export default function WalletCard() {
           </div>
         </div>
       )}
+
+      {showWithdraw && (
+  <div
+    className="
+      fixed
+      inset-0
+      z-50
+      bg-black/50
+      flex
+      items-center
+      justify-center
+      p-4
+    "
+  >
+    <div
+      className="
+        bg-white
+        w-full
+        max-w-lg
+        max-h-[90vh]
+        overflow-y-auto
+        rounded-3xl
+        shadow-2xl
+        p-6
+      "
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-black text-tcd-blue">
+            Withdraw Funds
+          </h2>
+
+          <p className="text-sm text-gray-500 mt-1">
+            Minimum withdrawal ₹300 • Keep ₹199 in your wallet
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() =>
+            setShowWithdraw(false)
+          }
+          className="
+            text-gray-500
+            hover:text-gray-900
+            text-2xl
+          "
+        >
+          ×
+        </button>
+      </div>
+
+      {!payoutAccount ? (
+        <div className="mt-6">
+          <h3 className="font-bold text-lg">
+            Add Payout Account
+          </h3>
+
+          <div className="grid grid-cols-2 gap-3 mt-4">
+            <button
+              type="button"
+              onClick={() =>
+                setAccountType("UPI")
+              }
+              className={`
+                rounded-xl
+                py-3
+                font-semibold
+                border
+                ${
+                  accountType === "UPI"
+                    ? "bg-tcd-blue text-white border-tcd-blue"
+                    : "text-tcd-blue border-gray-200"
+                }
+              `}
+            >
+              UPI
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                setAccountType("BANK")
+              }
+              className={`
+                rounded-xl
+                py-3
+                font-semibold
+                border
+                ${
+                  accountType === "BANK"
+                    ? "bg-tcd-blue text-white border-tcd-blue"
+                    : "text-tcd-blue border-gray-200"
+                }
+              `}
+            >
+              Bank Account
+            </button>
+          </div>
+
+          <input
+            value={accountHolderName}
+            onChange={(event) =>
+              setAccountHolderName(
+                event.target.value
+              )
+            }
+            placeholder="Account holder name"
+            className="
+              mt-4
+              w-full
+              border
+              rounded-xl
+              px-4
+              py-3
+              outline-none
+              focus:border-tcd-blue
+            "
+          />
+
+          {accountType === "UPI" ? (
+            <input
+              value={upiId}
+              onChange={(event) =>
+                setUpiId(
+                  event.target.value
+                )
+              }
+              placeholder="UPI ID"
+              className="
+                mt-3
+                w-full
+                border
+                rounded-xl
+                px-4
+                py-3
+                outline-none
+                focus:border-tcd-blue
+              "
+            />
+          ) : (
+            <>
+              <input
+                value={bankAccountNumber}
+                onChange={(event) =>
+                  setBankAccountNumber(
+                    event.target.value
+                  )
+                }
+                placeholder="Bank account number"
+                inputMode="numeric"
+                className="
+                  mt-3
+                  w-full
+                  border
+                  rounded-xl
+                  px-4
+                  py-3
+                  outline-none
+                  focus:border-tcd-blue
+                "
+              />
+
+              <input
+                value={ifscCode}
+                onChange={(event) =>
+                  setIfscCode(
+                    event.target.value
+                      .toUpperCase()
+                  )
+                }
+                placeholder="IFSC code"
+                className="
+                  mt-3
+                  w-full
+                  border
+                  rounded-xl
+                  px-4
+                  py-3
+                  uppercase
+                  outline-none
+                  focus:border-tcd-blue
+                "
+              />
+            </>
+          )}
+
+          <button
+            type="button"
+            disabled={payoutLoading}
+            onClick={
+              handleSavePayoutAccount
+            }
+            className="
+              mt-5
+              w-full
+              rounded-xl
+              bg-tcd-blue
+              text-white
+              py-3
+              font-bold
+              disabled:opacity-50
+            "
+          >
+            {payoutLoading
+              ? "Saving..."
+              : "Save Payout Account"}
+          </button>
+        </div>
+      ) : (
+        <div className="mt-6">
+          <div
+            className="
+              bg-[#F7F9FC]
+              border
+              border-gray-100
+              rounded-2xl
+              p-4
+            "
+          >
+            <div className="flex justify-between gap-4">
+              <div>
+                <p className="text-xs text-gray-500 uppercase">
+                  Payout Account
+                </p>
+
+                <p className="font-bold mt-1">
+                  {
+                    payoutAccount.accountHolderName
+                  }
+                </p>
+
+                <p className="text-sm text-gray-600 mt-1">
+                  {payoutAccount.accountType ===
+                  "UPI"
+                    ? payoutAccount.upiId
+                    : `${payoutAccount.bankAccountNumber} • ${payoutAccount.ifscCode}`}
+                </p>
+              </div>
+
+              <div>
+                {payoutAccount.isVerified ? (
+                  <span className="text-sm font-bold text-green-600">
+                    Verified
+                  </span>
+                ) : (
+                  <span className="text-sm font-bold text-yellow-600">
+                    Verification Pending
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {!payoutAccount.isVerified ? (
+            <div
+              className="
+                mt-4
+                rounded-2xl
+                bg-yellow-50
+                border
+                border-yellow-200
+                p-4
+                text-sm
+                text-yellow-800
+              "
+            >
+              Your payout account must be verified before you can withdraw funds.
+            </div>
+          ) : (
+            <>
+              <div className="mt-5">
+                <label className="text-sm font-semibold">
+                  Withdrawal Amount
+                </label>
+
+                <div className="relative mt-2">
+                  <span
+                    className="
+                      absolute
+                      left-4
+                      top-1/2
+                      -translate-y-1/2
+                      font-bold
+                    "
+                  >
+                    ₹
+                  </span>
+
+                  <input
+                    type="number"
+                    min="300"
+                    step="1"
+                    value={
+                      withdrawAmount
+                    }
+                    onChange={(event) =>
+                      setWithdrawAmount(
+                        event.target.value
+                      )
+                    }
+                    placeholder="300"
+                    className="
+                      w-full
+                      border
+                      rounded-xl
+                      pl-9
+                      pr-4
+                      py-3
+                      outline-none
+                      focus:border-tcd-blue
+                    "
+                  />
+                </div>
+
+                <p className="text-xs text-gray-500 mt-2">
+                  Available:{" "}
+                  {formatRupees(
+                    wallet?.available_balance ??
+                      0
+                  )}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                disabled={
+                  payoutLoading
+                }
+                onClick={
+                  handleWithdrawal
+                }
+                className="
+                  mt-5
+                  w-full
+                  rounded-xl
+                  bg-tcd-blue
+                  text-white
+                  py-3
+                  font-bold
+                  disabled:opacity-50
+                "
+              >
+                {payoutLoading
+                  ? "Submitting..."
+                  : "Request Withdrawal"}
+              </button>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  </div>
+)}
     </>
   );
 }

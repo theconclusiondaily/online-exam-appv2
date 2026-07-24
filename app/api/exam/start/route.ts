@@ -54,8 +54,7 @@ if (!profileData?.institute_id) {
     }
   );
 }
-    console.log("AUTH ERROR:", authError);
-    console.log("USER:", user);
+  
 
     if (authError || !user) {
       return NextResponse.json(
@@ -131,8 +130,7 @@ if (submittedSession) {
       .eq("id", examId)
       .maybeSingle();
 
-    console.log("EXAM:", exam);
-    console.log("EXAM ERROR:", examError);
+   
 
     if (examError || !exam) {
       return NextResponse.json(
@@ -192,75 +190,93 @@ if (exam.exam_scope !== "PUBLIC") {
     }
     
 // ======================================
-// ENTRY FEE VALIDATION
+// ENTRY FEE PAYMENT VERIFICATION
 // ======================================
 
 if (exam.entry_fee > 0) {
 
+  const entryFeeReference =
+    `ENTRY-FEE-${exam.id}-${user.id}`;
+
   const {
-    data: wallet,
-    error: walletError,
+    data: entryFeePayment,
+    error: entryFeePaymentError,
   } = await supabase
-    .from("tcd_wallets")
-    .select("available_balance")
-    .eq("user_id", user.id)
-    .single();
+    .from("tcd_transactions")
+    .select(`
+      id,
+      amount,
+      transaction_status
+    `)
+    .eq(
+      "reference_number",
+      entryFeeReference
+    )
+    .eq(
+      "transaction_type",
+      "ENTRY_FEE"
+    )
+    .eq(
+      "transaction_status",
+      "SUCCESS"
+    )
+    .maybeSingle();
 
-  if (walletError || !wallet) {
+  if (entryFeePaymentError) {
 
-    return NextResponse.json(
-      {
-        error: "Wallet not found",
-      },
-      {
-        status: 404,
-      }
+    console.error(
+      "ENTRY FEE VERIFICATION ERROR:",
+      entryFeePaymentError
     );
-
-  }
-
-  if (wallet.available_balance < exam.entry_fee) {
 
     return NextResponse.json(
       {
         error:
-          "Insufficient wallet balance",
-      },
-      {
-        status: 400,
-      }
-    );
-
-  }
-
-  const {
-    error: debitError,
-  } = await supabase.rpc(
-    "debit_wallet",
-    {
-      p_user_id: user.id,
-      p_amount: exam.entry_fee,
-      p_transaction_type: "ENTRY_FEE",
-      p_exam_id: exam.id,
-    }
-  );
-
-  if (debitError) {
-
-    console.error(debitError);
-
-    return NextResponse.json(
-      {
-        error:
-          "Unable to deduct entry fee",
+          "Unable to verify entry fee payment",
       },
       {
         status: 500,
       }
     );
-
   }
 
+  if (!entryFeePayment) {
+
+    return NextResponse.json(
+      {
+        error:
+          "Entry fee payment required",
+        paymentRequired: true,
+      },
+      {
+        status: 402,
+      }
+    );
+  }
+
+  // Defensive check:
+  // payment must match the current
+  // exam entry fee.
+  if (
+    Number(
+      entryFeePayment.amount
+    ) !==
+    Number(
+      exam.entry_fee
+    )
+  ) {
+
+    return NextResponse.json(
+      {
+        error:
+          "Entry fee payment amount mismatch",
+        paymentRequired: true,
+      },
+      {
+        status: 402,
+      }
+    );
+  }
 }
     // CREATE SESSION TOKEN
     const sessionToken = crypto.randomUUID();
@@ -269,7 +285,7 @@ if (exam.entry_fee > 0) {
       Date.now() +
         exam.duration * 60 * 1000
     ).toISOString();
-
+  
     // CREATE SESSION
     const {
       data: session,
@@ -287,8 +303,7 @@ if (exam.entry_fee > 0) {
       .select()
       .single();
 
-    console.log("SESSION:", session);
-    console.log("SESSION ERROR:", sessionError);
+  
 
     if (sessionError) {
       return NextResponse.json(
@@ -298,10 +313,10 @@ if (exam.entry_fee > 0) {
     }
 
     return NextResponse.json({
-      success: true,
-      session,
-    });
-
+  success: true,
+  session,
+});
+  
   } catch (error) {
     console.error("START EXAM ERROR:", error);
 

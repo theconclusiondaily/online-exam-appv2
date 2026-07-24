@@ -245,7 +245,7 @@ if (allAttemptsError || !allExamAttempts) {
 
 }
 
-console.log("FINAL RANK MAP", rankMap);
+
 
 setRanks(rankMap);
     } catch (error) {

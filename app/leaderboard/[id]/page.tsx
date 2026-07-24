@@ -79,7 +79,7 @@ const [liveUpdate,
 
     if (error) {
 
-      console.log(error);
+      
 
       return;
     }

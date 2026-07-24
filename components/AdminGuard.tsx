@@ -37,10 +37,7 @@ export default function AdminGuard({
         .auth
         .getUser();
 
-      console.log(
-        "AUTH USER:",
-        user
-      );
+      
 
       if (!user) {
 
@@ -65,15 +62,7 @@ export default function AdminGuard({
         )
         .maybeSingle();
 
-      console.log(
-        "PROFILE:",
-        profile
-      );
-
-      console.log(
-        "ERROR:",
-        error
-      );
+   
 
       // PROFILE NOT FOUND
 

@@ -111,13 +111,7 @@ if (exam.exam_scope !== "PUBLIC") {
 
 }
  
-    console.log("SAVE ANSWER REQUEST:", {
-      examId,
-      questionId,
-      selectedOption,
-      sessionToken,
-      userId: user.id,
-    });
+   
 
     if (!examId) {
       return NextResponse.json(
@@ -152,15 +146,7 @@ if (exam.exam_scope !== "PUBLIC") {
       .eq("session_token", sessionToken)
       .maybeSingle();
 
-    console.log(
-      "SESSION QUERY RESULT:",
-      session
-    );
-
-    console.log(
-      "SESSION QUERY ERROR:",
-      sessionError
-    );
+    
 
     if (sessionError) {
       return NextResponse.json(
@@ -231,10 +217,7 @@ if (exam.exam_scope !== "PUBLIC") {
         new Date().toISOString(),
     };
 
-    console.log(
-      "SAVE PAYLOAD:",
-      payload
-    );
+   
 
     const {
       data,
@@ -247,15 +230,7 @@ if (exam.exam_scope !== "PUBLIC") {
       })
       .select();
 
-    console.log(
-      "UPSERT DATA:",
-      data
-    );
-
-    console.log(
-      "UPSERT ERROR:",
-      error
-    );
+   
 
     if (error) {
       return NextResponse.json(

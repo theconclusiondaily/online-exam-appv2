@@ -364,6 +364,23 @@ setQuestions(
     <main className="min-h-screen bg-gray-50 p-5">
      
       <div className="max-w-5xl mx-auto">
+        {/* TCD Brand Header */}
+
+<div className="flex flex-col items-center text-center mb-8">
+  <img
+    src="/logo.png"
+    alt="The Conclusion Daily"
+    className="w-20 h-20 object-contain"
+  />
+
+  <h1 className="mt-3 text-2xl font-black tracking-wide text-[#243B6B]">
+    Exam Review
+  </h1>
+
+  <p className="mt-1 text-xs font-semibold uppercase tracking-[0.3em] text-[#D4AF37]">
+    The Conclusion Daily · Hope & Faith
+  </p>
+</div>
 <div className="bg-white rounded-2xl border p-5 mb-6 flex justify-between items-center">
 
   <div>

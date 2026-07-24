@@ -3,7 +3,10 @@
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { TCDIcons } from "@/components/ui/tcd-icons";
-
+import { cancelExam as cancelExamService } from "@/components/exam-builder/services/cancelExam";
+import {
+  publishExam as publishExamService,
+} from "@/components/exam-builder/services/publishExam";
 interface Props {
   exams: any[];
 }
@@ -14,45 +17,71 @@ export default function RecentExams({
 
   const router = useRouter();
 
-  async function publishExam(id: string) {
+ async function handlePublishExam(
+  id: string
+) {
+  try {
+    await publishExamService(id);
 
-    const { error } = await supabase
-      .from("exams")
-      .update({
-        published: true,
-        status: "scheduled",
-      })
-      .eq("id", id);
-
-    if (error) {
-      alert(error.message);
-      return;
-    }
+    alert(
+      "Exam published successfully."
+    );
 
     window.location.reload();
+
+  } catch (error: any) {
+
+    console.error(
+      "PUBLISH EXAM ERROR:",
+      error
+    );
+
+    alert(
+      error?.message ||
+      "Unable to publish exam."
+    );
+  }
+}
+
+  async function handleCancelExam(
+  id: string,
+  endTime: string
+) {
+  if (new Date(endTime) < new Date()) {
+    alert(
+      "Completed exams cannot be cancelled."
+    );
+    return;
   }
 
-  async function cancelExam(
-    id: string,
-    endTime: string
-  ) {
+  const confirmed = window.confirm(
+    "Cancel this exam? All successful entry fees will be refunded automatically."
+  );
 
-    if (new Date(endTime) < new Date()) {
-      alert(
-        "Completed exams cannot be cancelled."
-      );
-      return;
-    }
+  if (!confirmed) {
+    return;
+  }
 
-    await supabase
-      .from("exams")
-      .update({
-        status: "cancelled",
-      })
-      .eq("id", id);
+  try {
+    await cancelExamService(id);
+
+    alert(
+      "Exam cancelled successfully. Eligible entry fees have been refunded."
+    );
 
     window.location.reload();
+  } catch (error: any) {
+    console.error(
+      "CANCEL EXAM ERROR:",
+      error
+    );
+
+    alert(
+      error?.message ||
+      "Unable to cancel exam."
+    );
   }
+}
 
   return (
 
@@ -168,8 +197,8 @@ export default function RecentExams({
 
                   <button
                     onClick={() =>
-                      publishExam(exam.id)
-                    }
+  handlePublishExam(exam.id)
+}
                     className="bg-tcd-blue text-white px-4 py-2 rounded-xl"
                   >
                     Publish
@@ -177,16 +206,17 @@ export default function RecentExams({
 
                 )}
 
-                {exam.status !==
-                  "completed" && (
+                {exam.status !== "completed" &&
+ exam.status !== "cancelled" &&
+ !exam.cancelled && (
 
                   <button
                     onClick={() =>
-                      cancelExam(
-                        exam.id,
-                        exam.end_time
-                      )
-                    }
+  handleCancelExam(
+    exam.id,
+    exam.end_time
+  )
+}
                     className="bg-red-500 text-white px-4 py-2 rounded-xl"
                   >
                     Cancel

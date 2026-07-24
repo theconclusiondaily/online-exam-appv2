@@ -1,18 +1,46 @@
 "use client";
 
 import { AlertTriangle } from "lucide-react";
+import { useEffect, useState } from "react";
 
 type Props = {
   open: boolean;
+  countdownMinutes: number;
   onStayLoggedIn: () => void;
   onLogout: () => void;
 };
 
 export default function SessionTimeoutModal({
   open,
+  countdownMinutes,
   onStayLoggedIn,
   onLogout,
 }: Props) {
+  const [secondsLeft, setSecondsLeft] = useState(
+  countdownMinutes * 60
+);
+
+useEffect(() => {
+  if (!open) return;
+
+  setSecondsLeft(countdownMinutes * 60);
+
+  const interval = setInterval(() => {
+    setSecondsLeft((prev) => {
+      if (prev <= 1) {
+        clearInterval(interval);
+        return 0;
+      }
+
+      return prev - 1;
+    });
+  }, 1000);
+
+  return () => clearInterval(interval);
+}, [open, countdownMinutes]);
+
+const minutes = Math.floor(secondsLeft / 60);
+const seconds = secondsLeft % 60;
   if (!open) return null;
 
   return (
@@ -46,20 +74,42 @@ export default function SessionTimeoutModal({
 
         {/* Body */}
 
-        <div className="p-6">
+       <div className="p-6 text-center">
 
-          <p className="text-gray-700 leading-7">
+  <p className="text-gray-700 leading-7">
+    For your security, your session will expire unless you continue.
+  </p>
 
-            For your security, you will be
-            automatically logged out in
-            <span className="font-bold text-red-600">
-              {" "}5 minutes
-            </span>
-            {" "}unless you continue your session.
+  <div
+    className="
+      mt-6
+      rounded-2xl
+      border
+      border-red-200
+      bg-red-50
+      py-5
+    "
+  >
+    <div className="text-sm text-gray-600">
+      Session expires in
+    </div>
 
-          </p>
+    <div
+      className="
+        mt-2
+        text-5xl
+        font-bold
+        tracking-wider
+        text-red-600
+        tabular-nums
+      "
+    >
+      {String(minutes).padStart(2, "0")}:
+      {String(seconds).padStart(2, "0")}
+    </div>
+  </div>
 
-        </div>
+</div>
 
         {/* Footer */}
 

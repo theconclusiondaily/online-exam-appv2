@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { getPaper } from "./services/getPaper";
-
+import TCDLogo from "@/components/brand/TCDLogo";
 export default function PaperPreviewContainer() {
 
   const params = useParams();
@@ -79,6 +79,9 @@ export default function PaperPreviewContainer() {
     Print Paper
   </button>
 
+</div>
+<div className="mb-5">
+  <TCDLogo size={64} />
 </div>
         <h1 className="text-4xl font-bold">
 

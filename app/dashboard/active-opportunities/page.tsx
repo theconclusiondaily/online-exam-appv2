@@ -69,23 +69,13 @@ export default function ActiveOpportunitiesPage() {
 
       .single();
 
-    console.log(
-      "PROFILE ERROR:",
-      profileError
-    );
-
-    console.log(
-      "PROFILE:",
-      profile
-    );
+    
 
     // BLOCK USERS WITHOUT INSTITUTE
 
     if (!profile?.institute_id) {
 
-      console.log(
-        "NO INSTITUTE ASSIGNED"
-      );
+     
 
       setLiveExams([]);
       return;
@@ -123,9 +113,7 @@ await updateExamStatuses();
 
       return;
     }
-console.log("PROFILE", profile);
 
-console.log("ALL EXAMS", data);
 
 
     setLiveExams(

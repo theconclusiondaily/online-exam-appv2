@@ -303,7 +303,9 @@ if (existingPrize) {
         examId,
 
       p_amount:
-        Number(amount),
+  Math.round(
+    Number(amount)
+  ),
 
       p_reference_number:
         `PRIZE-${examId}-RANK-${i + 1}`,

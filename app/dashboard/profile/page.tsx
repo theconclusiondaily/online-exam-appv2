@@ -204,17 +204,21 @@ setPointsRemaining(
     // WALLET
 
     const {
-      data: wallet,
-    } = await supabase
-      .from("tcd_wallets")
-      .select(`
-        lifetime_earned
-      `)
-      .eq(
-        "user_id",
-        user.id
-      )
-      .single();
+  data: wallet,
+} = await supabase
+  .from("tcd_wallets")
+  .select(`
+    lifetime_added,
+    lifetime_won,
+    lifetime_refunded
+  `)
+  .eq(
+    "user_id",
+    user.id
+  )
+  .maybeSingle();
+
+
 const { data: levelData } =
   await supabase
     .from("user_levels")
@@ -338,8 +342,12 @@ setStats({
   exams,
   highest,
   accuracy,
-  lifetimeTcd:
-    wallet?.lifetime_earned || 0,
+ lifetimeTcd:
+  (
+    (wallet?.lifetime_added || 0) +
+    (wallet?.lifetime_won || 0) +
+    (wallet?.lifetime_refunded || 0)
+  ) / 10,
 
   currentStreak:
     streak?.current_streak || 0,

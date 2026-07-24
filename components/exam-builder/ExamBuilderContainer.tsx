@@ -121,15 +121,13 @@ await publishExam(examId);
 
   } catch (error: any) {
 
-  console.log("========== PUBLISH ERROR ==========");
-  console.log(error);
+  
 
   if (error instanceof Error) {
-    console.log("Message:", error.message);
+    
   }
 
-  console.log("Keys:", Object.keys(error || {}));
-  console.log("JSON:", JSON.stringify(error, null, 2));
+ 
 
   alert("Publish Failed.");
 }

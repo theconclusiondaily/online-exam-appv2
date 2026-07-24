@@ -2,28 +2,53 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
+
 interface UseInactivityLogoutOptions {
   warningTime?: number;
   logoutDelay?: number;
   shouldIgnore?: (pathname: string) => boolean;
 }
+
 export default function useInactivityLogout({
-  warningTime = 10  * 1000,
-  logoutDelay = 10* 1000,
+  warningTime = 25 * 60 * 1000, // 25 minutes
+logoutDelay = 5 * 60 * 1000,  // 5-minute warning
   shouldIgnore,
 }: UseInactivityLogoutOptions = {}) {
   const [showWarning, setShowWarning] = useState(false);
 
-  const warningTimeout = useRef<NodeJS.Timeout | null>(null);
-  const logoutTimeout = useRef<NodeJS.Timeout | null>(null);
+  const warningTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const logoutTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showWarningRef = useRef(false);
+  const shouldIgnoreRef = useRef(shouldIgnore);
+
+  // Keep the latest callback without recreating listeners
+  useEffect(() => {
+    shouldIgnoreRef.current = shouldIgnore;
+  }, [shouldIgnore]);
+
+  const clearTimers = useCallback(() => {
+    if (warningTimeout.current) {
+      clearTimeout(warningTimeout.current);
+      warningTimeout.current = null;
+    }
+
+    if (logoutTimeout.current) {
+      clearTimeout(logoutTimeout.current);
+      logoutTimeout.current = null;
+    }
+  }, []);
 
   const logout = useCallback(async () => {
-    // Never logout while writing an exam
-  const pathname = window.location.pathname;
+   
 
-if (shouldIgnore?.(pathname)) {
-  return;
-}
+    const pathname = window.location.pathname;
+
+    if (shouldIgnoreRef.current?.(pathname)) {
+  
+      return;
+    }
+
     localStorage.removeItem("tcd_session_token");
     sessionStorage.clear();
 
@@ -32,33 +57,52 @@ if (shouldIgnore?.(pathname)) {
     });
 
     window.location.replace("/login");
-  }, [shouldIgnore]);
-
-  const clearTimers = useCallback(() => {
-    if (warningTimeout.current) {
-      clearTimeout(warningTimeout.current);
-    }
-
-    if (logoutTimeout.current) {
-      clearTimeout(logoutTimeout.current);
-    }
   }, []);
 
   const resetTimer = useCallback(() => {
+    
+
     clearTimers();
 
-    setShowWarning(false);
+    if (showWarningRef.current) {
+      showWarningRef.current = false;
+      setShowWarning(false);
+    }
 
     warningTimeout.current = setTimeout(() => {
+      
+
+      showWarningRef.current = true;
       setShowWarning(true);
 
       logoutTimeout.current = setTimeout(() => {
+        
         logout();
-    }, logoutDelay);
+      }, logoutDelay);
     }, warningTime);
-  }, [clearTimers, logout]);
+  }, [clearTimers, logout, logoutDelay, warningTime]);
+
+  const handleActivity = useCallback(
+    (event: Event) => {
+      
+
+      if (showWarningRef.current) return;
+
+      resetTimer();
+    },
+    [resetTimer]
+  );
 
   useEffect(() => {
+    
+
+    const pathname = window.location.pathname;
+
+    if (shouldIgnoreRef.current?.(pathname)) {
+      
+      return;
+    }
+
     const events = [
       "mousemove",
       "mousedown",
@@ -70,19 +114,27 @@ if (shouldIgnore?.(pathname)) {
     ];
 
     events.forEach((event) =>
-      window.addEventListener(event, resetTimer)
+      window.addEventListener(event, handleActivity, {
+        passive: true,
+      })
     );
 
     resetTimer();
 
     return () => {
+     
+
       clearTimers();
 
       events.forEach((event) =>
-        window.removeEventListener(event, resetTimer)
+        window.removeEventListener(event, handleActivity)
       );
     };
-  }, [resetTimer, clearTimers]);
+  }, [handleActivity, resetTimer, clearTimers]);
+
+  useEffect(() => {
+    
+  }, [showWarning]);
 
   return {
     showWarning,

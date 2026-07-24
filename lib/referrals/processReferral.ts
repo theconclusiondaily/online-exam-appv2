@@ -156,107 +156,64 @@ export async function processReferral(
       ]);
 
     // -----------------------------------
-    // REFERRER WALLET
-    // -----------------------------------
+// REFERRER WALLET REWARD
+// 50 TCD Credits = 500 paise
+// -----------------------------------
 
-    const {
-      data: referrerWallet,
-    } = await supabase
-      .from("tcd_wallets")
-      .select("*")
-      .eq(
-        "user_id",
-        referrer.id
-      )
-      .single();
+const {
+  error: referrerRewardError,
+} = await supabase.rpc(
+  "credit_wallet",
+  {
+    p_user_id: referrer.id,
+    p_amount: 500,
+    p_transaction_type: "REFERRAL",
+    p_bonus_amount: 500,
+    p_reference_number:
+      `REFERRAL-REFERRER-${referral.id}`,
+    p_metadata: {
+      referral_id: referral.id,
+      referred_user_id: user.id,
+      reward_credits: 50,
+      source: "referral_reward",
+    },
+  }
+);
 
-    if (referrerWallet) {
+if (referrerRewardError) {
+  throw referrerRewardError;
+}
 
-      await supabase
-        .from("tcd_wallets")
-        .update({
+// -----------------------------------
+// NEW USER REFERRAL REWARD
+// 25 TCD Credits = 250 paise
+// -----------------------------------
 
-          current_balance:
-            (referrerWallet.current_balance || 0) + 500,
+const {
+  error: newUserRewardError,
+} = await supabase.rpc(
+  "credit_wallet",
+  {
+    p_user_id: user.id,
+    p_amount: 250,
+    p_transaction_type: "REFERRAL",
+    p_bonus_amount: 250,
+    p_reference_number:
+      `REFERRAL-NEWUSER-${referral.id}`,
+    p_metadata: {
+      referral_id: referral.id,
+      referrer_user_id: referrer.id,
+      reward_credits: 25,
+      source: "referral_reward",
+    },
+  }
+);
 
-          lifetime_earned:
-            (referrerWallet.lifetime_earned || 0) + 500,
+if (newUserRewardError) {
+  throw newUserRewardError;
+}
 
-        })
-        .eq(
-          "user_id",
-          referrer.id
-        );
-    }
-
-    // -----------------------------------
-    // NEW USER WALLET
-    // -----------------------------------
-
-    const {
-      data: newUserWallet,
-    } = await supabase
-      .from("tcd_wallets")
-      .select("*")
-      .eq(
-        "user_id",
-        user.id
-      )
-      .single();
-
-    if (newUserWallet) {
-
-      await supabase
-        .from("tcd_wallets")
-        .update({
-
-          current_balance:
-            (newUserWallet.current_balance || 0) + 200,
-
-          lifetime_earned:
-            (newUserWallet.lifetime_earned || 0) + 200,
-
-        })
-        .eq(
-          "user_id",
-          user.id
-        );
-    }
-
-    // -----------------------------------
-    // TRANSACTIONS
-    // -----------------------------------
-
-    await supabase
-      .from("tcd_transactions")
-      .insert([
-        {
-          user_id:
-            referrer.id,
-
-          credits: 500,
-
-          transaction_type:
-            "referral_reward",
-
-          description:
-            "Referral reward earned",
-        },
-
-        {
-          user_id:
-            user.id,
-
-          credits: 200,
-
-          transaction_type:
-            "referral_bonus",
-
-          description:
-            "Signup referral bonus",
-        },
-      ]);
-
+ 
     // -----------------------------------
     // NOTIFICATIONS
     // -----------------------------------
@@ -271,8 +228,8 @@ export async function processReferral(
           title:
             "Referral Successful",
 
-          message:
-            "You earned 500 TCD Credits.",
+         message:
+  "You earned 50 TCD Credits.",
 
           type:
             "reward",
@@ -286,7 +243,7 @@ export async function processReferral(
             "Welcome Bonus",
 
           message:
-            "You earned 200 TCD Credits.",
+  "You earned 25 TCD Credits.",
 
           type:
             "reward",

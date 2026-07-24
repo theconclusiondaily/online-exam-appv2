@@ -63,15 +63,7 @@ const {
 
   .maybeSingle();
 
-console.log(
-  currentLiveExam
-);
-setLiveExam(
-  currentLiveExam
-);
-console.log(
-  liveExamError
-);
+
 
       // FETCH ONLY LIVE EXAM LEADERBOARD
 
@@ -88,17 +80,11 @@ console.log(
   .limit(10);
 
       if (error) {
-        console.log(error);
+      
         return;
       }
-      console.log(
-  "LIVE EXAM:",
-  currentLiveExam
-);
-console.log(
-  "LEADERBOARD DATA:",
-  data
-);
+      
+
       setLeaders(data || []);
 
       setLoading(false);
@@ -110,9 +96,7 @@ console.log(
     }
 
     loadLeaderboard();
-console.log(
-  "LEADERBOARD FUNCTION STARTED"
-);
+
     const interval =
       setInterval(() => {
         loadLeaderboard();
@@ -122,9 +106,7 @@ console.log(
       clearInterval(interval);
 
   }, []);
-console.log(
-  "FETCHING LEADERBOARD..."
-);
+
   if (loading) {
 
     return (

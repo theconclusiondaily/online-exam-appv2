@@ -384,7 +384,7 @@ const cameraPositionClass = {
 
     setTimerInitialized(true);
 
-    console.log("✅ Timer Started");
+  
 
   });
 
@@ -858,10 +858,7 @@ useEffect(() => {
 
           const data =
             payload.new as any;
-console.log(
-  "REALTIME EVENT:",
-  payload
-);
+
      if (
   data.warning_message
 ) {
@@ -1044,9 +1041,7 @@ if (
 
   if (updated >= 10) {
 
-    console.log(
-      "AUTO SUBMIT TRIGGERED"
-    );
+   
 
     setTimeout(() => {
 
@@ -1094,8 +1089,14 @@ if (
     }
   }
   async function uploadSnapshot() {
+  const video = videoRef.current;
 
-  if (!videoRef.current) {
+  if (
+    !video ||
+    video.readyState < 2 ||
+    video.videoWidth === 0 ||
+    video.videoHeight === 0
+  ) {
     return;
   }
 
@@ -1115,22 +1116,36 @@ if (
   }
 
   ctx.drawImage(
-    videoRef.current,
+    video,
     0,
     0,
     320,
     240
   );
-const detector =
-  await getFaceDetector();
 
-const result =
-  detector.detect(
-    canvas
-  );
+  let faceCount = 0;
 
-const faceCount =
-  result.detections.length;
+  try {
+    const detector =
+      await getFaceDetector();
+
+    const result =
+      detector.detect(canvas);
+
+    faceCount =
+      result?.detections?.length ?? 0;
+
+  } catch (error) {
+    console.error(
+      "FACE DETECTION SKIPPED:",
+      error
+    );
+
+    return;
+  }
+
+  // Keep your existing Supabase insert
+  // and faceCount logic below unchanged.
   await supabase
   .from(
     "proctoring_events"
@@ -1394,10 +1409,7 @@ if (cachedQuestion) {
 }
 
 
-console.log(
-  "FETCH QUESTION TOKEN:",
-  sessionToken
-);
+
   const response = await fetch(
     "/api/exam/question",
     {
@@ -1415,26 +1427,16 @@ console.log(
       }),
     }
   );
-console.log(
-  "QUESTION REQUEST:",
-  {
-    examId,
-    questionIndex: index,
-    sessionToken,
-  }
-);
+
   const result =
     await response.json();
-    console.log(result);
+   
 
   if (
   response.ok &&
   result.data
 ) {
-console.log(
-  "TOTAL QUESTIONS:",
-  result.totalQuestions
-);
+
 
 const total =
   result.totalQuestions || 1;
@@ -1450,10 +1452,7 @@ if (
   );
 
 }
-console.log(
-  "FETCH TOTAL QUESTIONS:",
-  result.totalQuestions
-);
+
     const question =
       result.data;
 const shuffledQuestion = {
@@ -1626,24 +1625,24 @@ const result =
   result.session?.attempt_id ||
   null
 );
-console.log(
-  "START RESULT FULL:",
-  JSON.stringify(
-    result,
-    null,
-    2
-  )
-);
 
-console.log(
-  "SESSION TOKEN FROM API:",
-  result.session?.session_token
-);
+
+
 if (!response.ok) {
-console.log(
-  "START API ERROR:",
-  result
-);
+
+
+ // Paid exam accessed without
+  // a valid entry-fee payment.
+  if (
+    response.status === 402 &&
+    result.paymentRequired
+  ) {
+    router.replace(
+      `/exam/${examId}/entry`
+    );
+
+    return;
+  }
   if (
     result.error ===
     "You have already submitted this exam"
@@ -1694,19 +1693,7 @@ const questionResponse =
 
 const questionResult =
   await questionResponse.json();
-  console.log(
-  "QUESTION RESPONSE STATUS:",
-  questionResponse.status
-);
-
-console.log(
-  "QUESTION RESULT FULL:",
-  JSON.stringify(
-    questionResult,
-    null,
-    2
-  )
-);
+ 
 
 if (!questionResponse.ok) {
 
@@ -1720,22 +1707,12 @@ if (!questionResponse.ok) {
 
   return;
 }
-console.log(
-  "TOTAL QUESTIONS:",
-  questionResult.totalQuestions
-);
+
 
 setTotalQuestions(
   questionResult.totalQuestions || 1
 );
-console.log(
-  "TOTAL QUESTIONS:",
-  questionResult.totalQuestions
-);
-console.log(
-  "QUESTION RESULT:",
-  questionResult
-);
+
 
 if (
   questionResponse.ok &&
@@ -1805,15 +1782,7 @@ localStorage.setItem(
     return;
   }
 
-  console.log(
-    "SELECT ANSWER",
-    {
-      questionId,
-      answer,
-      sessionToken,
-      examId,
-    }
-  );
+  
 
  const newValue =
   answers[questionId] === answer
@@ -2125,15 +2094,9 @@ try {
 
 const result =
   await response.json();
-  console.log(
-  "SUBMIT RESULT:",
-  result
-);
+  
 
-console.log(
-  "ATTEMPT ID:",
-  result?.attemptId
-);
+
 
 if (!response.ok) {
 
@@ -2247,10 +2210,7 @@ if (
   newRank < previousRank
 
 ) {
-console.log(
-  "ACTIVITY RESULT:",
-  result
-);
+
   await supabase
 
     .from("activity_feed")
@@ -2358,9 +2318,7 @@ await supabase
   );
 
   
-console.log(
-  "RESULT SAVED"
-);
+
     localStorage.setItem(
       `exam-submitted-${examId}-${userId}`,
       "true"
@@ -2407,15 +2365,7 @@ localStorage.removeItem(
     setTimeout(() => {
 
   setShowXP(false);
-console.log(
-  "ATTEMPT ID:",
-  result.attemptId
-);
 
-console.log(
-  "FULL RESULT:",
-  result
-);
 sessionStorage.setItem(
   `achievement-count-${result.attemptId}`,
   String(
@@ -2803,12 +2753,20 @@ to-[#EEF3FB] p-5"
 >
 
   <img
-    src="/icons/tcd-shield.svg"
-    className="w-8 h-8"
-    alt=""
-  />
+  src="/logo.png"
+  className="w-12 h-12 object-contain"
+  alt="The Conclusion Daily"
+/>
 
-  TCD Exam
+<div className="flex flex-col">
+  <span className="text-xl md:text-2xl font-black leading-tight">
+    TCD Exam
+  </span>
+
+  <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-[#D4AF37]">
+    Hope & Faith
+  </span>
+</div>
 
 </h1>
 
@@ -3044,14 +3002,19 @@ font-black
   ].filter(Boolean)
 ).map((option: string, index: number) => {
 
-  const optionKey =
-    option === currentQuestionData.option_a
-      ? "A"
-      : option === currentQuestionData.option_b
-      ? "B"
-      : option === currentQuestionData.option_c
-      ? "C"
-      : "D";
+ // Original database key used for scoring
+const optionKey =
+  option === currentQuestionData.option_a
+    ? "A"
+    : option === currentQuestionData.option_b
+    ? "B"
+    : option === currentQuestionData.option_c
+    ? "C"
+    : "D";
+
+// Visible label based on shuffled position
+const displayLabel =
+  ["A", "B", "C", "D"][index];
 
   return (
                   <button
@@ -3077,7 +3040,7 @@ font-black
                   >
 
                     <span className="font-bold mr-2">
-  {optionKey}.
+  {displayLabel}.
 </span>
 
 <MathText

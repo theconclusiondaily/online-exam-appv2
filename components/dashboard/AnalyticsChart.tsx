@@ -38,7 +38,7 @@ export default function AnalyticsChart() {
         .select("created_at");
 
       if (error) {
-        console.log(error);
+      
         return;
       }
 

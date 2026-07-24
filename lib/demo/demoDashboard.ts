@@ -5,9 +5,15 @@ export const demoDashboard = {
   },
 
 wallet: {
-  current_balance: 250,
-  last_exam_credits: 50,
-  lifetime_earned: 500,
+  available_balance: 2500,
+  locked_balance: 0,
+  bonus_balance: 0,
+
+  lifetime_added: 5000,
+  lifetime_won: 0,
+  lifetime_spent: 0,
+  lifetime_withdrawn: 0,
+  lifetime_refunded: 0,
 },
 
   streak: {

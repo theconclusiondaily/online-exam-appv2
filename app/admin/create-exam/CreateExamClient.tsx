@@ -81,10 +81,7 @@ useEffect(() => {
       .from("institutes")
       .select("*")
       .order("name");
-console.log(
-  "INSTITUTE ERROR:",
-  instituteError
-);
+
     if (!instituteError && instituteData) {
       setInstitutes(
         instituteData
@@ -103,10 +100,7 @@ console.log(
           ascending: false,
         }
       );
-console.log(
-  "QUESTION ERROR:",
-  questionError
-);
+
     if (!questionError && questionData) {
       setQuestions(
         questionData
@@ -133,25 +127,7 @@ useEffect(() => {
   .eq("id", editId)
   .maybeSingle();
 
-console.log("EDIT ID:", editId);
-console.log("STATUS:", status);
-console.log("DATA:", data);
-console.log("ERROR:", error);
 
-console.log(
-  "EDIT ID:",
-  editId
-);
-
-console.log(
-  "EXAM DATA:",
-  data
-);
-
-console.log(
-  "EXAM ERROR:",
-  error
-);
 
     if (!data) {
 
@@ -235,15 +211,7 @@ const {
   .select("question_id")
   .eq("exam_id", editId);
 
-console.log(
-  "MAPPINGS:",
-  mappings
-);
 
-console.log(
-  "MAPPINGS ERROR:",
-  mappingsError
-);
 
 if (mappings) {
 
@@ -365,18 +333,7 @@ end_time:
   error = result.error;
 
 } else {
-console.log("startTime input:", startTime);
-console.log("endTime input:", endTime);
 
-console.log(
-  "startTime ISO:",
-  new Date(startTime).toISOString()
-);
-
-console.log(
-  "endTime ISO:",
-  new Date(endTime).toISOString()
-);
   const result = await supabase
     .from("exams")
     .insert({
@@ -415,7 +372,7 @@ console.log(
 
 if (error) {
 
-  console.log(error);
+ 
 
   alert(
     editId
@@ -470,10 +427,7 @@ const mappings =
     })
   );
 
-console.log(
-  "MAPPINGS TO INSERT:",
-  mappings
-);
+
 
 const {
   data: insertedMappings,
@@ -483,15 +437,7 @@ const {
   .insert(mappings)
   .select();
 
-console.log(
-  "INSERTED MAPPINGS:",
-  insertedMappings
-);
 
-console.log(
-  "MAPPING INSERT ERROR:",
-  mappingInsertError
-);
 
 if (mappingInsertError) {
 

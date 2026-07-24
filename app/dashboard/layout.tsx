@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
-import useInactivityLogout
-from "@/hooks/useInactivityLogout";
-import SessionTimeoutModal
-from "@/components/session/SessionTimeoutModal";
+
+import useInactivityLogout from "@/hooks/useInactivityLogout";
+import SessionTimeoutModal from "@/components/session/SessionTimeoutModal";
 import SessionGuard from "@/components/auth/SessionGuard";
 import StudentSidebar from "@/components/layout/StudentSidebar";
 
@@ -14,20 +13,27 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const {
-  showWarning,
-  resetTimer,
-  logout,
-} = useInactivityLogout({
-  shouldIgnore: (pathname) =>
-    pathname.startsWith("/exam/") ||
-    pathname.startsWith("/admin/") ||
-    pathname.startsWith("/teacher/"),
-});
-  const [sidebarOpen, setSidebarOpen] =
-    useState(false);
+ 
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  return (
+  // Stable callback (important)
+  const shouldIgnore = useCallback((pathname: string) => {
+    return (
+      pathname.startsWith("/exam/") ||
+      pathname.startsWith("/admin/") ||
+      pathname.startsWith("/teacher/")
+    );
+  }, []);
+
+  const {
+    showWarning,
+    resetTimer,
+    logout,
+  } = useInactivityLogout({
+    shouldIgnore,
+  });
+
+    return (
     <div
       className="
         flex
@@ -51,106 +57,93 @@ export default function DashboardLayout({
               bg-black/40
               z-50
             "
-            onClick={() =>
-              setSidebarOpen(false)
-            }
+            onClick={() => setSidebarOpen(false)}
           />
 
-         <div
-  className="
-    fixed
-    top-0
-    left-0
-
-    w-72
-    h-full
-
-    overflow-y-auto
-
-    bg-white
-
-    z-50
-
-    shadow-2xl
-  "
->
+          <div
+            className="
+              fixed
+              top-0
+              left-0
+              w-72
+              h-full
+              overflow-y-auto
+              bg-white
+              z-50
+              shadow-2xl
+            "
+          >
             <button
               className="
                 absolute
                 top-4
                 right-4
               "
-              onClick={() =>
-                setSidebarOpen(false)
-              }
+              onClick={() => setSidebarOpen(false)}
             >
               <X size={22} />
             </button>
 
-           <div className="pt-10">
-  <StudentSidebar mobile />
-</div>
+            <div className="pt-10">
+              <StudentSidebar mobile />
+            </div>
           </div>
         </>
       )}
 
-      {/* Mobile Header Only */}
+      {/* Mobile Header */}
       <div
         className="
           lg:hidden
-
           fixed
           top-0
           left-0
           right-0
-
           h-16
-
           bg-white
-
           border-b
           border-gray-200
-
           z-40
-
           flex
           items-center
-
           px-4
         "
       >
-        <button
-          onClick={() =>
-            setSidebarOpen(true)
-          }
-        >
+        <button onClick={() => setSidebarOpen(true)}>
           <Menu size={24} />
         </button>
+
+        <div className="absolute left-1/2 -translate-x-1/2">
+          <img
+            src="/logo.png"
+            alt="The Conclusion Daily"
+            className="h-11 w-11 object-contain"
+          />
+        </div>
       </div>
 
       {/* Main Content */}
-     <main
-  className="
-    flex-1
-    min-w-0
-    overflow-y-auto
-
-    pt-16
-    pb-24
-
-    lg:pt-0
-    lg:pb-0
-  "
->
+      <main
+        className="
+          flex-1
+          min-w-0
+          overflow-y-auto
+          pt-16
+          pb-24
+          lg:pt-0
+          lg:pb-0
+        "
+      >
         <SessionGuard>
           {children}
         </SessionGuard>
 
         <SessionTimeoutModal
-  open={showWarning}
-  onStayLoggedIn={resetTimer}
-  onLogout={logout}
-/>
+          open={showWarning}
+          countdownMinutes={5}
+          onStayLoggedIn={resetTimer}
+          onLogout={logout}
+        />
       </main>
     </div>
   );

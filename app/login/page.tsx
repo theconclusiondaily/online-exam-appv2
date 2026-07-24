@@ -247,7 +247,7 @@ if (!existingProfile) {
 if (profileError) {
 
   console.error("PROFILE ERROR:", profileError);
-  console.log(profileError);
+  
 
   alert(profileError.message);
 
@@ -405,10 +405,7 @@ const generatedCode =
 
         });
 
-    console.log(
-      "SESSION ERROR:",
-      sessionError
-    );
+    
 
     // FETCH PROFILE
 
@@ -440,9 +437,7 @@ const generatedCode =
       return;
     }
 
-    console.log(
-      profile
-    );
+    
 localStorage.removeItem(
   "tcd_demo"
 );

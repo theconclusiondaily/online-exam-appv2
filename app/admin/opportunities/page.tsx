@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase/client";
-
+import TCDLogo from "@/components/brand/TCDLogo";
 export default function AdminOpportunitiesPage() {
 
   const [title, setTitle] =
@@ -103,7 +103,9 @@ export default function AdminOpportunitiesPage() {
     <main className="p-6">
 
       <div className="max-w-4xl mx-auto">
-
+<div className="mb-5">
+  <TCDLogo size={64} />
+</div>
         <h1
           className="
             text-3xl

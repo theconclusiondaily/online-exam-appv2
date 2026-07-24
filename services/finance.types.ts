@@ -4,7 +4,6 @@ export interface Wallet {
   available_balance: number;
   locked_balance: number;
   bonus_balance: number;
-  lifetime_balance: number;
 
   lifetime_added: number;
   lifetime_won: number;

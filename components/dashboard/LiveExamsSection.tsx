@@ -112,13 +112,7 @@ const completedExams =
   
 
 liveExams.forEach((exam) => {
-  console.log({
-    title: exam.title,
-    exam_scope: exam.exam_scope,
-    challenge_type: exam.challenge_type,
-    status: exam.status,
-    published: exam.published,
-  });
+ 
 });
 
 

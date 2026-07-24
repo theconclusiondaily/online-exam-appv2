@@ -28,6 +28,12 @@ const items = [
     href: "/admin/analytics",
     icon: TCDIcons.target,
   },
+{
+  title: "Withdrawals",
+  description: "Review and process payouts",
+  href: "/admin/withdrawals",
+  icon: TCDIcons.wallet,
+},
 ];
 
 export default function PlatformManagement() {
@@ -43,7 +49,7 @@ export default function PlatformManagement() {
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
         {items.map((item) => (
           <Link
             key={item.title}
