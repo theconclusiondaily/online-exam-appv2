@@ -15,7 +15,7 @@ import FAQ from "@/components/landing/FAQ";
 import CTA from "@/components/landing/CTA";
 import Footer from "@/components/landing/Footer";
 
-export default function MarketingHomePage() {
+export default function MarketingHome() {
   return (
     <>
       <Navbar />

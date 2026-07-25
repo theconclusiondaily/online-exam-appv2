@@ -36,7 +36,7 @@ const features = [
   },
 ];
 
-export default function HomePage() {
+export default function ExamHome() {
     const [showIntro, setShowIntro] = useState<boolean | null>(null);
 
 useEffect(() => {

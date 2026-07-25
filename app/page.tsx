@@ -1,14 +1,13 @@
 import { headers } from "next/headers";
-
-import MarketingHomePage from "./(marketing)/page";
-import ExamHomePage from "./(exam-home)/page"; // we'll create this
+import MarketingHome from "@/components/marketing/MarketingHome";
+import ExamHome from "@/components/exam/ExamHome";
 
 export default async function Home() {
-  const host = (await headers()).get("host") ?? "";
+  const host = (await headers()).get("host")?.toLowerCase() ?? "";
 
-  if (host.startsWith("exam.")) {
-    return <ExamHomePage />;
-  }
+  const isExamDomain =
+    host === "exam.theconclusiondaily.com" ||
+    host.startsWith("exam.");
 
-  return <MarketingHomePage />;
+  return isExamDomain ? <ExamHome /> : <MarketingHome />;
 }
