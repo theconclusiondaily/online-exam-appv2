@@ -5,7 +5,7 @@ import TCDIcon from "@/components/brand/TCDIcon";
 import {
   getXPProgress
 } from "@/lib/xpLevels";
-
+import { formatCredits } from "@/lib/finance/formatter";
 
 interface DashboardHeroProps {
 
@@ -366,10 +366,10 @@ const xpProgress =
       >
 
         <HeroMetric
-          title="TCD Vault"
-          value={balance}
-          icon="/icons/coin.svg"
-        />
+  title="TCD Vault"
+  value={`${formatCredits(balance)} Credits`}
+  icon="/icons/coin.svg"
+/>
 
         <HeroMetric
           title="Growth Streak"
@@ -401,7 +401,7 @@ function HeroMetric({
 
   title: string;
 
-  value: number;
+  value: number | string;
 
   icon: string;
 
