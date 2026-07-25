@@ -1312,7 +1312,7 @@ const filteredLiveExams =
       exam.exam_scope === "PUBLIC" ||
       instituteIds.includes(exam.institute_id)
   );
-
+setLiveExams(filteredLiveExams);
 // UPCOMING EXAMS
 
 const {
