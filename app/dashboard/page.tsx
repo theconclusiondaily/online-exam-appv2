@@ -764,10 +764,7 @@ setLoginStreak(
     prestige_level
   `)
 
-        .eq(
-          "email",
-          user.email
-        )
+        .eq("id", user.id)
         
         .single();
 

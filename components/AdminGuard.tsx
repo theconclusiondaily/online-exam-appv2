@@ -56,10 +56,7 @@ export default function AdminGuard({
       } = await supabase
         .from("users")
         .select("*")
-        .eq(
-          "email",
-          user.email
-        )
+        .eq("id", user.id)
         .maybeSingle();
 
    
@@ -90,9 +87,19 @@ export default function AdminGuard({
           "Access Denied"
         );
 
-        router.push(
-          "/teacher"
-        );
+        switch (profile.role) {
+  case "teacher":
+    router.replace("/teacher");
+    return;
+
+  case "student":
+    router.replace("/dashboard")
+    return;
+
+  default:
+    router.replace("/login");
+    return;
+}
 
         return;
       }
