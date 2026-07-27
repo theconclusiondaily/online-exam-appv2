@@ -16,8 +16,14 @@ import GlowBackground from "./ui/GlowBackground";
 import Section from "./ui/Section";
 
 import { COMPANY } from "@/lib/landing/constants";
+import type { HeroData } from "@/lib/landing/types";
+interface HeroProps {
+  data: HeroData;
+}
 
-export default function Hero() {
+export default function Hero({
+  data,
+}: HeroProps) {
   return (
     <Section className="relative min-h-screen flex items-center pt-24">
 
@@ -92,7 +98,35 @@ export default function Hero() {
             </OutlineButton>
 
           </div>
+<div className="mt-12 grid grid-cols-2 gap-4 md:grid-cols-4">
+  <div className="rounded-2xl border border-gray-200 bg-white/80 p-5 backdrop-blur-xl">
+    <p className="text-sm text-brand-muted">Live Exams</p>
+    <h3 className="mt-2 text-3xl font-black text-brand">
+      {data.stats.exams}
+    </h3>
+  </div>
 
+  <div className="rounded-2xl border border-gray-200 bg-white/80 p-5 backdrop-blur-xl">
+    <p className="text-sm text-brand-muted">Students</p>
+    <h3 className="mt-2 text-3xl font-black text-brand">
+      {data.stats.students}
+    </h3>
+  </div>
+
+  <div className="rounded-2xl border border-gray-200 bg-white/80 p-5 backdrop-blur-xl">
+    <p className="text-sm text-brand-muted">Institutes</p>
+    <h3 className="mt-2 text-3xl font-black text-brand">
+      {data.stats.institutes}
+    </h3>
+  </div>
+
+  <div className="rounded-2xl border border-gray-200 bg-white/80 p-5 backdrop-blur-xl">
+    <p className="text-sm text-brand-muted">Questions</p>
+    <h3 className="mt-2 text-3xl font-black text-brand">
+      {data.stats.questions}
+    </h3>
+  </div>
+</div>
           {/* Highlights */}
 
           <div className="mt-12 flex flex-wrap gap-6">
@@ -164,7 +198,29 @@ export default function Hero() {
           }}
         >
 
-        <ProductShowcase mode="dashboard" />
+       {data.featuredExam && (
+  <div className="mb-6 rounded-3xl border border-brand/10 bg-white/90 p-6 shadow-lg backdrop-blur-xl">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm text-brand-muted">Featured Exam</p>
+
+        <h3 className="mt-2 text-xl font-bold text-brand">
+          {data.featuredExam.title}
+        </h3>
+
+        <p className="mt-2 text-sm text-brand-muted">
+          Prize Pool: {data.featuredExam.rewardPool}
+        </p>
+      </div>
+
+      <span className="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white">
+        {data.featuredExam.status}
+      </span>
+    </div>
+  </div>
+)}
+
+<ProductShowcase mode="dashboard" />
 
         </motion.div>
 

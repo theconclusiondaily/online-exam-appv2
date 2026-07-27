@@ -1,3 +1,5 @@
+import { getLandingData } from "@/lib/landing/getLandingData";
+
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 
@@ -15,13 +17,19 @@ import FAQ from "@/components/landing/FAQ";
 import CTA from "@/components/landing/CTA";
 import Footer from "@/components/landing/Footer";
 
-export default function MarketingHome() {
+interface MarketingHomeProps {
+  landing: Awaited<ReturnType<typeof getLandingData>>;
+}
+
+export default function MarketingHome({
+  landing,
+}: MarketingHomeProps) {
   return (
     <>
       <Navbar />
 
       <main className="overflow-hidden">
-        <Hero />
+        <Hero data={landing.hero} />
 
         <StudentExperience />
 

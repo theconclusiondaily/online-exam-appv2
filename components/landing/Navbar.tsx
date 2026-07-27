@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X, ChevronRight } from "lucide-react";
 
 import { navigation } from "@/lib/landing/navigation";
-import { COMPANY } from "@/lib/landing/constants";
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -27,113 +27,132 @@ export default function Navbar() {
   return (
     <>
       <header
-        className={`
-        fixed
-        top-0
-        left-0
-        right-0
-        z-50
-        transition-all
-        duration-500
-        ${
+        className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
           scrolled
-            ? "backdrop-blur-2xl bg-white/80 border-b border-gray-200 shadow-sm"
+            ? "border-b border-gray-200 bg-white/80 shadow-sm backdrop-blur-2xl"
             : "bg-transparent"
-        }
-      `}
+        }`}
       >
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
 
           {/* Logo */}
 
-          <Link
-            href="/"
-            className="flex items-center gap-3 group"
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand text-white font-black text-lg transition-transform duration-300 group-hover:rotate-6">
-              T
+          <Link href="/" className="flex items-center gap-4">
+
+            <Image
+              src="/logo.png"
+              alt="The Conclusion Daily"
+              width={56}
+              height={56}
+              priority
+              className="h-14 w-14 object-contain"
+            />
+
+            <div className="flex flex-col leading-tight">
+
+              <span
+                className={`text-lg font-black tracking-wide transition-colors duration-300 ${
+                  scrolled ? "text-brand" : "text-white"
+                }`}
+              >
+                THE CONCLUSION DAILY
+              </span>
+
+              <span
+                className={`text-[11px] uppercase tracking-[0.28em] transition-colors duration-300 ${
+                  scrolled ? "text-brand-gold" : "text-[#F2D27A]"
+                }`}
+              >
+                Hope & Faith 
+              </span>
+
             </div>
 
-            <div className="hidden sm:block">
-              <p className="font-black tracking-wide text-brand">
-                {COMPANY.shortName}
-              </p>
-
-              <p className="text-xs text-brand-muted">
-                {COMPANY.tagline}
-              </p>
-            </div>
           </Link>
 
-          {/* Desktop */}
+          {/* Desktop Navigation */}
 
-          <nav className="hidden lg:flex items-center gap-10">
+          <nav className="hidden items-center gap-10 lg:flex">
 
             {navigation.map((item) => (
+
               <Link
                 key={item.title}
                 href={item.href}
-                className="
-                relative
-                text-sm
-                font-semibold
-                text-brand-muted
-                transition
-                hover:text-brand
-                after:absolute
-                after:-bottom-2
-                after:left-0
-                after:h-[2px]
-                after:w-0
-                after:bg-brand-gold
-                after:transition-all
-                hover:after:w-full
-                "
+                className={`
+                  relative
+                  text-sm
+                  font-semibold
+                  transition
+                  after:absolute
+                  after:-bottom-2
+                  after:left-0
+                  after:h-[2px]
+                  after:w-0
+                  after:bg-brand-gold
+                  after:transition-all
+                  hover:after:w-full
+                  ${
+                    scrolled
+                      ? "text-brand-muted hover:text-brand"
+                      : "text-white/90 hover:text-brand-gold"
+                  }
+                `}
               >
                 {item.title}
               </Link>
+
             ))}
 
           </nav>
 
           {/* Desktop CTA */}
 
-          <div className="hidden lg:flex items-center gap-4">
+          <div className="hidden items-center gap-4 lg:flex">
 
             <Link
-              href="/login"
-              className="font-semibold text-brand hover:text-brand-gold transition"
+              href="https://exam.theconclusiondaily.com/login"
+              className={`font-semibold transition ${
+                scrolled
+                  ? "text-brand hover:text-brand-gold"
+                  : "text-white hover:text-brand-gold"
+              }`}
             >
               Login
             </Link>
 
             <Link
-              href="/signup"
+              href="https://exam.theconclusiondaily.com/signup"
               className="
-              rounded-2xl
-              bg-brand
-              px-6
-              py-3
-              font-semibold
-              text-white
-              transition-all
-              duration-300
-              hover:scale-105
-              hover:bg-brand-light
-            "
+                rounded-2xl
+                bg-brand
+                px-6
+                py-3
+                font-semibold
+                text-white
+                transition-all
+                duration-300
+                hover:scale-105
+                hover:bg-brand-light
+                shadow-lg
+              "
             >
               Get Started
             </Link>
 
           </div>
 
-          {/* Mobile */}
+          {/* Mobile Menu Button */}
 
           <button
             onClick={() => setMobileOpen(true)}
-            className="lg:hidden rounded-xl p-2"
+            className="rounded-xl p-2 lg:hidden"
           >
-            <Menu className="h-7 w-7 text-brand" />
+            <Menu
+              className={`h-7 w-7 ${
+                scrolled ? "text-brand" : "text-white"
+              }`}
+            />
           </button>
 
         </div>
@@ -155,33 +174,45 @@ export default function Navbar() {
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
-              transition={{ duration: .35 }}
-              className="
-              absolute
-              right-0
-              top-0
-              h-full
-              w-[330px]
-              bg-white
-              shadow-2xl
-              p-8
-              "
+              transition={{ duration: 0.35 }}
+              className="absolute right-0 top-0 h-full w-[330px] bg-white p-8 shadow-2xl"
             >
+
               <div className="flex items-center justify-between">
 
-                <h2 className="text-xl font-black text-brand">
-                  {COMPANY.shortName}
-                </h2>
-
-                <button
+                <Link
+                  href="/"
                   onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-3"
                 >
+                  <Image
+                    src="/logo.png"
+                    alt="The Conclusion Daily"
+                    width={46}
+                    height={46}
+                  />
+
+                  <div>
+
+                    <div className="text-sm font-black text-brand">
+                      THE CONCLUSION DAILY
+                    </div>
+
+                    <div className="text-[10px] uppercase tracking-[0.25em] text-brand-gold">
+                      Hope & Faith 
+                    </div>
+
+                  </div>
+
+                </Link>
+
+                <button onClick={() => setMobileOpen(false)}>
                   <X className="h-7 w-7 text-brand" />
                 </button>
 
               </div>
 
-              <div className="mt-12 flex flex-col gap-6">
+              <div className="mt-12 flex flex-col gap-5">
 
                 {navigation.map((item) => (
 
@@ -190,17 +221,17 @@ export default function Navbar() {
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
                     className="
-                    flex
-                    items-center
-                    justify-between
-                    rounded-2xl
-                    border
-                    border-gray-200
-                    p-4
-                    font-semibold
-                    text-brand
-                    transition
-                    hover:bg-gray-50
+                      flex
+                      items-center
+                      justify-between
+                      rounded-2xl
+                      border
+                      border-gray-200
+                      p-4
+                      font-semibold
+                      text-brand
+                      transition
+                      hover:bg-gray-50
                     "
                   >
                     {item.title}
@@ -216,29 +247,34 @@ export default function Navbar() {
               <div className="mt-12 flex flex-col gap-4">
 
                 <Link
-                  href="/login"
+                  href="https://exam.theconclusiondaily.com/login"
                   className="
-                  rounded-2xl
-                  border
-                  border-brand
-                  py-3
-                  text-center
-                  font-semibold
-                  text-brand
+                    rounded-2xl
+                    border
+                    border-brand
+                    py-3
+                    text-center
+                    font-semibold
+                    text-brand
+                    transition
+                    hover:bg-brand
+                    hover:text-white
                   "
                 >
                   Login
                 </Link>
 
                 <Link
-                  href="/signup"
+                  href="https://exam.theconclusiondaily.com/signup"
                   className="
-                  rounded-2xl
-                  bg-brand
-                  py-3
-                  text-center
-                  font-semibold
-                  text-white
+                    rounded-2xl
+                    bg-brand
+                    py-3
+                    text-center
+                    font-semibold
+                    text-white
+                    transition
+                    hover:bg-brand-light
                   "
                 >
                   Get Started
@@ -253,7 +289,6 @@ export default function Navbar() {
         )}
 
       </AnimatePresence>
-
     </>
   );
 }
