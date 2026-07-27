@@ -1,50 +1,56 @@
 import type { MetadataRoute } from "next";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://www.theconclusiondaily.com";
+const BASE_URL = "https://www.theconclusiondaily.com";
 
+export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
-      url: baseUrl,
+      url: BASE_URL,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 1,
     },
+
     {
-      url: `${baseUrl}/login`,
+      url: `${BASE_URL}/login`,
       lastModified: new Date(),
       changeFrequency: "weekly",
-      priority: 0.8,
+      priority: 0.9,
     },
+
     {
-      url: `${baseUrl}/signup`,
+      url: `${BASE_URL}/signup`,
       lastModified: new Date(),
       changeFrequency: "weekly",
-      priority: 0.8,
+      priority: 0.9,
     },
+
     {
-      url: `${baseUrl}/privacy-policy`,
+      url: `${BASE_URL}/privacy-policy`,
       lastModified: new Date(),
       changeFrequency: "monthly",
-      priority: 0.5,
+      priority: 0.6,
     },
+
     {
-      url: `${baseUrl}/terms-and-conditions`,
+      url: `${BASE_URL}/terms-and-conditions`,
       lastModified: new Date(),
       changeFrequency: "monthly",
-      priority: 0.5,
+      priority: 0.6,
     },
+
     {
-      url: `${baseUrl}/refund-policy`,
+      url: `${BASE_URL}/refund-policy`,
       lastModified: new Date(),
       changeFrequency: "monthly",
-      priority: 0.5,
+      priority: 0.6,
     },
+
     {
-      url: `${baseUrl}/contact`,
+      url: `${BASE_URL}/contact`,
       lastModified: new Date(),
       changeFrequency: "monthly",
-      priority: 0.5,
+      priority: 0.6,
     },
   ];
 }
