@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-
+import Image from "next/image";
 import { COMPANY } from "@/lib/company";
 
 export default function AboutHero() {
@@ -12,7 +12,24 @@ export default function AboutHero() {
       {/* Decorative Blur */}
       <div className="absolute -left-32 top-20 h-72 w-72 rounded-full bg-brand-gold/10 blur-3xl" />
       <div className="absolute -right-32 bottom-0 h-96 w-96 rounded-full bg-blue-600/10 blur-3xl" />
+<div className="flex flex-col items-center text-center">
+  <Image
+    src="/logo.svg" // or your actual logo path
+    alt="The Conclusion Daily"
+    width={140}
+    height={140}
+    priority
+    className="drop-shadow-2xl"
+  />
 
+  <h1 className="mt-8 text-5xl md:text-6xl font-black text-brand">
+    About The Conclusion Daily
+  </h1>
+
+  <p className="mt-6 max-w-3xl text-lg text-brand-muted">
+    India's Competitive Learning Ecosystem
+  </p>
+</div>
       <div className="relative mx-auto max-w-7xl px-6 text-center">
         {/* Badge */}
         <div className="inline-flex rounded-full border border-brand-gold/30 bg-white/5 px-4 py-2 text-sm font-medium text-brand-gold backdrop-blur">
