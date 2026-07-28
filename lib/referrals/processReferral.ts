@@ -110,7 +110,7 @@ export async function processReferral(
         referral_code:
           signupReferralCode,
 
-        reward_credits: 50,
+        reward_credits: 20,
       })
       .select()
       .single();
@@ -141,7 +141,7 @@ export async function processReferral(
           referral_id:
             referral.id,
 
-          credits: 50,
+          credits: 20,
         },
 
         {
@@ -151,7 +151,7 @@ export async function processReferral(
           referral_id:
             referral.id,
 
-          credits: 25,
+          credits: 10,
         },
       ]);
 
@@ -166,15 +166,15 @@ const {
   "credit_wallet",
   {
     p_user_id: referrer.id,
-    p_amount: 500,
+    p_amount: 200,
     p_transaction_type: "REFERRAL",
-    p_bonus_amount: 500,
+    p_bonus_amount: 200,
     p_reference_number:
       `REFERRAL-REFERRER-${referral.id}`,
     p_metadata: {
       referral_id: referral.id,
       referred_user_id: user.id,
-      reward_credits: 50,
+      reward_credits: 20,
       source: "referral_reward",
     },
   }
@@ -195,15 +195,15 @@ const {
   "credit_wallet",
   {
     p_user_id: user.id,
-    p_amount: 250,
+    p_amount: 100,
     p_transaction_type: "REFERRAL",
-    p_bonus_amount: 250,
+    p_bonus_amount: 100,
     p_reference_number:
       `REFERRAL-NEWUSER-${referral.id}`,
     p_metadata: {
       referral_id: referral.id,
       referrer_user_id: referrer.id,
-      reward_credits: 25,
+      reward_credits: 10,
       source: "referral_reward",
     },
   }
@@ -229,7 +229,7 @@ if (newUserRewardError) {
             "Referral Successful",
 
          message:
-  "You earned 50 TCD Credits.",
+  "You earned 20 TCD Credits.",
 
           type:
             "reward",
@@ -243,7 +243,7 @@ if (newUserRewardError) {
             "Welcome Bonus",
 
           message:
-  "You earned 25 TCD Credits.",
+  "You earned 10 TCD Credits.",
 
           type:
             "reward",

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { COMPANY } from "@/lib/company";
-
+import { ArrowLeft } from "lucide-react";
 export default function AboutHero() {
   return (
     <section className="relative overflow-hidden bg-slate-950 py-28 text-white">
@@ -16,8 +16,8 @@ export default function AboutHero() {
   <Image
     src="/logo.png" // or your actual logo path
     alt="The Conclusion Daily"
-    width={140}
-    height={140}
+    width={420}
+    height={420}
     priority
     className="drop-shadow-2xl"
   />
@@ -50,7 +50,15 @@ export default function AboutHero() {
         <p className="mx-auto mt-8 max-w-4xl text-lg leading-8 text-slate-300">
           {COMPANY.shortDescription}
         </p>
-
+<div className="mt-16 flex justify-center">
+  <Link
+    href="/"
+    className="group inline-flex items-center gap-3 rounded-full border border-yellow-500 bg-gradient-to-r from-blue-700 to-blue-900 px-8 py-3 font-semibold text-white shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+  >
+    <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
+    Return to Home
+  </Link>
+</div>
         {/* Buttons */}
         <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link
