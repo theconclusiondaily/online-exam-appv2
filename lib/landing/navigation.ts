@@ -39,10 +39,7 @@ export const navigation: NavigationItem[] = [
     title: "Rewards",
     href: "#rewards",
   },
-  {
-    title: "FAQ",
-    href: "#faq",
-  },
+  
 ];
 
 export const footerNavigation = {
