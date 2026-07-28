@@ -47,13 +47,13 @@ export const footerNavigation = {
       href: "/about",
     },
     {
-      title: "Students",
-      href: "#students",
-    },
-    {
-      title: "Institutes",
-      href: "#institutes",
-    },
+  title: "Students",
+  href: "/#students",
+},
+{
+  title: "Institutes",
+  href: "/#institutes",
+},
     {
       title: "Contact",
       href: "#contact",
