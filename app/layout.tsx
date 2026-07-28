@@ -4,6 +4,8 @@ import { Toaster } from "sonner";
 import "./globals.css";
 import { MathJaxContext } from "better-react-mathjax";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { COMPANY, SEO } from "@/lib/company";
+import { organizationSchema } from "@/lib/company";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,37 +18,28 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.theconclusiondaily.com"),
+  metadataBase: new URL(COMPANY.website),
 
   title: {
-    default: "The Conclusion Daily",
-    template: "%s | The Conclusion Daily",
+    default: SEO.title,
+    template: SEO.titleTemplate,
   },
 
-  description:
-    "The Conclusion Daily is an AI-powered online examination platform for students, teachers, and educational institutes. Practice, compete, earn rewards, and conduct secure online exams.",
+  description: SEO.description,
 
-  applicationName: "The Conclusion Daily",
+  applicationName: COMPANY.name,
 
-  keywords: [
-    "The Conclusion Daily",
-    "Online Exam Platform",
-    "CBT",
-    "Computer Based Test",
-    "NEET",
-    "JEE",
-    "Mock Tests",
-    "AI Proctoring",
-    "Institute Exams",
-    "Online Test Series",
-    "Education",
+  authors: [
+    {
+      name: COMPANY.name,
+    },
   ],
 
-  authors: [{ name: "The Conclusion Daily" }],
+  creator: COMPANY.name,
 
-  creator: "The Conclusion Daily",
+  publisher: COMPANY.name,
 
-  publisher: "The Conclusion Daily",
+  keywords: SEO.keywords,
 
   robots: {
     index: true,
@@ -58,32 +51,31 @@ export const metadata: Metadata = {
   },
 
   alternates: {
-    canonical: "https://www.theconclusiondaily.com",
+    canonical: COMPANY.website,
   },
 
   openGraph: {
     type: "website",
-    url: "https://www.theconclusiondaily.com",
-    title: "The Conclusion Daily",
-    description:
-      "AI-powered Online Examination Platform for Students, Teachers & Institutes.",
-    siteName: "The Conclusion Daily",
+    url: COMPANY.website,
+    title: COMPANY.name,
+    description: SEO.description,
+    siteName: COMPANY.name,
+
     images: [
       {
-        url: "/logo.png",
+        url: COMPANY.logo,
         width: 1200,
         height: 630,
-        alt: "The Conclusion Daily",
+        alt: COMPANY.name,
       },
     ],
   },
 
   twitter: {
     card: "summary_large_image",
-    title: "The Conclusion Daily",
-    description:
-      "AI-powered Online Examination Platform.",
-    images: ["/logo.png"],
+    title: COMPANY.name,
+    description: SEO.description,
+    images: [COMPANY.logo],
   },
 };
 
@@ -118,6 +110,12 @@ export default function RootLayout({
       },
     }}
   >
+    <script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify(organizationSchema),
+  }}
+/>
     <AuthProvider>
       <Toaster
         richColors
