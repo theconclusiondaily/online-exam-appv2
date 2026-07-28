@@ -4,22 +4,18 @@ import Link from "next/link";
 import clsx from "clsx";
 import { ReactNode } from "react";
 
-interface OutlineButtonProps {
+interface GradientButtonProps {
   href: string;
-
   children: ReactNode;
-
   className?: string;
-
   size?: "sm" | "md" | "lg";
-
   fullWidth?: boolean;
-
   disabled?: boolean;
-
   leftIcon?: ReactNode;
-
   rightIcon?: ReactNode;
+
+  target?: React.HTMLAttributeAnchorTarget;
+  rel?: string;
 }
 
 const sizeClasses = {
@@ -30,7 +26,7 @@ const sizeClasses = {
   lg: "px-9 py-4.5 text-lg",
 };
 
-export default function OutlineButton({
+export default function GradientButton({
   href,
   children,
   className,
@@ -39,12 +35,16 @@ export default function OutlineButton({
   disabled = false,
   leftIcon,
   rightIcon,
-}: OutlineButtonProps) {
+  target,
+  rel,
+}: GradientButtonProps) {
   return (
     <Link
-      href={disabled ? "#" : href}
-      aria-disabled={disabled}
-      className={clsx(
+  href={disabled ? "#" : href}
+  target={target}
+  rel={rel}
+  aria-disabled={disabled}
+  className={clsx(
         "inline-flex items-center justify-center gap-2",
         "rounded-2xl",
         "border-2 border-brand",

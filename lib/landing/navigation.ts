@@ -10,10 +10,15 @@ export interface NavigationItem {
 }
 
 export const navigation: NavigationItem[] = [
+  
   {
     title: "Home",
     href: "#home",
   },
+  {
+  title: "About",
+  href: "/about",
+},
   {
     title: "Students",
     href: "#students",

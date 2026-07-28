@@ -83,7 +83,9 @@ export default function Hero({
 
           <div className="mt-10 flex flex-wrap gap-4">
 
-            <GradientButton href="/signup">
+            <GradientButton  href="https://exam.theconclusiondaily.com/signup"
+  target="_blank"
+  rel="noopener noreferrer">
 
               Start Learning
 
@@ -91,7 +93,7 @@ export default function Hero({
 
             </GradientButton>
 
-            <OutlineButton href="/institutes">
+            <OutlineButton href="/#institutes">
 
               For Institutes
 

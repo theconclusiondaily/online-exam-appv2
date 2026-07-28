@@ -112,6 +112,8 @@ export default function Navbar() {
 
             <Link
               href="https://exam.theconclusiondaily.com/login"
+              target="_blank"
+  rel="noopener noreferrer"
               className={`font-semibold transition ${
                 scrolled
                   ? "text-brand hover:text-brand-gold"
@@ -123,6 +125,8 @@ export default function Navbar() {
 
             <Link
               href="https://exam.theconclusiondaily.com/signup"
+              target="_blank"
+  rel="noopener noreferrer"
               className="
                 rounded-2xl
                 bg-brand
@@ -248,6 +252,8 @@ export default function Navbar() {
 
                 <Link
                   href="https://exam.theconclusiondaily.com/login"
+                  target="_blank"
+  rel="noopener noreferrer"
                   className="
                     rounded-2xl
                     border
@@ -266,6 +272,8 @@ export default function Navbar() {
 
                 <Link
                   href="https://exam.theconclusiondaily.com/signup"
+                  target="_blank"
+  rel="noopener noreferrer"
                   className="
                     rounded-2xl
                     bg-brand
