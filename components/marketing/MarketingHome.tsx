@@ -29,28 +29,46 @@ export default function MarketingHome({
       <Navbar />
 
       <main className="overflow-hidden">
-        <Hero data={landing.hero} />
+  <section id="home">
+    <Hero data={landing.hero} />
+  </section>
 
-        <StudentExperience />
+  <section id="students" className="scroll-mt-24">
+    <StudentExperience />
+  </section>
 
-        <ExamExperience />
+  <section id="competitions" className="scroll-mt-24">
+    <CompetitionExperience />
+  </section>
 
-        <CompetitionExperience />
+  <section id="rewards" className="scroll-mt-24">
+    <RewardsExperience />
+  </section>
 
-        <RewardsExperience />
+  <section id="institutes" className="scroll-mt-24">
+    <InstituteExperience />
+  </section>
 
-        <InstituteExperience />
+  <section id="security" className="scroll-mt-24">
+    <AISecurity />
+  </section>
 
-        <AISecurity />
+  <section>
+    <WhyChooseTCD />
+  </section>
 
-        <WhyChooseTCD />
+  <section>
+    <Testimonials />
+  </section>
 
-        <Testimonials />
+  <section id="faq" className="scroll-mt-24">
+    <FAQ />
+  </section>
 
-        <FAQ />
-
-        <CTA />
-      </main>
+  <section>
+    <CTA />
+  </section>
+</main>
 
       <Footer />
     </>

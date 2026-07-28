@@ -4,6 +4,8 @@ import TCDMotion from "@/components/ui/TCDMotion";
 import clsx from "clsx";
 
 interface SectionHeadingProps {
+   eyebrow?: string;
+  
   badge?: string;
 
   title: string;
@@ -24,6 +26,7 @@ const widths = {
 };
 
 export default function SectionHeading({
+  eyebrow,
   badge,
   title,
   subtitle,
@@ -51,7 +54,11 @@ export default function SectionHeading({
             {badge}
           </span>
         )}
-
+{eyebrow && (
+  <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-brand-gold">
+    {eyebrow}
+  </p>
+)}
         <h2
           className={clsx(
             "mt-6 font-black tracking-tight",

@@ -436,3 +436,7 @@ body {
     margin: 15mm;
   }
 }
+
+html {
+  scroll-behavior: smooth;
+}

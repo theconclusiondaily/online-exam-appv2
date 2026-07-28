@@ -44,7 +44,7 @@ export const footerNavigation = {
   company: [
     {
       title: "About",
-      href: "#about",
+      href: "/about",
     },
     {
       title: "Students",
@@ -83,24 +83,24 @@ export const footerNavigation = {
     },
   ],
 
-  legal: [
-    {
-      title: "Privacy Policy",
-      href: "/privacy-policy",
-    },
-    {
-      title: "Terms & Conditions",
-      href: "/terms-and-conditions",
-    },
-    {
-      title: "Refund Policy",
-      href: "/refund-policy",
-    },
-    {
-      title: "Contact Us",
-      href: "/contact",
-    },
-  ],
+ legal: [
+  {
+    title: "Privacy Policy",
+    href: "/privacy",
+  },
+  {
+    title: "Terms & Conditions",
+    href: "/terms",
+  },
+  {
+    title: "Refund Policy",
+    href: "/refund",
+  },
+  {
+    title: "Contact Us",
+    href: "/contact",
+  },
+]
 };
 
 export default navigation;
