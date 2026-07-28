@@ -14,7 +14,7 @@ export default function AboutHero() {
       <div className="absolute -right-32 bottom-0 h-96 w-96 rounded-full bg-blue-600/10 blur-3xl" />
 <div className="flex flex-col items-center text-center">
   <Image
-    src="public/logo.png" // or your actual logo path
+    src="/logo.png" // or your actual logo path
     alt="The Conclusion Daily"
     width={140}
     height={140}
