@@ -46,7 +46,7 @@ export default function Hero({
             <Award className="h-5 w-5 text-brand-gold" />
 
             <span className="text-sm font-semibold text-brand">
-              Hope • Faith • Excellence
+              Hope & Faith
             </span>
 
           </div>

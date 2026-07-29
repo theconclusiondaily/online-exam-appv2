@@ -3,8 +3,10 @@ import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import COMPANY from "@/lib/landing/constants";
 import { ArrowLeft } from "lucide-react";
-export default function AboutHero() {
+import Navbar from "@/components/landing/Navbar";
+export default function AboutPage() {
   return (
+   
     <section className="relative overflow-hidden bg-slate-950 py-28 text-white">
       {/* Background Gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-slate-950 to-black" />
@@ -14,31 +16,10 @@ export default function AboutHero() {
       <div className="absolute -right-32 bottom-0 h-96 w-96 rounded-full bg-blue-600/10 blur-3xl" />
       <div className="mb-12 flex flex-col items-center justify-between gap-6 lg:flex-row">
 
-  {/* Logo */}
-
-  <Link
-    href="/"
-    className="flex items-center gap-4"
-  >
-    <Image
-      src="/logo.png"
-      alt="The Conclusion Daily"
-      width={70}
-      height={70}
-      priority
-      className="rounded-xl"
-    />
-
-    <div>
-      <h2 className="text-2xl font-bold text-white">
-        THE CONCLUSION DAILY
-      </h2>
-
-      <p className="text-sm text-slate-400">
-        Hope & Faith
-      </p>
-    </div>
-  </Link>
+   <>
+      <Navbar />
+      
+    </>
       <div className="relative mx-auto max-w-7xl px-6 text-center">
         {/* Badge */}
         <div className="inline-flex rounded-full border border-brand-gold/30 bg-white/5 px-4 py-2 text-sm font-medium text-brand-gold backdrop-blur">
