@@ -3,7 +3,7 @@ import Script from "next/script";
 
 import MarketingHome from "@/components/marketing/MarketingHome";
 import ExamHome from "@/components/exam/ExamHome";
-
+import TCDIntroWrapper from "@/components/TCDIntroWrapper";
 import { getLandingData } from "@/lib/landing/getLandingData";
 
 export default async function Home() {
@@ -13,9 +13,13 @@ export default async function Home() {
     host === "exam.theconclusiondaily.com" ||
     host.startsWith("exam.");
 
-  if (isExamDomain) {
-    return <ExamHome />;
-  }
+if (isExamDomain) {
+  return (
+    <TCDIntroWrapper>
+      <ExamHome />
+    </TCDIntroWrapper>
+  );
+}
 
   const landing = await getLandingData();
 
@@ -41,7 +45,9 @@ export default async function Home() {
         })}
       </Script>
 
-      <MarketingHome landing={landing} />
+      <TCDIntroWrapper>
+  <MarketingHome landing={landing} />
+</TCDIntroWrapper>
     </>
   );
 }
