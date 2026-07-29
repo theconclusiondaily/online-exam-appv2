@@ -13,16 +13,8 @@ export default function AboutHero() {
       <div className="absolute -left-32 top-20 h-72 w-72 rounded-full bg-brand-gold/10 blur-3xl" />
       <div className="absolute -right-32 bottom-0 h-96 w-96 rounded-full bg-blue-600/10 blur-3xl" />
 <div className="flex flex-col items-center text-center">
-  <Image
-    src="/logo.png" // or your actual logo path
-    alt="The Conclusion Daily"
-    width={420}
-    height={420}
-    priority
-    className="drop-shadow-2xl"
-  />
 
-  <h1 className="mt-8 text-5xl md:text-6xl font-black text-brand">
+  <h1 className="mt-8 text-5xl md:text-6xl font-white text-brand">
     About The Conclusion Daily
   </h1>
 
@@ -59,6 +51,14 @@ export default function AboutHero() {
     Return to Home
   </Link>
 </div>
+  <Image
+    src="/logo.png" // or your actual logo path
+    alt="The Conclusion Daily"
+    width={420}
+    height={420}
+    priority
+    className="drop-shadow-2xl"
+  />
         {/* Buttons */}
         <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link

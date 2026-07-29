@@ -10,7 +10,7 @@ import RewardsExperience from "@/components/landing/RewardsExperience";
 import InstituteExperience from "@/components/landing/InstituteExperience";
 import AISecurity from "@/components/landing/AISecurity";
 import WhyChooseTCD from "@/components/landing/WhyChooseTCD";
-
+import FeaturesPreview from "@/components/landing/FeaturesPreview";
 import Testimonials from "@/components/landing/Testimonials";
 import FAQ from "@/components/landing/FAQ";
 
@@ -56,6 +56,10 @@ export default function MarketingHome({
   <section>
     <WhyChooseTCD />
   </section>
+
+<section id="features" className="scroll-mt-24">
+    <FeaturesPreview />
+</section>
 
   <section>
     <Testimonials />
