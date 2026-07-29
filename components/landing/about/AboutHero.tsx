@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
-import { COMPANY } from "@/lib/company";
+import COMPANY from "@/lib/landing/constants";
 import { ArrowLeft } from "lucide-react";
 export default function AboutHero() {
   return (
@@ -12,16 +12,33 @@ export default function AboutHero() {
       {/* Decorative Blur */}
       <div className="absolute -left-32 top-20 h-72 w-72 rounded-full bg-brand-gold/10 blur-3xl" />
       <div className="absolute -right-32 bottom-0 h-96 w-96 rounded-full bg-blue-600/10 blur-3xl" />
-<div className="flex flex-col items-center text-center">
+      <div className="mb-12 flex flex-col items-center justify-between gap-6 lg:flex-row">
 
-  <h1 className="mt-8 text-5xl md:text-6xl font-white text-brand">
-    About The Conclusion Daily
-  </h1>
+  {/* Logo */}
 
-  <p className="mt-6 max-w-3xl text-lg text-brand-muted">
-    India's Competitive Learning Ecosystem
-  </p>
-</div>
+  <Link
+    href="/"
+    className="flex items-center gap-4"
+  >
+    <Image
+      src="/logo.png"
+      alt="The Conclusion Daily"
+      width={70}
+      height={70}
+      priority
+      className="rounded-xl"
+    />
+
+    <div>
+      <h2 className="text-2xl font-bold text-white">
+        THE CONCLUSION DAILY
+      </h2>
+
+      <p className="text-sm text-slate-400">
+        Hope & Faith
+      </p>
+    </div>
+  </Link>
       <div className="relative mx-auto max-w-7xl px-6 text-center">
         {/* Badge */}
         <div className="inline-flex rounded-full border border-brand-gold/30 bg-white/5 px-4 py-2 text-sm font-medium text-brand-gold backdrop-blur">
@@ -40,7 +57,7 @@ export default function AboutHero() {
 
         {/* Description */}
         <p className="mx-auto mt-8 max-w-4xl text-lg leading-8 text-slate-300">
-          {COMPANY.shortDescription}
+          {COMPANY.heroDescription}
         </p>
 <div className="mt-16 flex justify-center">
   <Link
@@ -51,14 +68,7 @@ export default function AboutHero() {
     Return to Home
   </Link>
 </div>
-  <Image
-    src="/logo.png" // or your actual logo path
-    alt="The Conclusion Daily"
-    width={420}
-    height={420}
-    priority
-    className="drop-shadow-2xl"
-  />
+ 
         {/* Buttons */}
         <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link
@@ -76,6 +86,7 @@ export default function AboutHero() {
             Contact Us
           </Link>
         </div>
+      </div>
       </div>
     </section>
   );
