@@ -44,7 +44,9 @@ export default function MarketingHome({
   <section id="rewards" className="scroll-mt-24">
     <RewardsExperience />
   </section>
-
+ <section id="exams" className="scroll-mt-24">
+    <ExamExperience />
+  </section>
   <section id="institutes" className="scroll-mt-24">
     <InstituteExperience />
   </section>
