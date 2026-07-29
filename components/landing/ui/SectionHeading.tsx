@@ -1,6 +1,7 @@
+
 "use client";
 
-import TCDMotion from "@/components/ui/TCDMotion";
+import TCDMotion from "../../ui/TCDMotion";
 import clsx from "clsx";
 
 interface SectionHeadingProps {
