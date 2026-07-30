@@ -26,7 +26,7 @@ export default function DashboardPreview() {
           </p>
 
           <h2 className="mt-1 text-3xl font-black text-brand">
-            Rahul
+            Maadhav
           </h2>
         </div>
 
@@ -37,7 +37,7 @@ export default function DashboardPreview() {
           </button>
 
           <div className="h-12 w-12 rounded-2xl bg-brand text-white flex items-center justify-center font-bold">
-            R
+            M
           </div>
 
         </div>

@@ -247,7 +247,12 @@ const [loading,
   "top-left" |
   "bottom-right" |
   "bottom-left"
->("bottom-right");
+>(() => {
+  if (typeof window !== "undefined" && window.innerWidth < 768) {
+    return "top-right";
+  }
+  return "bottom-right";
+});
 const savingRef = useRef(false);
 useEffect(() => {
 
@@ -359,6 +364,40 @@ const cameraPositionClass = {
     "bottom-4 left-4",
 
 }[cameraCorner];
+
+function moveCameraAwayFrom(element: HTMLElement | null) {
+  if (!element) return;
+  if (window.innerWidth >= 768) return;
+
+  const camera = document.getElementById("student-camera");
+  if (!camera) return;
+
+  const cameraRect = camera.getBoundingClientRect();
+  const elementRect = element.getBoundingClientRect();
+
+  const overlaps =
+    cameraRect.left < elementRect.right &&
+    cameraRect.right > elementRect.left &&
+    cameraRect.top < elementRect.bottom &&
+    cameraRect.bottom > elementRect.top;
+
+  if (!overlaps) return;
+
+  const positions: Array<
+    "top-right" | "top-left" | "bottom-right" | "bottom-left"
+  > = [
+    "top-right",
+    "top-left",
+    "bottom-right",
+    "bottom-left",
+  ];
+
+  const current = positions.indexOf(cameraCorner);
+
+  setCameraCorner(
+    positions[(current + 1) % positions.length]
+  );
+}
   useEffect(() => {
 
     setMounted(true);
@@ -1754,6 +1793,9 @@ if (
 ) {
   prefetchQuestion(1);
 }
+if (window.innerWidth < 768) {
+  setCameraCorner("top-right");
+}
 setExamStarted(true);
 
 localStorage.setItem(
@@ -1965,6 +2007,40 @@ useEffect(() => {
   examStarted,
   cameraStream
 ]);
+useEffect(() => {
+  if (!examStarted) return;
+
+  const checkCameraPosition = () => {
+    const ids = [
+      "next-button",
+      "previous-button",
+      "submit-button",
+      "mark-review-button",
+    ];
+
+    for (const id of ids) {
+      const element = document.getElementById(id);
+
+      if (element) {
+        moveCameraAwayFrom(element);
+      }
+    }
+  };
+
+  // First check
+ requestAnimationFrame(() => {
+  checkCameraPosition();
+});
+
+  // Check whenever the page scrolls or rotates
+  window.addEventListener("scroll", checkCameraPosition);
+  window.addEventListener("resize", checkCameraPosition);
+
+  return () => {
+    window.removeEventListener("scroll", checkCameraPosition);
+    window.removeEventListener("resize", checkCameraPosition);
+  };
+}, [examStarted, currentQuestion]);
   async function flushPendingAnswers() {
   if (!sessionToken) {
     throw new Error("Session not initialized");
@@ -2784,13 +2860,22 @@ to-[#EEF3FB] p-5"
       </div>
 
 <div
+ id="student-camera"
 className={`
 fixed
 ${cameraPositionClass}
+
+transition-all
+duration-500
+ease-in-out
+
 z-[9999]
 
-w-20
-h-20
+w-16
+h-16
+
+md:w-24
+md:h-24
 
 lg:w-40
 lg:h-40
@@ -2799,9 +2884,7 @@ overflow-hidden
 rounded-2xl
 border
 border-[#D4AF37]
-
 shadow-[0_0_25px_rgba(212,175,55,0.25)]
-
 bg-black
 `}
 >
@@ -2842,12 +2925,17 @@ onClick={() => {
 
 }}
 className="
+hidden md:flex
+
 fixed
 
 bottom-28
 right-4
 
 z-[10000]
+
+items-center
+justify-center
 
 w-12
 h-12
@@ -3072,7 +3160,8 @@ const displayLabel =
       <div className="flex justify-between items-center mt-5">
 
         <button
- onClick={async () => {
+  id="previous-button"
+  onClick={async () => {
 
   const prevIndex =
     Math.max(
@@ -3083,7 +3172,13 @@ const displayLabel =
   await fetchQuestionByIndex(
     prevIndex
   );
+   requestAnimationFrame(() => {
+    moveCameraAwayFrom(
+      document.getElementById("previous-button")
+    );
+  });
 }}
+
   disabled={
     currentQuestion === 0
   }
@@ -3116,6 +3211,7 @@ hover:bg-[#243B6B]/5
   Previous
 </button>
   <button
+  id="mark-review-button"
   onClick={() => {
 
     setMarkedQuestions(
@@ -3161,8 +3257,9 @@ hover:bg-[#C89A1F]
     0
   ) && (
 
-    <button
-      onClick={() => {
+  <button
+  id="next-button"
+  onClick={async() => {
   const nextIndex =
     currentQuestion + 1;
 
@@ -3177,14 +3274,22 @@ hover:bg-[#C89A1F]
   questionCacheRef.current[nextIndex];
 
 if (cachedQuestion) {
+
   setCurrentQuestionData(
     cachedQuestion
   );
 
-    setCurrentQuestion(
-      nextIndex
-    );
+  setCurrentQuestion(
+    nextIndex
+  );
 
+  requestAnimationFrame(() => {
+    moveCameraAwayFrom(
+      document.getElementById("next-button")
+    );
+  });
+
+  // Prepare the question after this one
     // Prepare the question after this one
     if (
       nextIndex + 1 <
@@ -3199,9 +3304,15 @@ if (cachedQuestion) {
   }
 
   // Fallback if prefetch has not completed
-  fetchQuestionByIndex(
-    nextIndex
+  await fetchQuestionByIndex(
+  nextIndex
+);
+
+requestAnimationFrame(() => {
+  moveCameraAwayFrom(
+    document.getElementById("next-button")
   );
+});
 }}
 
       className="
@@ -3233,7 +3344,8 @@ hover:bg-tcd-blue-light
   ) && (
 
     <button
-      onClick={() => setShowSubmitSummary(true)}
+  id="submit-button"
+  onClick={() => setShowSubmitSummary(true)}
 
       className="
         px-8
