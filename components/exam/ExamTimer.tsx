@@ -2,6 +2,7 @@
 
 import React, {
   useEffect,
+  useRef,
   useState,
 } from "react";
 
@@ -23,6 +24,10 @@ function ExamTimer({
   const [timeLeft,
     setTimeLeft] =
     useState(initialTime);
+const onTimeUpRef = useRef(onTimeUp);
+useEffect(() => {
+  onTimeUpRef.current = onTimeUp;
+}, [onTimeUp]);
 
   useEffect(() => {
 
@@ -38,7 +43,7 @@ function ExamTimer({
                 interval
               );
 
-              onTimeUp();
+              onTimeUpRef.current();
 
               return 0;
             }
@@ -54,7 +59,7 @@ function ExamTimer({
         interval
       );
 
-  }, [onTimeUp]);
+}, []);
 
   function formatTime(
     seconds: number

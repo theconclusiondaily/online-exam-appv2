@@ -152,6 +152,7 @@ const videoRef =
   useRef<HTMLVideoElement | null>(null);
   const lastViolationRef =
     useRef(0);
+    const timerSubmittedRef = useRef(false);
 const snapshotIntervalRef =
   useRef<NodeJS.Timeout | null>(
     null
@@ -2123,9 +2124,15 @@ useEffect(() => {
 }
 async function submitExam() {
 
-  if (submitting || submitted) {
-    return;
-  }
+ if (
+  submitting ||
+  submitted ||
+  timerSubmittedRef.current
+) {
+  return;
+}
+
+timerSubmittedRef.current = true;
 
   setSubmitting(true);
   setFinalizingExam(true);
