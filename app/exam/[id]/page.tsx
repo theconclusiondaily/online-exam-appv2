@@ -2124,13 +2124,18 @@ useEffect(() => {
 }
 async function submitExam() {
 
- if (
-  submitting ||
-  submitted ||
-  timerSubmittedRef.current
-) {
-  return;
-}
+  console.log("========== AUTO SUBMIT START ==========");
+
+  if (
+    submitting ||
+    submitted ||
+    timerSubmittedRef.current
+  ) {
+    console.log("Submit blocked");
+    return;
+  }
+
+  timerSubmittedRef.current = true;
 
 timerSubmittedRef.current = true;
 
@@ -2140,43 +2145,33 @@ timerSubmittedRef.current = true;
 try {
   await flushPendingAnswers();
 } catch (error) {
-  console.error(
-    "FINAL ANSWER SAVE FAILED:",
+  console.warn(
+    "Final answer save failed. Continuing with submission.",
     error
   );
 
-  toast.error(
-    error instanceof Error
-      ? error.message
-      : "Unable to save latest answers."
-  );
-
-  setSubmitting(false);
-  setFinalizingExam(false);
-
-  return;
+  // Don't abort auto-submit when time has expired.
 }
 
   
-    const response = await fetch(
-  "/api/exam/submit",
-  {
-    method: "POST",
+  const response = await fetch("/api/exam/submit", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    examId,
+    sessionToken,
+  }),
+});
 
-    headers: {
-      "Content-Type":
-        "application/json",
-    },
+console.log("SUBMIT STATUS:", response.status);
 
-    body: JSON.stringify({
-      examId,
-      sessionToken,
-    }),
-  }
-);
+const result = await response.json();
 
-const result =
-  await response.json();
+console.log("SUBMIT RESPONSE:", result);
+
+
   
 
 
@@ -2462,6 +2457,7 @@ sessionStorage.setItem(
     result.achievementReward || 0
   )
 );
+console.log("Redirecting to result page...");
     router.replace(
   `/exam-result/${result.attemptId}`
 );

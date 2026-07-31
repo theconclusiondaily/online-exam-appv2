@@ -158,7 +158,7 @@ if (exam.exam_scope !== "PUBLIC") {
       .eq("exam_id", examId)
       .eq("user_id", user.id)
       .eq("session_token", sessionToken)
-      .eq("status", "active")
+      .in("status", ["active", "completed", "expired"])
       .maybeSingle();
 
     if (!session) {

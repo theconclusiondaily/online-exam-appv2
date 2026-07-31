@@ -186,26 +186,19 @@ if (exam.exam_scope !== "PUBLIC") {
     }
 
     if (
-      session.expires_at &&
-      new Date(session.expires_at) <
-        new Date()
-    ) {
-      await supabase
-        .from("exam_sessions")
-        .update({
-          status: "expired",
-        })
-        .eq("id", session.id);
+  session.expires_at &&
+  new Date(session.expires_at) < new Date()
+) {
+  console.log(
+    "Save request received after timer expired. Skipping save but allowing final submission."
+  );
 
-      return NextResponse.json(
-        {
-          error: "Session expired",
-        },
-        {
-          status: 403,
-        }
-      );
-    }
+  return NextResponse.json({
+    success: true,
+    skipped: true,
+    reason: "Session expired",
+  });
+}
 
     const payload = {
       exam_id: examId,

@@ -182,7 +182,12 @@ if (now > new Date(exam.end_time)) {
   .eq("user_id", user.id)
   .eq("session_token", sessionToken)
   .maybeSingle();
-
+console.log("SESSION:", {
+  id: session?.id,
+  status: session?.status,
+  expires_at: session?.expires_at,
+  now: new Date().toISOString(),
+});
 if (sessionError || !session) {
   return NextResponse.json(
     {
@@ -195,33 +200,21 @@ if (sessionError || !session) {
 }
 // Session expiry
 
-    if (
-      session.expires_at &&
-      new Date(
-        session.expires_at
-      ) < new Date()
-    ) {
-      await supabase
-        .from("exam_sessions")
-        .update({
-          status:
-            "expired",
-        })
-        .eq(
-          "id",
-          session.id
-        );
+// Session expiry
+if (
+  session.expires_at &&
+  new Date(session.expires_at) < new Date()
+) {
+  console.log("Session expired because time is over. Continuing automatic submission.");
 
-      return NextResponse.json(
-        {
-          error:
-            "Session expired",
-        },
-        {
-          status: 403,
-        }
-      );
-    }
+  // Mark it expired for audit purposes, but DO NOT stop submission.
+  await supabase
+    .from("exam_sessions")
+    .update({
+      status: "expired",
+    })
+    .eq("id", session.id);
+}
     // Prevent double submit
 
     if (
