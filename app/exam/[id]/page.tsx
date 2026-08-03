@@ -255,6 +255,7 @@ const [loading,
   return "bottom-right";
 });
 const savingRef = useRef(false);
+const lastCameraMoveRef = useRef(0);
 useEffect(() => {
 
   const saved =
@@ -280,6 +281,55 @@ useEffect(() => {
   );
 
 }, [cameraCorner]);
+function moveCameraAway(
+  mouseX: number,
+  mouseY: number
+) {
+  const corners = [
+    {
+      name: "top-left",
+      x: 0,
+      y: 0,
+    },
+    {
+      name: "top-right",
+      x: window.innerWidth,
+      y: 0,
+    },
+    {
+      name: "bottom-left",
+      x: 0,
+      y: window.innerHeight,
+    },
+    {
+      name: "bottom-right",
+      x: window.innerWidth,
+      y: window.innerHeight,
+    },
+  ];
+
+  let bestCorner = corners[0];
+  let maxDistance = -1;
+
+  for (const corner of corners) {
+
+    const dx = corner.x - mouseX;
+    const dy = corner.y - mouseY;
+
+    const distance =
+      dx * dx + dy * dy;
+
+    if (distance > maxDistance) {
+
+      maxDistance = distance;
+      bestCorner = corner;
+
+    }
+
+  }
+
+  setCameraCorner(bestCorner.name as any);
+}
 const [
   sessionToken,
   setSessionToken
@@ -2863,33 +2913,59 @@ to-[#EEF3FB] p-5"
       </div>
 
 <div
- id="student-camera"
-className={`
-fixed
-${cameraPositionClass}
+  id="student-camera"
 
-transition-all
-duration-500
-ease-in-out
+ onMouseEnter={(e) => {
 
-z-[9999]
+  if (window.innerWidth < 768)
+    return;
 
-w-16
-h-16
+  const now = Date.now();
 
-md:w-24
-md:h-24
+  if (
+    now -
+      lastCameraMoveRef.current <
+    600
+  ) {
+    return;
+  }
 
-lg:w-40
-lg:h-40
+  lastCameraMoveRef.current =
+    now;
 
-overflow-hidden
-rounded-2xl
-border
-border-[#D4AF37]
-shadow-[0_0_25px_rgba(212,175,55,0.25)]
-bg-black
-`}
+  moveCameraAway(
+    e.clientX,
+    e.clientY
+  );
+
+}}
+
+  className={`
+    fixed
+    ${cameraPositionClass}
+
+    transition-all
+    duration-500
+    ease-in-out
+
+    z-[9999]
+
+    w-16
+    h-16
+
+    md:w-24
+    md:h-24
+
+    lg:w-40
+    lg:h-40
+
+    overflow-hidden
+    rounded-2xl
+    border
+    border-[#D4AF37]
+    shadow-[0_0_25px_rgba(212,175,55,0.25)]
+    bg-black
+  `}
 >
 
   <StudentCameraStream
