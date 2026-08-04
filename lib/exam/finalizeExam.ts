@@ -3,12 +3,14 @@ import { updateWeeklyChallenges } from "@/lib/challenges/updateWeeklyChallenges"
 
 export async function finalizeExam({
   supabase,
-  user,
+  userId,
+  userEmail,
   examId,
   session,
 }: {
   supabase: any;
-  user: any;
+  userId: string;
+  userEmail?: string;
   examId: string;
   session: any;
 }) {
@@ -31,7 +33,7 @@ export async function finalizeExam({
       )
       .eq(
         "user_id",
-        user.id
+        userId
       );
     
 if (answersError) {
@@ -198,7 +200,7 @@ const {
 } = await supabase
   .from("exam_attempts")
   .select("id")
-  .eq("user_id", user.id)
+  .eq("user_id", userId)
   .eq("exam_id", examId)
   .maybeSingle();
 
@@ -237,7 +239,7 @@ if (existingAttempt) {
           examId,
 
         user_id:
-          user.id,
+          userId,
 
         score:
           totalScore,
@@ -253,9 +255,8 @@ if (existingAttempt) {
         started_at:
           session.started_at,
 
-        violations:
-          session.tab_switch_violations ||
-          0,
+       violations:
+  session.total_violations || 0,
 
         correct_count:
           correctCount,
@@ -278,7 +279,7 @@ const { error: leaderboardError } = await supabase
   .from("leaderboard")
   .upsert(
     {
-      user_id: user.id,
+      user_id: userId,
       exam_id: examId,
       score: totalScore,
       correct_answers: correctCount,
@@ -302,7 +303,7 @@ if (leaderboardError) {
       
 };
 await updateWeeklyChallenges(
-  user.id,
+  userId,
   totalScore,
   percentage
 );
@@ -316,7 +317,7 @@ const {
 
   .select("id")
 
-  .eq("user_id", user.id)
+  .eq("user_id", userId)
 
   .eq("exam_id", examId)
 
@@ -330,7 +331,7 @@ if (!existingCertificate) {
 
     .insert({
 
-      user_id: user.id,
+      user_id: userId,
 
       exam_id: examId,
 
@@ -358,7 +359,7 @@ if (attemptData?.length) {
     await supabase.rpc(
       "add_user_xp",
       {
-        p_user_id: user.id,
+        p_user_id: userId,
         p_xp: xpEarned,
       }
     );
@@ -400,7 +401,7 @@ const {
 } = await supabase
   .from("tcd_transactions")
   .select("id")
-  .eq("user_id", user.id)
+  .eq("user_id", userId)
   .eq("exam_id", examId)
   .eq(
     "transaction_type",
@@ -430,7 +431,7 @@ if (
     await supabase.rpc(
       "award_participation_tcd",
       {
-        p_user_id: user.id,
+        p_user_id: userId,
         p_exam_id: examId,
       }
     );
@@ -448,7 +449,7 @@ const {
 await supabase.rpc(
   "update_study_streak",
   {
-    p_user_id: user.id,
+    p_user_id: userId,
   }
 );
 
@@ -458,7 +459,7 @@ const {
 } = await supabase.rpc(
   "award_exam_achievements",
   {
-    p_user_id: user.id,
+    p_user_id: userId,
   }
 );
 
@@ -487,7 +488,7 @@ const {
 
   .eq(
     "user_id",
-    user.id
+    userId
   )
 
   .eq(
@@ -527,13 +528,13 @@ if (newAchievements?.length) {
       .insert({
 
         user_id:
-          user.id,
+          userId,
 
         activity_type:
           "achievement",
 
         title:
-          `${user.email?.split("@")[0]} unlocked an achievement`,
+          `${(userEmail || "Student").split("@")[0]} unlocked an achievement`,
 
         description:
           achievement?.title,
@@ -574,7 +575,7 @@ if (rewardError) {
 
   .eq(
     "user_id",
-    user.id
+    userId
   )
 
   .eq(

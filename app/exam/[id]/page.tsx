@@ -1102,6 +1102,14 @@ useEffect(() => {
 
   const updated =
     prev + 1;
+    supabase
+  .from("exam_sessions")
+  .update({
+    total_violations: updated,
+  })
+  .eq("exam_id", examId)
+  .eq("user_id", userId)
+  .eq("status", "active");
 if (
   userId &&
   examId
@@ -2023,6 +2031,8 @@ savingRef.current = false;
   sessionToken,
   examId,
 ]);
+
+
 useEffect(() => {
 
   if (
@@ -2092,6 +2102,116 @@ useEffect(() => {
     window.removeEventListener("resize", checkCameraPosition);
   };
 }, [examStarted, currentQuestion]);
+
+useEffect(() => {
+
+  if (submitted) return;
+
+  // Push a history state so the Back button stays on this page
+  window.history.pushState(
+    null,
+    "",
+    window.location.href
+  );
+
+  const handleBackButton = () => {
+
+    // Keep the user on the exam page
+    window.history.pushState(
+      null,
+      "",
+      window.location.href
+    );
+
+    toast.error(
+      "Back navigation is disabled during the exam."
+    );
+
+    // Optional: Count as a violation
+    // incrementViolation("BACK_BUTTON");
+
+  };
+
+  window.addEventListener(
+    "popstate",
+    handleBackButton
+  );
+
+  return () => {
+
+    window.removeEventListener(
+      "popstate",
+      handleBackButton
+    );
+
+  };
+
+}, [submitted]);
+
+useEffect(() => {
+
+  if (submitted) return;
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+
+    // Allow normal typing inside inputs
+    const target = e.target as HTMLElement;
+
+    if (
+      target?.tagName === "INPUT" ||
+      target?.tagName === "TEXTAREA"
+    ) {
+      return;
+    }
+
+    const suspicious =
+
+      e.key === "F12" ||
+
+      (e.ctrlKey && e.key.toLowerCase() === "c") ||
+
+      (e.ctrlKey && e.key.toLowerCase() === "v") ||
+
+      (e.ctrlKey && e.key.toLowerCase() === "x") ||
+
+      (e.ctrlKey && e.key.toLowerCase() === "u") ||
+
+      (e.ctrlKey && e.key.toLowerCase() === "p") ||
+
+      (e.ctrlKey && e.key.toLowerCase() === "s") ||
+
+      (e.ctrlKey && e.key.toLowerCase() === "f") ||
+
+      (e.ctrlKey &&
+        e.shiftKey &&
+        ["i", "j", "c"].includes(
+          e.key.toLowerCase()
+        ));
+
+    if (!suspicious) return;
+
+    e.preventDefault();
+
+    
+   handleViolation("Restricted keyboard shortcut");
+
+  };
+
+  window.addEventListener(
+    "keydown",
+    handleKeyDown
+  );
+
+  return () => {
+
+    window.removeEventListener(
+      "keydown",
+      handleKeyDown
+    );
+
+  };
+
+}, [submitted]);
   async function flushPendingAnswers() {
   if (!sessionToken) {
     throw new Error("Session not initialized");

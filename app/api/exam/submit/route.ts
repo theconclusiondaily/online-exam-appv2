@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { SCORING }
-from "@/lib/exam";
-import {
-  updateWeeklyChallenges
-}
-from "@/lib/challenges/updateWeeklyChallenges";
+import { finalizeExam } from "@/lib/exam/finalizeExam";
 
 export async function POST(
   req: NextRequest
@@ -233,7 +228,15 @@ if (
     }
 // Lock the session immediately to prevent race conditions
    
+const result = await finalizeExam({
+  supabase,
+  userId: user.id,
+  userEmail: user.email,
+  examId,
+  session,
+});
 
+return NextResponse.json(result);
 
 
   } catch (error) {
