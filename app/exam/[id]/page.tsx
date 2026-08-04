@@ -21,7 +21,6 @@ import ExamTopStats from "@/components/exam/ExamTopStats";
 import ProctoringCapture
 from "@/components/exam/ProctoringCapture";
 import useExamAutosave from "@/hooks/useExamAutosave";
-import useAntiCheat from "@/hooks/useAntiCheat";
 import useLiveStudents from "@/hooks/useLiveStudents";
 import StudentCameraStream
 from "@/components/exam/StudentCameraStream";
@@ -32,9 +31,6 @@ import {
 import {
   fetchExam,
 } from "@/services/exam.service";
-
-import XPRewardPopup
-from "@/components/dashboard/XPRewardPopup";
 import {
   updateLiveStatus
 } from "@/services/liveStatus.service";
@@ -1066,19 +1062,7 @@ useEffect(() => {
 
   });
 
-  useAntiCheat({
-
-    antiCheatEnabled:
-      examStarted,
-
-    violations,
-
-    setViolations,
-
-    submitExam,
-
-  });
-
+  
   function handleViolation(
     reason: string
   ) {
