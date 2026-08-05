@@ -1424,47 +1424,67 @@ async function resumeExam() {
 }
 useEffect(() => {
 
-  const fullscreenHandler =
-    () => {
+  if (!examStarted || submitted) return;
 
-      if (
+  const handleFullscreen = () => {
 
-        examStarted &&
+    if (!document.fullscreenElement) {
 
-        !submitted &&
+      handleViolation(
+        "Fullscreen exited"
+      );
 
-        !document.fullscreenElement
-      ) {
+    }
 
-        handleViolation(
-          "Fullscreen exited"
-        );
-      }
-    };
+  };
 
   document.addEventListener(
-
     "fullscreenchange",
-
-    fullscreenHandler
+    handleFullscreen
   );
 
   return () => {
 
     document.removeEventListener(
-
       "fullscreenchange",
-
-      fullscreenHandler
+      handleFullscreen
     );
+
   };
 
-}, [
+}, [examStarted, submitted]);
 
-  examStarted,
+useEffect(() => {
 
-  submitted,
-]);
+  if (!examStarted || submitted) return;
+
+  const handleVisibility = () => {
+
+    if (document.hidden) {
+
+      handleViolation(
+        "Tab switched"
+      );
+
+    }
+
+  };
+
+  document.addEventListener(
+    "visibilitychange",
+    handleVisibility
+  );
+
+  return () => {
+
+    document.removeEventListener(
+      "visibilitychange",
+      handleVisibility
+    );
+
+  };
+
+}, [examStarted, submitted]);
 async function fetchQuestionByIndex(
   index: number
 ) {
