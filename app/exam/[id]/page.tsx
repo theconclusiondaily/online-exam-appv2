@@ -2485,11 +2485,10 @@ if (
       activity_type:
         "rank",
 
-      title:
-        `${studentName} climbed the leaderboard`,
+      title: "Leaderboard Updated",
 
-      description:
-        `Moved from #${previousRank} to #${newRank}`,
+description:
+  `Moved from #${previousRank} to #${newRank}`,
 
       metadata: {
 
@@ -2537,13 +2536,10 @@ await supabase
 
     activity_type: "exam",
 
-    title:
-      `${studentName} completed an exam`,
+  title: "Exam Completed",
 
-   
-      description:
+description:
   `Scored ${result.percentage}% in ${examInfo?.title}`,
-
    metadata: {
   score: result.score,
   percentage: result.percentage,

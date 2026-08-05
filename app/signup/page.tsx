@@ -6,6 +6,9 @@ import AuthHero from "@/components/auth/AuthHero";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Turnstile } from "@marsidev/react-turnstile";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { CalendarDays } from "lucide-react";
 export default function SignupPage() {
   const router = useRouter();
   const [name, setName] =
@@ -17,8 +20,8 @@ export default function SignupPage() {
   const [mobile, setMobile] =
     useState("");
 
-  const [dob, setDob] =
-    useState("");
+ const [dob, setDob] =
+  useState<Date | null>(null);
 
   const [password, setPassword] =
     useState("");
@@ -108,7 +111,10 @@ const { data, error } = await supabase.auth.signUp({
   data: {
   name,
   mobile,
-  dob,
+  dob:
+  dob
+    ? dob.toISOString().split("T")[0]
+    : null,
   referred_by: referralCode || null,
 },
   },
@@ -120,56 +126,31 @@ if (error) {
 }
 
 // Success
+const user = data.user;
+
+if (!user) {
+  alert("User creation failed");
+  return;
+}
+
+alert(
+  "Verification email sent. Please check your inbox and verify your email before logging in."
+);
+
+setName("");
+setEmail("");
+setMobile("");
+setDob(null);
+setPassword("");
+setReferralCode("");
+
+await supabase.auth.signOut();
+
 router.replace(
   `/verify-email?email=${encodeURIComponent(normalizedEmail)}`
 );
-    const user =
-      data.user;
 
-    if (!user) {
-
-      alert(
-        "User creation failed"
-      );
-
-      return;
-    }
-
-    if (
-      data.session === null
-    ) {
-
-      alert(
-        "Verification email sent. Please check your inbox and verify your email before logging in."
-      );
-
-    } else {
-
-      alert(
-        "Account created successfully."
-      );
-
-    }
-
-    setName("");
-
-    setEmail("");
-
-    setMobile("");
-
-    setDob("");
-
-    setPassword("");
-
-    await supabase.auth.signOut();
-
-localStorage.removeItem(
-  "tcd_demo"
-);
-
-router.replace(
-  "/login"
-);
+return;
 
   } catch (err) {
 
@@ -393,36 +374,58 @@ focus:ring-[#D4AF37]/30
     focus:ring-[#D4AF37]/30
   "
 />
-          <input
-            type="date"
-            value={dob}
-            onChange={(e) =>
-              setDob(
-                e.target.value
-              )
-            }
-            className="
-w-full
+          
+<div className="relative">
 
-p-4
+  <CalendarDays
+    className="
+      absolute
+      left-4
+      top-1/2
+      -translate-y-1/2
+      w-5
+      h-5
+      text-[#D4AF37]
+      pointer-events-none
+      z-10
+    "
+  />
 
-rounded-xl
+  <DatePicker
+    selected={dob}
+    onChange={(date: Date | null) =>
+  setDob(date)
+}
+    dateFormat="dd/MM/yyyy"
+    placeholderText="Date of Birth"
+    showMonthDropdown
+    showYearDropdown
+    dropdownMode="select"
+    scrollableYearDropdown
+    yearDropdownItemNumber={100}
+    maxDate={new Date()}
+    openToDate={new Date(2008, 0, 1)}
+    className="
+      w-full
+      pl-12
+      pr-4
+      py-4
+      rounded-xl
+      border
+      border-[#D8E1F0]
+      bg-[#F7F9FC]
+      text-[#274472]
+      placeholder:text-tcd-primary
+      focus:outline-none
+      focus:border-[#D4AF37]
+      focus:ring-2
+      focus:ring-[#D4AF37]/30
+      cursor-pointer
+    "
+  />
 
-border
-border-[#D8E1F0]
+</div>
 
-bg-[#F7F9FC]
-
-text-[#274472]
-
-transition-all
-
-focus:outline-none
-focus:border-[#D4AF37]
-focus:ring-2
-focus:ring-[#D4AF37]/30
-"
-          />
 
           <div className="relative">
 

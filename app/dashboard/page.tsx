@@ -557,8 +557,14 @@ if (
     const {
   data: activityData,
 } = await supabase
-  .from("activity_feed")
-  .select("*")
+  .from("activity_feed_view")
+.select(`
+  *,
+  users (
+    full_name,
+    avatar_url
+  )
+`)
   .order("created_at", {
     ascending: false,
   })

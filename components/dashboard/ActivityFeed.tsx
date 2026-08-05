@@ -157,20 +157,21 @@ useEffect(() => {
             "activity_feed",
         },
 
-        (payload) => {
+     async (payload) => {
 
-          setActivities(
-            (
-              prev: any[]
-            ) => [
+  const { data } = await supabase
+    .from("activity_feed_view")
+    .select("*")
+    .eq("id", payload.new.id)
+    .single();
 
-              payload.new,
+  if (!data) return;
 
-              ...prev,
-            ]
-              .slice(0, 10)
-          );
-        }
+  setActivities((prev: any[]) => [
+    data,
+    ...prev,
+  ].slice(0, 10));
+}
       )
 
       .subscribe();
@@ -432,17 +433,28 @@ useEffect(() => {
                         "
                       >
 
-                        <h3
-                          className="
-                            font-bold
+                    <div>
 
-                            text-tcd-blue
-                          "
-                        >
+  <h3
+    className="
+      font-bold
+      text-tcd-blue
+    "
+  >
+    {activity.student_name || "Student"}
+  </h3>
 
-                          {activity.title}
+  <p
+    className="
+      text-sm
+      font-medium
+      text-tcd-primary
+    "
+  >
+    {activity.title}
+  </p>
 
-                        </h3>
+</div>
 
                         <p
                           className="
@@ -454,17 +466,18 @@ useEffect(() => {
                         >
 
                           {
-                            new Date(
-                              activity.created_at
-                            ).toLocaleString(
-                              "en-IN",
-                              {
-                                day: "numeric",
-                                month: "short",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              }
-                            )
+                           new Date(
+  activity.created_at
+).toLocaleString("en-IN", {
+  timeZone: "Asia/Kolkata",
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: true,
+})
                           }
 
                         </p>

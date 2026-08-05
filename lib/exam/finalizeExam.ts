@@ -224,6 +224,18 @@ if (existingAttempt) {
   };
 
 }
+const {
+  data: latestSession,
+  error: latestSessionError,
+} = await supabase
+  .from("exam_sessions")
+  .select("total_violations")
+  .eq("id", session.id)
+  .single();
+
+if (latestSessionError) {
+  throw new Error(latestSessionError.message);
+}
     // Insert attempt
 
     const {
@@ -254,8 +266,8 @@ if (existingAttempt) {
         started_at:
           session.started_at,
 
-       violations:
-  session.total_violations || 0,
+      violations:
+  latestSession?.total_violations || 0,
 
         correct_count:
           correctCount,
@@ -532,8 +544,7 @@ if (newAchievements?.length) {
         activity_type:
           "achievement",
 
-        title:
-          `${(userEmail || "Student").split("@")[0]} unlocked an achievement`,
+        title: "Achievement Unlocked",
 
         description:
           achievement?.title,
