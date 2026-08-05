@@ -307,11 +307,7 @@ export default function ExamIntroPage() {
     className="w-20 h-20 object-contain"
   />
 
-  <h1 className="mt-3 text-2xl font-black tracking-wide text-[#243B6B]">
-    Exam Review
-  </h1>
-
-  <p className="mt-1 text-xs font-semibold uppercase tracking-[0.3em] text-[#D4AF37]">
+   <p className="mt-1 text-xs font-semibold uppercase tracking-[0.3em] text-[#D4AF37]">
     The Conclusion Daily · Hope & Faith
   </p>
 </div>
