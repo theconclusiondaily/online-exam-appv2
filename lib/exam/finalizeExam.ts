@@ -51,33 +51,9 @@ if (answersError) {
 
     // No answers submitted
 
-    if (
-      questionIds.length === 0
-    ) {
-      throw new Error(
-            "No answers found")
-        };
+  
 
 // Fetch ALL questions of this exam
-
-const {
-  data: allQuestions,
-  error: allQuestionsError,
-} = await supabase
-  .from("questions")
-  .select(`
-    id,
-    correct_answer
-  `)
-  .in(
-    "id",
-    questionIds
-  );
-
-if (allQuestionsError) {
-  throw new Error
-        (allQuestionsError.message,);
-};
 
 
 const {
@@ -99,7 +75,30 @@ if (
         ("Failed to load exam questions",)
     
 };
+const allQuestionIds =
+  mappings.map(
+    (m: any) => m.question_id
+  );
 
+const {
+  data: allQuestions,
+  error: allQuestionsError,
+} = await supabase
+  .from("questions")
+  .select(`
+    id,
+    correct_answer
+  `)
+  .in(
+    "id",
+    allQuestionIds
+  );
+
+if (allQuestionsError) {
+  throw new Error(
+    allQuestionsError.message
+  );
+}
 const totalQuestionsCount =
   mappings.length;
 const maxMarks =
