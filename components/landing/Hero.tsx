@@ -93,11 +93,9 @@ export default function Hero({
 
             </GradientButton>
 
-            <OutlineButton href="/#institutes">
-
-              For Institutes
-
-            </OutlineButton>
+            <OutlineButton href="/login">
+  Login
+</OutlineButton>
 
           </div>
 <div className="mt-12 grid grid-cols-2 gap-4 md:grid-cols-4">
