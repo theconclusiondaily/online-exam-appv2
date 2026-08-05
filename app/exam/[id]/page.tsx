@@ -148,7 +148,7 @@ const videoRef =
   useRef<HTMLVideoElement | null>(null);
   const lastViolationRef =
     useRef(0);
-    const multipleFacesSinceRef =
+    const multipleFaceStartRef =
   useRef<number | null>(null);
     const timerSubmittedRef = useRef(false);
 const snapshotIntervalRef =
@@ -1286,40 +1286,36 @@ if (
 
 if (faceCount > 1) {
 
-  if (!multipleFaceSince) {
+  if (
+    multipleFaceStartRef.current === null
+  ) {
 
-    setMultipleFaceSince(
-      Date.now()
+    multipleFaceStartRef.current =
+      Date.now();
+
+  }
+
+  const duration =
+    Date.now() -
+    multipleFaceStartRef.current;
+
+  if (
+    duration >= 5000
+  ) {
+
+    handleViolation(
+      "Multiple faces detected"
     );
 
-  } else {
-
-    const duration =
-
-      Date.now() -
-      multipleFaceSince;
-
-    if (
-      duration >= 5000
-    ) {
-
-      handleViolation(
-        "Multiple faces detected"
-      );
-
-      setMultipleFaceSince(
-        Date.now()
-      );
-
-    }
+    multipleFaceStartRef.current =
+      Date.now();
 
   }
 
 } else {
 
-  setMultipleFaceSince(
-    null
-  );
+  multipleFaceStartRef.current =
+    null;
 
 }
   const blob =
