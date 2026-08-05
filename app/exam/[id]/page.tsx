@@ -330,6 +330,9 @@ const [
   sessionToken,
   setSessionToken
 ] = useState("");
+
+const sessionTokenRef = useRef("");
+
   const [examInfo,
     setExamInfo] =
     useState<any>(null);
@@ -1770,6 +1773,8 @@ const token =
   result.session.session_token;
 
 setSessionToken(token);
+sessionTokenRef.current = token;
+
 
 localStorage.setItem(
   `exam-session-${examId}-${userId}`,
@@ -2217,9 +2222,12 @@ useEffect(() => {
 
 }, [submitted]);
   async function flushPendingAnswers() {
-  if (!sessionToken) {
-    throw new Error("Session not initialized");
-  }
+  const token =
+  sessionToken || sessionTokenRef.current;
+
+if (!token) {
+  throw new Error("Session not initialized");
+}
 
   // Wait for an autosave already in progress
   const startTime = Date.now();
@@ -2261,7 +2269,7 @@ useEffect(() => {
             examId,
             questionId: item.questionId,
             selectedOption: item.selectedOption,
-            sessionToken,
+           sessionToken: token,
           }),
         }
       );
@@ -2311,7 +2319,7 @@ async function submitExam() {
 
   timerSubmittedRef.current = true;
 
-timerSubmittedRef.current = true;
+
 
   setSubmitting(true);
   setFinalizingExam(true);
@@ -2328,14 +2336,17 @@ try {
 }
 
   
-  const response = await fetch("/api/exam/submit", {
+  const token =
+  sessionToken || sessionTokenRef.current;
+
+const response = await fetch("/api/exam/submit", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
   },
   body: JSON.stringify({
     examId,
-    sessionToken,
+    sessionToken: token,
   }),
 });
 
@@ -2614,6 +2625,7 @@ if (
 localStorage.removeItem(
   `exam-session-${examId}-${userId}`
 );
+sessionTokenRef.current = "";
     setTimeout(() => {
 
   setShowXP(false);
