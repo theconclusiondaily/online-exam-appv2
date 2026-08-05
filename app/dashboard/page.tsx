@@ -558,13 +558,7 @@ if (
   data: activityData,
 } = await supabase
   .from("activity_feed_view")
-.select(`
-  *,
-  users (
-    full_name,
-    avatar_url
-  )
-`)
+.select("*")
   .order("created_at", {
     ascending: false,
   })
