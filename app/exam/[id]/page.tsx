@@ -148,6 +148,8 @@ const videoRef =
   useRef<HTMLVideoElement | null>(null);
   const lastViolationRef =
     useRef(0);
+    const multipleFacesSinceRef =
+  useRef<number | null>(null);
     const timerSubmittedRef = useRef(false);
 const snapshotIntervalRef =
   useRef<NodeJS.Timeout | null>(
@@ -1261,11 +1263,11 @@ if (
       noFaceSince;
 
     if (
-      duration > 60000
+      duration >= 30000
     ) {
 
       handleViolation(
-        "Face not visible for 60 seconds"
+        "Face not visible for 30 seconds"
       );
 
       setNoFaceSince(
@@ -1298,7 +1300,7 @@ if (faceCount > 1) {
       multipleFaceSince;
 
     if (
-      duration > 30000
+      duration >= 5000
     ) {
 
       handleViolation(
