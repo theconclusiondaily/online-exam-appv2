@@ -90,7 +90,7 @@ class HeroRepository extends BaseRepository {
       "Failed to load featured exam."
     );
 
-    return {
+       return {
       featuredExam,
 
       studentCount: this.count(

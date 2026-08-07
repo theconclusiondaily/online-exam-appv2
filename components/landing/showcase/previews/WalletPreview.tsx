@@ -49,7 +49,7 @@ export default function WalletPreview() {
         className="
           overflow-hidden
           rounded-[32px]
-          bg-gradient-to-br
+          bg-brand
           from-brand
           via-brand-light
           to-brand
