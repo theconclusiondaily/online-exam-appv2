@@ -3,10 +3,12 @@ import TCDIcon from "@/components/brand/TCDIcon";
 
 interface Props {
   liveExams: any[];
+  upcomingExams: any[];
 }
 
 export default function LiveExamsSection({
   liveExams,
+  upcomingExams,
 }: Props) {
   
 const arenaExams =
@@ -79,14 +81,6 @@ const instituteExams =
   );
   const now = new Date();
 
-const upcomingExams =
-  liveExams.filter(
-    (exam) =>
-      exam.start_time &&
-      new Date(
-        exam.start_time
-      ) > now
-  );
 
 const activeExams =
   liveExams.filter(

@@ -2370,6 +2370,7 @@ const handleClaimReward =
 
 <LiveExamsSection
   liveExams={liveExams}
+  upcomingExams={upcomingExams}
 />
 
 {/* PERFORMANCE */}
