@@ -13,7 +13,7 @@ export const navigation: NavigationItem[] = [
   
   {
     title: "Home",
-    href: "#home",
+    href: "/#home",
   },
   {
   title: "About",
@@ -21,23 +21,23 @@ export const navigation: NavigationItem[] = [
 },
   {
     title: "Students",
-    href: "#students",
+    href: "/#students",
   },
   {
     title: "Competitions",
-    href: "#competitions",
+    href: "/#competitions",
   },
   {
     title: "Institutes",
-    href: "#institutes",
+    href: "/#institutes",
   },
   {
     title: "AI Security",
-    href: "#security",
+    href: "/#security",
   },
   {
     title: "Rewards",
-    href: "#rewards",
+    href: "/#rewards",
   },
   
 ];
@@ -58,7 +58,7 @@ export const footerNavigation = {
 },
     {
       title: "Contact",
-      href: "#contact",
+      href: "/#contact",
     },
   ],
 

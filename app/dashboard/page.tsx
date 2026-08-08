@@ -2367,12 +2367,7 @@ const handleClaimReward =
   )
 }
 
-<UpcomingExamCard
-  exam={
-    upcomingExams[0] ??
-    null
-  }
-/>
+
 
 {/* LIVE EXAMS */}
 
@@ -2381,11 +2376,17 @@ const handleClaimReward =
   upcomingExams={upcomingExams}
 />
 
+{/* UPCOMING EXAM */}
+
+<UpcomingExamCard
+  exam={upcomingExams[0] ?? null}
+/>
+
 {/* PERFORMANCE */}
 
-      <StatsGrid
-        stats={stats}
-      />
+<StatsGrid
+  stats={stats}
+/>
       {/* STREAK CARDS */}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
