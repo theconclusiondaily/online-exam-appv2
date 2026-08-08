@@ -24,7 +24,11 @@ export function useExamBuilder() {
 
       reward_pool: 0,
 
-      scholarship_enabled: false,
+correct_marks: 3,
+
+negative_marks: 1,
+
+scholarship_enabled: false,
 
       scholarship_pool: 0,
 

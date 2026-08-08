@@ -84,6 +84,71 @@ export default function ExamSettings({
   </p>
 
 </div>
+{/* MARKING SCHEME */}
+
+<div className="grid grid-cols-2 gap-6 mt-6">
+
+  <div>
+
+    <label className="block text-sm font-bold text-tcd-blue mb-2">
+
+      Correct Marks
+
+    </label>
+
+    <input
+      type="number"
+      min={1}
+      max={10}
+      value={exam.correct_marks}
+      onChange={(e) =>
+        updateField(
+          "correct_marks",
+          Number(e.target.value)
+        )
+      }
+      className="
+        w-full
+        rounded-2xl
+        border
+        border-gray-200
+        p-4
+      "
+    />
+
+  </div>
+
+  <div>
+
+    <label className="block text-sm font-bold text-tcd-blue mb-2">
+
+      Negative Marks
+
+    </label>
+
+    <input
+      type="number"
+      min={0}
+      max={10}
+      value={exam.negative_marks}
+      onChange={(e) =>
+        updateField(
+          "negative_marks",
+          Number(e.target.value)
+        )
+      }
+      className="
+        w-full
+        rounded-2xl
+        border
+        border-gray-200
+        p-4
+      "
+    />
+
+  </div>
+
+</div>
       </div>
 
       <div className="mt-6">

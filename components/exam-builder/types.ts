@@ -25,6 +25,10 @@ export interface ExamForm {
 
   reward_pool: number;
 
+  correct_marks: number;
+
+negative_marks: number;
+
   scholarship_enabled: boolean;
 
   scholarship_pool: number;
