@@ -144,21 +144,7 @@ useEffect(() => {
 
   return;
 }
-if (Number(correctMarks) <= 0) {
 
-  alert("Correct marks must be greater than 0.");
-
-  return;
-
-}
-
-if (Number(negativeMarks) < 0) {
-
-  alert("Negative marks cannot be negative.");
-
-  return;
-
-}
     setTitle(data.title || "");
 
 setDescription(
@@ -255,6 +241,21 @@ if (mappings) {
   // CREATE EXAM
 
   async function createExam() {
+    if (Number(correctMarks) <= 0) {
+
+  alert("Correct marks must be greater than 0.");
+
+  return;
+
+}
+
+if (Number(negativeMarks) < 0) {
+
+  alert("Negative marks cannot be negative.");
+
+  return;
+
+}
 const {
   data: { user },
 } = await supabase.auth.getUser();
@@ -571,51 +572,53 @@ router.push("/admin");
               }
               className="w-full border rounded-2xl p-4"
             />
+{/* MARKING SCHEME */}
 
-   {/* MARKS */}
-
-   <div className="grid grid-cols-2 gap-4">
+<div className="grid grid-cols-2 gap-6">
 
   <div>
 
-    <label className="block text-sm font-medium mb-2">
+    <p className="font-semibold mb-2">
+
       Correct Marks
-    </label>
+
+    </p>
 
     <input
       type="number"
-      min="1"
-      max="10"
+      min={1}
+      max={10}
       value={correctMarks}
       onChange={(e) =>
         setCorrectMarks(e.target.value)
       }
-      className="input"
+      className="w-full border rounded-2xl p-4"
     />
 
   </div>
 
   <div>
 
-    <label className="block text-sm font-medium mb-2">
+    <p className="font-semibold mb-2">
+
       Negative Marks
-    </label>
+
+    </p>
 
     <input
       type="number"
-      min="0"
-      max="10"
+      min={0}
+      max={10}
       value={negativeMarks}
       onChange={(e) =>
         setNegativeMarks(e.target.value)
       }
-      className="input"
+      className="w-full border rounded-2xl p-4"
     />
 
   </div>
 
 </div>
-
             {/* INSTITUTE */}
 
             <div>
