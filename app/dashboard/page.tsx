@@ -1340,9 +1340,7 @@ const filteredUpcomingExams =
       );
     }
   );
-console.log("All Upcoming Exams:", allUpcomingExams);
-console.log("Filtered Upcoming Exams:", filteredUpcomingExams);
-console.log("Institute IDs:", instituteIds);
+
 setUpcomingExams(filteredUpcomingExams);
 
 setLoading(false);

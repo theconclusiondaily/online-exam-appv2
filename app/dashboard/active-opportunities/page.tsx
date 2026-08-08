@@ -513,9 +513,14 @@ await updateExamStatuses();
 
           </div>
 
-          <LiveExamsSection
-            liveExams={liveExams}
-          />
+         <LiveExamsSection
+  liveExams={liveExams}
+  upcomingExams={liveExams.filter(
+    (exam) =>
+      exam.start_time &&
+      new Date(exam.start_time) > new Date()
+  )}
+/>
 
         </div>
 
