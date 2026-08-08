@@ -1326,9 +1326,19 @@ const {
 
 const filteredUpcomingExams =
   (allUpcomingExams || []).filter(
-    (exam) =>
-      exam.exam_scope === "PUBLIC" ||
-      instituteIds.includes(exam.institute_id)
+    (exam) => {
+
+      const scope =
+        exam.exam_scope
+          ?.toLowerCase();
+
+      return (
+        scope === "public" ||
+        instituteIds.includes(
+          exam.institute_id
+        )
+      );
+    }
   );
 
 setUpcomingExams(filteredUpcomingExams);
