@@ -170,7 +170,7 @@ export default function RecentExams({
 
                 <div className="mt-3 font-bold text-tcd-gold">
 
-                  ₹ {exam.reward_pool || 0}
+                  ₹ {((exam.reward_pool || 0) / 100).toLocaleString("en-IN")}
 
                 </div>
 

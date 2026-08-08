@@ -263,7 +263,7 @@ const renderArenaSection = (
                     font-bold
                   "
                 >
-                  ₹ {exam.reward_pool || 0}
+                 ₹ {((exam.reward_pool || 0) / 100).toLocaleString("en-IN")}
                 </div>
 
               </div>
@@ -744,7 +744,7 @@ const renderArenaSection = (
                     font-bold
                   "
                 >
-                  ₹ {exam.reward_pool || 0}
+                  ₹ {((exam.reward_pool || 0) / 100).toLocaleString("en-IN")}
                 </div>
 
               </div>

@@ -237,7 +237,7 @@ export default function ExamIntroPage() {
             </p>
 
             <h3 className="text-3xl font-black text-tcd-gold mt-2">
-              ₹ {exam.reward_pool || 0}
+             ₹ {((exam.reward_pool || 0) / 100).toLocaleString("en-IN")}
             </h3>
           </div>
 

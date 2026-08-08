@@ -530,8 +530,7 @@ setLiveExams(
 
               Reward:
               {" "}
-              ₹
-              {exam.reward_pool || 0}
+              ₹ {((exam.reward_pool || 0) / 100).toLocaleString("en-IN")}
 
             </p>
 
@@ -635,8 +634,7 @@ setLiveExams(
 
               Reward:
               {" "}
-              ₹
-              {exam.reward_pool || 0}
+              ₹ {((exam.reward_pool || 0) / 100).toLocaleString("en-IN")}
 
             </p>
 
