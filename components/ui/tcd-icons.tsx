@@ -243,5 +243,119 @@ unanswered: (
 security: (
   <img src="/icons/security.svg" className="w-6 h-6" />
 ),
+calendar: (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    className="w-10 h-10"
+  >
+    <rect
+      x="3"
+      y="5"
+      width="18"
+      height="16"
+      rx="3"
+      fill="#274472"
+    />
+    <path
+      d="M3 9H21"
+      stroke="#E6C06E"
+      strokeWidth="2"
+    />
+    <path
+      d="M8 3V7"
+      stroke="#E6C06E"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    <path
+      d="M16 3V7"
+      stroke="#E6C06E"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+  </svg>
+),
 
+clock: (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    className="w-10 h-10"
+  >
+    <circle
+      cx="12"
+      cy="12"
+      r="9"
+      fill="#274472"
+    />
+    <path
+      d="M12 7V12L15.5 14"
+      stroke="#E6C06E"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+),
+
+reward: (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    className="w-10 h-10"
+  >
+    <circle
+      cx="12"
+      cy="12"
+      r="8"
+      fill="#E6C06E"
+    />
+    <text
+      x="12"
+      y="16"
+      textAnchor="middle"
+      fontSize="9"
+      fontWeight="700"
+      fill="#274472"
+    >
+      ₹
+    </text>
+  </svg>
+),
+
+exam: (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    className="w-10 h-10"
+  >
+    <rect
+      x="5"
+      y="3"
+      width="14"
+      height="18"
+      rx="2"
+      fill="#274472"
+    />
+    <path
+      d="M8 8H16"
+      stroke="#E6C06E"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    <path
+      d="M8 12H16"
+      stroke="#E6C06E"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    <path
+      d="M8 16H13"
+      stroke="#E6C06E"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+  </svg>
+),
 };

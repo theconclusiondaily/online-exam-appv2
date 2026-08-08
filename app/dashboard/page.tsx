@@ -52,6 +52,8 @@ import {
 import {
   formatCredits,
 } from "@/lib/finance/formatter";
+import UpcomingExamCard
+from "@/components/dashboard/UpcomingExamCard";
 export default function DashboardPage() {
   const router =
     useRouter();
@@ -2364,6 +2366,14 @@ const handleClaimReward =
 
   )
 }
+
+<UpcomingExamCard
+  exam={
+    upcomingExams[0] ??
+    null
+  }
+/>
+
 {/* LIVE EXAMS */}
 
 <LiveExamsSection
