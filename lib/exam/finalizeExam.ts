@@ -99,11 +99,39 @@ if (allQuestionsError) {
     allQuestionsError.message
   );
 }
+
+const {
+  data: exam,
+  error: examError,
+} = await supabase
+  .from("exams")
+  .select(
+    "correct_marks, negative_marks"
+  )
+  .eq("id", examId)
+  .single();
+
+if (examError) {
+  throw new Error(examError.message);
+}
+
+const correctMarks =
+  Number(
+    exam?.correct_marks ??
+      SCORING.CORRECT
+  );
+
+const negativeMarks =
+  Number(
+    exam?.negative_marks ??
+      Math.abs(SCORING.WRONG)
+  );
+
 const totalQuestionsCount =
   mappings.length;
 const maxMarks =
   totalQuestionsCount *
-  SCORING.CORRECT;
+  correctMarks;
 
 let totalScore = 0;
 
@@ -131,8 +159,7 @@ for (
     question.correct_answer
   ) {
 
-    totalScore +=
-      SCORING.CORRECT;
+   totalScore += correctMarks;
 
     correctCount++;
 
@@ -140,8 +167,7 @@ for (
     answer.selected_option
   ) {
 
-    totalScore +=
-      SCORING.WRONG;
+   totalScore -= negativeMarks;
 
     wrongCount++;
   }

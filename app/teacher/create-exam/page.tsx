@@ -41,6 +41,11 @@ export default function TeacherCreateExamPage() {
   const [rewardPool,
     setRewardPool] =
     useState("");
+
+const [correctMarks, setCorrectMarks] = useState("3");
+
+const [negativeMarks, setNegativeMarks] = useState("1");
+    
 const [startTime,
   setStartTime] =
   useState("");
@@ -133,6 +138,9 @@ challenge_type:
   reward_pool:
     Number(rewardPool),
 
+    correct_marks: Number(correctMarks),
+
+negative_marks: Number(negativeMarks),
   created_by:
     userId,
 
@@ -162,7 +170,21 @@ cancelled: false,
     ).toISOString(),
 }
 ]);
+if (Number(correctMarks) <= 0) {
 
+  alert("Correct marks must be greater than 0.");
+
+  return;
+
+}
+
+if (Number(negativeMarks) < 0) {
+
+  alert("Negative marks cannot be negative.");
+
+  return;
+
+}
     if (error) {
 
       alert(error.message);
@@ -177,6 +199,10 @@ cancelled: false,
       setDescription("");
       setDuration("");
       setRewardPool("");
+setCorrectMarks("3");
+
+setNegativeMarks("1");
+
     }
   }
 
@@ -583,7 +609,47 @@ cancelled: false,
             className="border p-4 rounded-xl w-full"
           />
 <div>
+<div className="grid grid-cols-2 gap-4">
 
+  <div>
+
+    <label className="block text-sm font-medium mb-2">
+      Correct Marks
+    </label>
+
+    <input
+      type="number"
+      min="1"
+      max="10"
+      value={correctMarks}
+      onChange={(e) =>
+        setCorrectMarks(e.target.value)
+      }
+      className="input"
+    />
+
+  </div>
+
+  <div>
+
+    <label className="block text-sm font-medium mb-2">
+      Negative Marks
+    </label>
+
+    <input
+      type="number"
+      min="0"
+      max="10"
+      value={negativeMarks}
+      onChange={(e) =>
+        setNegativeMarks(e.target.value)
+      }
+      className="input"
+    />
+
+  </div>
+
+</div>
   <p className="font-semibold mb-2">
 
     Start Time

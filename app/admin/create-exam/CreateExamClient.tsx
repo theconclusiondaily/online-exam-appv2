@@ -37,6 +37,10 @@ const editId =
     setRewardPool] =
     useState("");
 
+const [correctMarks, setCorrectMarks] = useState("3");
+
+const [negativeMarks, setNegativeMarks] = useState("1");
+
   const [institutes,
     setInstitutes] =
     useState<any[]>([]);
@@ -59,6 +63,8 @@ const [examScope, setExamScope] =
   const [endTime,
     setEndTime] =
     useState("");
+
+    
   const [questions,
   setQuestions] =
   useState<any[]>([]);
@@ -138,7 +144,21 @@ useEffect(() => {
 
   return;
 }
+if (Number(correctMarks) <= 0) {
 
+  alert("Correct marks must be greater than 0.");
+
+  return;
+
+}
+
+if (Number(negativeMarks) < 0) {
+
+  alert("Negative marks cannot be negative.");
+
+  return;
+
+}
     setTitle(data.title || "");
 
 setDescription(
@@ -151,6 +171,13 @@ setRewardPool(
   )
 );
 
+setCorrectMarks(
+  String(data.correct_marks ?? 3)
+);
+
+setNegativeMarks(
+  String(data.negative_marks ?? 1)
+);
 setSelectedInstitute(
   data.institute_id || ""
 );
@@ -309,7 +336,9 @@ if (
 
   reward_pool:
     Number(rewardPool),
+correct_marks: Number(correctMarks),
 
+negative_marks: Number(negativeMarks),
     institute_id:
     selectedInstitute,
 
@@ -342,7 +371,9 @@ end_time:
 
   reward_pool:
     Number(rewardPool),
+correct_marks: Number(correctMarks),
 
+negative_marks: Number(negativeMarks),
   institute_id:
     selectedInstitute,
 
@@ -540,6 +571,50 @@ router.push("/admin");
               }
               className="w-full border rounded-2xl p-4"
             />
+
+   {/* MARKS */}
+
+   <div className="grid grid-cols-2 gap-4">
+
+  <div>
+
+    <label className="block text-sm font-medium mb-2">
+      Correct Marks
+    </label>
+
+    <input
+      type="number"
+      min="1"
+      max="10"
+      value={correctMarks}
+      onChange={(e) =>
+        setCorrectMarks(e.target.value)
+      }
+      className="input"
+    />
+
+  </div>
+
+  <div>
+
+    <label className="block text-sm font-medium mb-2">
+      Negative Marks
+    </label>
+
+    <input
+      type="number"
+      min="0"
+      max="10"
+      value={negativeMarks}
+      onChange={(e) =>
+        setNegativeMarks(e.target.value)
+      }
+      className="input"
+    />
+
+  </div>
+
+</div>
 
             {/* INSTITUTE */}
 
