@@ -96,6 +96,38 @@ useEffect(() => {
   if (!exam) {
 
   return (
+    <div
+      className="
+        bg-white
+        rounded-[30px]
+        border
+        border-gray-100
+        shadow-sm
+        p-8
+        mb-8
+      "
+    >
+      <div className="flex flex-col items-center justify-center text-center">
+
+        <div className="w-16 h-16 mb-5">
+          {TCDIcons.target}
+        </div>
+
+        <h2 className="text-3xl font-black text-tcd-blue">
+          No Upcoming Exams
+        </h2>
+
+        <p className="mt-3 text-tcd-primary max-w-md">
+          There are currently no upcoming exams available.
+          Check back later for new reward tests and mock exams.
+        </p>
+
+      </div>
+    </div>
+  );
+}
+
+return (
   <div
     className={`
 bg-white
@@ -836,6 +868,4 @@ Instant Result
 
 </div>
   )
-}
-
 }
