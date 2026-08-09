@@ -169,46 +169,51 @@ setLiveExams(liveExamData?.length ?? 0);
 
   return (
 
-    <main className="min-h-screen p-4 md:p-5 bg-gray-50">
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[#F5F7FB]">
+  <div className="mx-auto max-w-[1500px] px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
 
         <AdminHero
   onLogout={logout}
 />
-{/* STATS */}
+{/* PLATFORM OVERVIEW */}
+<section className="mb-8">
+  <DashboardStats {...stats} />
+</section>
 
-      <DashboardStats {...stats} />
-
-
-
+{/* COMMAND CENTER */}
+<section className="mb-8">
   <CommandCenter
     liveExams={stats.liveExams}
     totalAttempts={stats.totalAttempts}
     totalUsers={stats.totalUsers}
   />
+</section>
 
   
         {/* NAVIGATION */}
 
         
-<div className="grid xl:grid-cols-2 gap-6 mb-8">
+{/* OPERATIONS */}
+<section className="mb-8">
+  <div className="grid gap-6 xl:grid-cols-2">
+    <ContentManagement />
+    <LiveOperations />
+  </div>
+</section>
 
-  <ContentManagement />
+{/* PLATFORM */}
+<section className="mb-8">
+  <div className="grid gap-6 xl:grid-cols-2">
+    <PlatformManagement />
+    <RecentPapers
+      papers={papers.papers}
+    />
+  </div>
+</section>
 
-  <LiveOperations />
-
-</div>
-        <div className="grid xl:grid-cols-2 gap-6 mb-8">
-
-  <PlatformManagement />
-
-  <RecentPapers
-    papers={papers.papers}
-  />
-
-</div>
-<div className="grid xl:grid-cols-2 gap-6">
+{/* ACTIVITY */}
+<section>
+  <div className="grid gap-6 xl:grid-cols-2">
 
     <RecentExams
         exams={exams.recentExams}
@@ -218,9 +223,11 @@ setLiveExams(liveExamData?.length ?? 0);
         activities={activity.activities}
         setActivities={activity.setActivities}
     />
+ </div>
+</section>
 
 </div>
-      </div>
+    
 
     </main>
   );
