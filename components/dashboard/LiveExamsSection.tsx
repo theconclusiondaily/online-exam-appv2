@@ -11,12 +11,11 @@ export default function LiveExamsSection({
   upcomingExams,
 }: Props) {
   
-const arenaExams =
-  liveExams.filter(
-    (exam) =>
-      exam.exam_scope ===
-      "PUBLIC"
-  );
+const safeLiveExams = (liveExams ?? []).filter(Boolean);
+
+const arenaExams = safeLiveExams.filter(
+  (exam) => exam.exam_scope === "PUBLIC"
+);
   const normalizeChallengeType = (
   value?: string | null
 ) => {
@@ -74,7 +73,7 @@ const scholarshipChallenges =
   
   
 const instituteExams =
-  liveExams.filter(
+  safeLiveExams.filter(
     (exam) =>
       exam.exam_scope ===
       "INSTITUTE"
@@ -83,7 +82,7 @@ const instituteExams =
 
 
 const activeExams =
-  liveExams.filter(
+  safeLiveExams.filter(
     (exam) =>
       (!exam.start_time ||
         new Date(
@@ -96,7 +95,7 @@ const activeExams =
   );
 
 const completedExams =
-  liveExams.filter(
+  safeLiveExams.filter(
     (exam) =>
       exam.end_time &&
       new Date(
@@ -105,7 +104,7 @@ const completedExams =
   );
   
 
-liveExams.forEach((exam) => {
+safeLiveExams.forEach((exam) => {
  
 });
 
@@ -141,7 +140,9 @@ const renderArenaSection = (
 
       </div>
 
-      {exams.map((exam) => (
+      {exams
+  .filter(Boolean)
+  .map((exam) => (
 
         <div
           key={exam.id}
@@ -278,7 +279,7 @@ const renderArenaSection = (
                   mb-3
                 "
               >
-                {exam.title}
+                {exam?.title ?? "Untitled Exam"}
               </h3>
 
               {/* Description */}
@@ -617,7 +618,9 @@ const renderArenaSection = (
 
     </div>
 
-    {instituteExams.map((exam) => (
+   {instituteExams
+  .filter(Boolean)
+  .map((exam) => (
       <div
               key={exam.id}
               className="
@@ -759,7 +762,7 @@ const renderArenaSection = (
                   mb-3
                 "
               >
-                {exam.title}
+                {exam?.title ?? "Untitled Exam"}
               </h3>
 
               {/* Description */}
