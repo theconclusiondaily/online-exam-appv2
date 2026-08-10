@@ -42,7 +42,7 @@ export default function AdminHero({
                 </span>
 
                 <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#294D86]">
-                  TCD Administration
+                  The Conclusion Daily Administration
                 </span>
               </div>
 
