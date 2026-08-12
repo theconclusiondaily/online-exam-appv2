@@ -183,50 +183,38 @@ async function handleBulkArchive() {
 
       <div className="flex justify-between items-center mb-8">
 
-        <div>
+       <div className="flex gap-3">
+  <button
+    onClick={loadQuestions}
+    className="border rounded-xl px-4 py-3 flex items-center gap-2 hover:bg-slate-50"
+  >
+    <RefreshCw size={18} />
+    Refresh
+  </button>
 
-          <h1 className="text-3xl font-bold text-[#0F3D91]">
-            Question Bank
-          </h1>
+  <Link
+    href="/admin/questions/new"
+    className="bg-[#0F3D91] text-white rounded-xl px-5 py-3 flex items-center gap-2 hover:bg-[#0c3278]"
+  >
+    <Plus size={18} />
+    New Question
+  </Link>
 
-          <p className="text-slate-500 mt-2">
-            Manage all questions in TCD
-          </p>
-
-        </div>
-
-        <div className="flex gap-3">
-
-          <button
-            onClick={loadQuestions}
-            className="border rounded-xl px-4 py-3 flex items-center gap-2 hover:bg-slate-50"
-          >
-            <RefreshCw size={18} />
-            Refresh
-          </button>
-
-          <Link
-            href="/admin/questions/new"
-            className="bg-[#0F3D91] text-white rounded-xl px-5 py-3 flex items-center gap-2 hover:bg-[#0c3278]"
-          >
-            <Plus size={18} />
-            New Question
-          </Link>
-<Link
-  href="/admin/questions/import"
-  className="
-    bg-green-600
-    hover:bg-green-700
-    text-white
-    px-5
-    py-3
-    rounded-2xl
-    font-bold
-  "
->
-  Bulk Import
-</Link>
-        </div>
+  <Link
+    href="/admin/questions/import"
+    className="
+      bg-green-600
+      hover:bg-green-700
+      text-white
+      px-5
+      py-3
+      rounded-2xl
+      font-bold
+    "
+  >
+    Bulk Import
+  </Link>
+</div>
 
       </div>
 
