@@ -88,58 +88,33 @@ export default function PaperListPage() {
   description="Create and manage question papers."
 />
       {/* Header */}
+<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+  <div>
+    <h1 className="text-2xl font-bold">
+      Question Papers
+    </h1>
 
-      <div className="flex justify-between items-center mb-8">
+    <p className="text-gray-500 mt-1">
+      Create, manage and organize reusable question papers.
+    </p>
+  </div>
 
-        <div>
+  <div className="flex flex-wrap gap-3">
+    <Link
+      href="/admin"
+      className="bg-white border px-4 py-2 rounded-xl"
+    >
+      Dashboard
+    </Link>
 
-          <h1 className="text-3xl font-bold text-[#0F3D91]">
-
-            Question Papers
-
-          </h1>
-
-          <p className="text-slate-500 mt-2">
-
-            Build reusable papers for exams
-
-          </p>
-
-        </div>
-
-        <div className="flex gap-3">
-
-          <button
-
-            onClick={loadPapers}
-
-            className="border rounded-xl px-4 py-3 flex items-center gap-2 hover:bg-slate-50"
-
-          >
-
-            <RefreshCw size={18} />
-
-            Refresh
-
-          </button>
-
-          <Link
-
-            href="/admin/papers/new"
-
-            className="bg-[#0F3D91] text-white rounded-xl px-5 py-3 flex items-center gap-2 hover:bg-[#0C3278]"
-
-          >
-
-            <Plus size={18} />
-
-            New Paper
-
-          </Link>
-
-        </div>
-
-      </div>
+    <Link
+      href="/admin/papers/new"
+      className="bg-black text-white px-5 py-2 rounded-xl font-semibold"
+    >
+      + Create Paper
+    </Link>
+  </div>
+</div>
 
       <PaperStats
 

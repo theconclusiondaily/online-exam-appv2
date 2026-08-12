@@ -19,7 +19,9 @@ import {
 
 import { supabase } from "@/lib/supabase/client";
 import { formatRupees } from "@/lib/finance/formatter";
-
+import FinanceUsers from "@/components/admin/finance/FinanceUsers";
+import type { FinanceUser } from "@/lib/finance/adminUsers";
+import FinanceUserPanel from "@/components/admin/finance/FinanceUserPanel";
 interface FinanceDashboard {
   total_wallet_balance: number;
   total_locked_balance: number;
@@ -47,7 +49,11 @@ export default function FinancePage() {
 
   const [error, setError] =
     useState<string | null>(null);
+const [selectedFinanceUser, setSelectedFinanceUser] =
+  useState<FinanceUser | null>(null);
 
+const [financeUsersRefreshKey, setFinanceUsersRefreshKey] =
+  useState(0);
   const loadDashboard = useCallback(
     async () => {
       setLoading(true);
@@ -484,6 +490,19 @@ export default function FinancePage() {
           </Link>
         </section>
 
+{/* =====================================================
+    USER FINANCIAL MANAGEMENT
+===================================================== */}
+
+<section className="mb-8">
+  <FinanceUsers
+  refreshTrigger={financeUsersRefreshKey}
+  onSelectUser={(user) => {
+    setSelectedFinanceUser(user);
+  }}
+/>
+</section>
+
         {/* =====================================================
             FINANCIAL MODEL
         ===================================================== */}
@@ -517,10 +536,25 @@ export default function FinancePage() {
             </div>
           </div>
         </section>
+{selectedFinanceUser && (
+  <FinanceUserPanel
+    user={selectedFinanceUser}
+    onClose={() => {
+      setSelectedFinanceUser(null);
+    }}
+    onSuccess={() => {
+      setFinanceUsersRefreshKey(
+        (value) => value + 1
+      );
 
+      setSelectedFinanceUser(null);
+    }}
+  />
+)}
       </div>
     </div>
   );
+  
 }
 
 /* =====================================================
@@ -846,5 +880,7 @@ function QuickAction({
         />
       </div>
     </Link>
+    
   );
+  
 }
