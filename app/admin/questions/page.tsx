@@ -1,12 +1,5 @@
-"use client";
-
-import AppLayout from "@/components/layout/AppLayout";
-import QuestionBuilderContainer from "@/components/question-builder/QuestionBuilderContainer";
+import { redirect } from "next/navigation";
 
 export default function QuestionsPage() {
-  return (
-    <AppLayout>
-      <QuestionBuilderContainer />
-    </AppLayout>
-  );
+  redirect("/admin/questions/bank");
 }
