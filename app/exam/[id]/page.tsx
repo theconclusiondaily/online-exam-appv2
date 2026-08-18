@@ -1415,14 +1415,9 @@ await fetchQuestionByIndex(
   currentQuestion
 );
 
-// Start prefetching ahead.
-// These calls do not block exam start.
-void prefetchQuestion(
+// Build a rolling offline buffer.
+void prefetchQuestionsAhead(
   currentQuestion + 1
-);
-
-void prefetchQuestion(
-  currentQuestion + 2
 );
 
 setExamStarted(
@@ -1718,22 +1713,21 @@ async function prefetchQuestion(
     return;
   }
 
-  // Already cached in memory
+  // Already cached in memory.
   if (
     questionCacheRef.current[index]
   ) {
     return;
   }
 
-  // Already being fetched
+  // Already being fetched.
   if (
     prefetchingRef.current.has(index)
   ) {
     return;
   }
 
-  // Don't start unnecessary network
-  // requests while offline.
+  // Do not create network requests while offline.
   if (!navigator.onLine) {
     return;
   }
@@ -1779,6 +1773,23 @@ async function prefetchQuestion(
       return;
     }
 
+    /*
+     * Keep totalQuestions updated from
+     * the server response.
+     */
+    const serverTotal =
+      result.totalQuestions;
+
+    if (
+      typeof serverTotal ===
+      "number" &&
+      serverTotal > 0
+    ) {
+      setTotalQuestions(
+        serverTotal
+      );
+    }
+
     const question =
       result.data;
 
@@ -1802,7 +1813,7 @@ async function prefetchQuestion(
       shuffledQuestion;
 
     /*
-     * 2. REACT CACHE
+     * 2. REACT + SESSION CACHE
      */
     setQuestionCache((prev) => {
       const updated = {
@@ -1811,9 +1822,6 @@ async function prefetchQuestion(
           shuffledQuestion,
       };
 
-      /*
-       * 3. PERSISTENT CACHE
-       */
       try {
         const storageKey =
           `exam-question-cache-${examId}`;
@@ -1824,7 +1832,7 @@ async function prefetchQuestion(
         );
       } catch (error) {
         console.warn(
-          "Unable to persist prefetched question:",
+          "Unable to persist question cache:",
           error
         );
       }
@@ -1833,8 +1841,8 @@ async function prefetchQuestion(
     });
   } catch (error) {
     /*
-     * Prefetch failure should NEVER
-     * interrupt the student's exam.
+     * Prefetch failure must never
+     * interrupt the exam.
      */
     console.warn(
       "PREFETCH ERROR:",
@@ -1844,6 +1852,40 @@ async function prefetchQuestion(
     prefetchingRef.current.delete(
       index
     );
+  }
+}
+async function prefetchQuestionsAhead(
+  startIndex: number
+) {
+  if (!navigator.onLine) {
+    return;
+  }
+
+  const BUFFER_SIZE = 5;
+
+  const endIndex = Math.min(
+    startIndex + BUFFER_SIZE,
+    totalQuestions
+  );
+
+  for (
+    let index = startIndex;
+    index < endIndex;
+    index++
+  ) {
+    if (
+      questionCacheRef.current[index]
+    ) {
+      continue;
+    }
+
+    if (
+      prefetchingRef.current.has(index)
+    ) {
+      continue;
+    }
+
+    await prefetchQuestion(index);
   }
 }
   async function startExam() {
@@ -2519,8 +2561,9 @@ if (!token) {
   }
 }
 async function submitExam() {
-
-  console.log("========== AUTO SUBMIT START ==========");
+  console.log(
+    "========== AUTO SUBMIT START =========="
+  );
 
   if (
     submitting ||
@@ -2533,333 +2576,531 @@ async function submitExam() {
 
   timerSubmittedRef.current = true;
 
-
-
   setSubmitting(true);
   setFinalizingExam(true);
-// Flush pending answer before submitting
-try {
-  await flushPendingAnswers();
-} catch (error) {
-  console.warn(
-    "Final answer save failed. Continuing with submission.",
-    error
-  );
 
-  // Don't abort auto-submit when time has expired.
-}
+  /*
+   * --------------------------------------------------
+   * 1. SAVE ALL PENDING ANSWERS FIRST
+   * --------------------------------------------------
+   *
+   * If the device is offline, flushPendingAnswers()
+   * will not be able to save them. That's okay.
+   *
+   * We keep the exam state locally and wait for the
+   * connection before final submission.
+   */
+  try {
+    await flushPendingAnswers();
+  } catch (error) {
+    console.warn(
+      "Final answer save failed. Waiting for connection.",
+      error
+    );
+  }
 
-  
+  /*
+   * --------------------------------------------------
+   * 2. WAIT FOR NETWORK BEFORE FINAL SUBMISSION
+   * --------------------------------------------------
+   */
+  if (!navigator.onLine) {
+    toast.info(
+      "Your answers are safe. Waiting for internet connection..."
+    );
+
+    await new Promise<void>((resolve) => {
+      const handleOnline = () => {
+        window.removeEventListener(
+          "online",
+          handleOnline
+        );
+
+        resolve();
+      };
+
+      window.addEventListener(
+        "online",
+        handleOnline
+      );
+    });
+
+    toast.success(
+      "Internet connection restored. Submitting your exam..."
+    );
+
+    /*
+     * Give the browser a moment to stabilize
+     * the connection before making the request.
+     */
+    await new Promise<void>((resolve) => {
+      window.setTimeout(
+        resolve,
+        500
+      );
+    });
+  }
+
+  /*
+   * --------------------------------------------------
+   * 3. GET SESSION TOKEN
+   * --------------------------------------------------
+   */
   const token =
-  sessionToken || sessionTokenRef.current;
+    sessionToken ||
+    sessionTokenRef.current;
 
-const response = await fetch("/api/exam/submit", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    examId,
-    sessionToken: token,
-  }),
-});
+  if (!token) {
+    console.error(
+      "Missing session token during submission."
+    );
 
-console.log("SUBMIT STATUS:", response.status);
+    toast.error(
+      "Your exam session could not be verified."
+    );
 
-const result = await response.json();
+    setSubmitting(false);
+    setFinalizingExam(false);
+    timerSubmittedRef.current = false;
 
-console.log("SUBMIT RESPONSE:", result);
+    return;
+  }
 
+  /*
+   * --------------------------------------------------
+   * 4. SUBMIT EXAM
+   * --------------------------------------------------
+   *
+   * Network errors are handled separately from
+   * server errors.
+   */
+  let response: Response | null =
+    null;
 
-  
+  let result: any = null;
 
+  try {
+    response = await fetch(
+      "/api/exam/submit",
+      {
+        method: "POST",
 
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
 
-if (!response.ok) {
+        body: JSON.stringify({
+          examId,
+          sessionToken: token,
+        }),
+      }
+    );
 
-  toast.error(
-    result.error ||
-    "Submission failed"
-  );
+    console.log(
+      "SUBMIT STATUS:",
+      response.status
+    );
 
-  setSubmitting(false);
-  setFinalizingExam(false);
+    result =
+      await response
+        .json()
+        .catch(() => null);
 
-  return;
-}
+    console.log(
+      "SUBMIT RESPONSE:",
+      result
+    );
+  } catch (error) {
+    /*
+     * ------------------------------------------------
+     * NETWORK FAILURE
+     * ------------------------------------------------
+     *
+     * The exam is NOT considered submitted.
+     * Keep the exam state alive and wait for the
+     * connection to return.
+     */
+    console.warn(
+      "Exam submission network error:",
+      error
+    );
 
-setScore(result.score);
+    toast.info(
+      "Connection interrupted. Your exam is safe. Waiting for internet..."
+    );
 
-localStorage.setItem(
-  `exam-score-${examId}-${userId}`,
-  result.score.toString()
-);
-    const {
-  data: beforeLevel
-} = await supabase
+    /*
+     * Wait for connection to return.
+     */
+    await new Promise<void>((resolve) => {
+      const handleOnline = () => {
+        window.removeEventListener(
+          "online",
+          handleOnline
+        );
 
-  .from("user_levels")
+        resolve();
+      };
 
-  .select("level")
+      window.addEventListener(
+        "online",
+        handleOnline
+      );
+    });
 
-  .eq(
-    "user_id",
-    userId
-  )
+    toast.success(
+      "Connection restored. Retrying submission..."
+    );
 
-  .single();
-const {
-  data: beforeRanks
-} = await supabase
+    /*
+     * Retry submission once connection
+     * has returned.
+     */
+    try {
+      response = await fetch(
+        "/api/exam/submit",
+        {
+          method: "POST",
 
-  .from("leaderboard_view")
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
 
-  .select("user_id")
+          body: JSON.stringify({
+            examId,
+            sessionToken: token,
+          }),
+        }
+      );
 
-  .order(
-    "xp",
-    {
-      ascending: false,
+      console.log(
+        "RETRY SUBMIT STATUS:",
+        response.status
+      );
+
+      result =
+        await response
+          .json()
+          .catch(() => null);
+
+      console.log(
+        "RETRY SUBMIT RESPONSE:",
+        result
+      );
+    } catch (retryError) {
+      console.error(
+        "Retry submission failed:",
+        retryError
+      );
+
+      toast.error(
+        "Connection is still unstable. Please keep this exam open and try again."
+      );
+
+      setSubmitting(false);
+      setFinalizingExam(false);
+
+      /*
+       * Allow the student to attempt submission
+       * again without refreshing the exam.
+       */
+      timerSubmittedRef.current =
+        false;
+
+      return;
     }
+  }
+
+  /*
+   * --------------------------------------------------
+   * 5. SERVER ERROR
+   * --------------------------------------------------
+   */
+  if (
+    !response ||
+    !response.ok
+  ) {
+    toast.error(
+      result?.error ||
+        "Submission failed. Please try again."
+    );
+
+    setSubmitting(false);
+    setFinalizingExam(false);
+
+    timerSubmittedRef.current =
+      false;
+
+    return;
+  }
+
+  /*
+   * --------------------------------------------------
+   * 6. SERVER CONFIRMED SUBMISSION
+   * --------------------------------------------------
+   *
+   * From this point onward the attempt is safely
+   * submitted. Everything below is post-submission
+   * processing.
+   */
+  setScore(result.score);
+
+  localStorage.setItem(
+    `exam-score-${examId}-${userId}`,
+    result.score.toString()
   );
 
-const previousRankIndex =
-  beforeRanks?.findIndex(
-    (
-      r: any
-    ) =>
-      r.user_id ===
-      userId
-  );
+  /*
+   * --------------------------------------------------
+   * 7. LEVEL / RANK INFORMATION
+   * --------------------------------------------------
+   */
+  const {
+    data: beforeLevel,
+  } = await supabase
+    .from("user_levels")
+    .select("level")
+    .eq("user_id", userId)
+    .single();
 
-const previousRank =
-
-  previousRankIndex !==
-    undefined &&
-
-  previousRankIndex >= 0
-
-    ? previousRankIndex + 1
-
-    : null;
-
-const {
-  data: afterRanks
-} = await supabase
-
-  .from("leaderboard_view")
-
-  .select("user_id")
-
-  .order(
-    "xp",
-    {
+  const {
+    data: beforeRanks,
+  } = await supabase
+    .from("leaderboard_view")
+    .select("user_id")
+    .order("xp", {
       ascending: false,
-    }
-  );
+    });
 
-const newRankIndex =
-  afterRanks?.findIndex(
-    (
-      r: any
-    ) =>
-      r.user_id ===
-      userId
-  );
+  const previousRankIndex =
+    beforeRanks?.findIndex(
+      (r: any) =>
+        r.user_id === userId
+    );
 
-const newRank =
+  const previousRank =
+    previousRankIndex !==
+      undefined &&
+    previousRankIndex >= 0
+      ? previousRankIndex + 1
+      : null;
 
-  newRankIndex !==
-    undefined &&
+  const {
+    data: afterRanks,
+  } = await supabase
+    .from("leaderboard_view")
+    .select("user_id")
+    .order("xp", {
+      ascending: false,
+    });
 
-  newRankIndex >= 0
+  const newRankIndex =
+    afterRanks?.findIndex(
+      (r: any) =>
+        r.user_id === userId
+    );
 
-    ? newRankIndex + 1
+  const newRank =
+    newRankIndex !==
+      undefined &&
+    newRankIndex >= 0
+      ? newRankIndex + 1
+      : null;
 
-    : null;
+  if (
+    previousRank &&
+    newRank &&
+    newRank < previousRank
+  ) {
+    await supabase
+      .from("activity_feed")
+      .insert({
+        user_id: userId,
 
-if (
+        activity_type:
+          "rank",
 
-  previousRank &&
+        title:
+          "Leaderboard Updated",
 
-  newRank &&
+        description:
+          `Moved from #${previousRank} to #${newRank}`,
 
-  newRank < previousRank
+        metadata: {
+          old_rank:
+            previousRank,
 
-) {
+          new_rank:
+            newRank,
+        },
+      });
+  }
 
+  const {
+    data: afterLevel,
+  } = await supabase
+    .from("user_levels")
+    .select("level")
+    .eq("user_id", userId)
+    .single();
+
+  if (
+    afterLevel?.level >
+    beforeLevel?.level
+  ) {
+    setLevelUp(true);
+  }
+
+  setShowXP(true);
+
+  /*
+   * --------------------------------------------------
+   * 8. ACTIVITY FEED
+   * --------------------------------------------------
+   */
   await supabase
-
     .from("activity_feed")
-
     .insert({
-
       user_id: userId,
 
       activity_type:
-        "rank",
+        "exam",
 
-      title: "Leaderboard Updated",
+      title:
+        "Exam Completed",
 
-description:
-  `Moved from #${previousRank} to #${newRank}`,
+      description:
+        `Scored ${result.percentage}% in ${examInfo?.title}`,
 
       metadata: {
+        score: result.score,
 
-        old_rank:
-          previousRank,
+        percentage:
+          result.percentage,
 
-        new_rank:
-          newRank,
+        exam_id: examId,
 
+        xp_earned:
+          10 +
+          Math.floor(
+            result.percentage / 2
+          ),
       },
-
     });
-}
-const {
-  data: afterLevel
-} = await supabase
 
-  .from("user_levels")
+  /*
+   * --------------------------------------------------
+   * 9. UPDATE LIVE STATUS
+   * --------------------------------------------------
+   */
+  await supabase
+    .from("exam_live_status")
+    .update({
+      submitted: true,
+      fullscreen: false,
+    })
+    .eq("exam_id", examId)
+    .eq("user_id", userId);
 
-  .select("level")
-
-  .eq(
-    "user_id",
-    userId
-  )
-
-  .single();
-
-if (
-  afterLevel?.level >
-  beforeLevel?.level
-) {
-
-  setLevelUp(true);
-}
-
-setShowXP(true);
-await supabase
-
-  .from("activity_feed")
-
-  .insert({
-
-    user_id: userId,
-
-    activity_type: "exam",
-
-  title: "Exam Completed",
-
-description:
-  `Scored ${result.percentage}% in ${examInfo?.title}`,
-   metadata: {
-  score: result.score,
-  percentage: result.percentage,
-  exam_id: examId,
-  xp_earned:
-    10 +
-    Math.floor(
-      result.percentage / 2
-    ),
-},
-
-  });
-    await supabase
-
-  .from(
-    "exam_live_status"
-  )
-
-  .update({
-
-    submitted: true,
-
-    fullscreen: false,
-
-  })
-
-  .eq(
-    "exam_id",
-    examId
-  )
-
-  .eq(
-    "user_id",
-    userId
+  /*
+   * --------------------------------------------------
+   * 10. CLEAR EXAM STATE
+   * --------------------------------------------------
+   *
+   * ONLY clear local exam state AFTER the server
+   * has confirmed successful submission.
+   */
+  localStorage.setItem(
+    `exam-submitted-${examId}-${userId}`,
+    "true"
   );
 
-  
+  localStorage.removeItem(
+    `exam-current-question-${examId}-${userId}`
+  );
 
-    localStorage.setItem(
-      `exam-submitted-${examId}-${userId}`,
-      "true"
-    );
+  localStorage.removeItem(
+    `exam-answers-${examId}-${userId}`
+  );
 
-    localStorage.removeItem(
-      `exam-current-question-${examId}-${userId}`
-    );
+  localStorage.removeItem(
+    `exam-order-${examId}`
+  );
 
-    localStorage.removeItem(
-      `exam-answers-${examId}-${userId}`
-    );
+  localStorage.removeItem(
+    `exam-started-${examId}-${userId}`
+  );
 
-    localStorage.removeItem(
-      `exam-order-${examId}`
-    );
+  setSubmitted(true);
 
-    localStorage.removeItem(
-      `exam-started-${examId}-${userId}`
-    );
-    
-    setSubmitted(true);
-    
-if (
-  streamRef.current
-) {
-
-  streamRef.current
-    .getTracks()
-    .forEach(
-      (track) =>
-        track.stop()
-    );
-}
-if (
-  document.fullscreenElement
-) {
-
-  await document.exitFullscreen();
-}
-localStorage.removeItem(
-  `exam-session-${examId}-${userId}`
-);
-sessionTokenRef.current = "";
-    setTimeout(() => {
-
-  setShowXP(false);
-
-sessionStorage.setItem(
-  `achievement-count-${result.attemptId}`,
-  String(
-    result.achievementCount || 0
-  )
-);
-
-sessionStorage.setItem(
-  `achievement-reward-${result.attemptId}`,
-  String(
-    result.achievementReward || 0
-  )
-);
-console.log("Redirecting to result page...");
-    router.replace(
-  `/exam-result/${result.attemptId}`
-);
-
-}, 5000);
+  /*
+   * Stop camera.
+   */
+  if (
+    streamRef.current
+  ) {
+    streamRef.current
+      .getTracks()
+      .forEach(
+        (track) =>
+          track.stop()
+      );
   }
+
+  /*
+   * Exit fullscreen.
+   */
+  if (
+    document.fullscreenElement
+  ) {
+    await document.exitFullscreen();
+  }
+
+  /*
+   * Clear session.
+   */
+  localStorage.removeItem(
+    `exam-session-${examId}-${userId}`
+  );
+
+  sessionTokenRef.current =
+    "";
+
+  /*
+   * --------------------------------------------------
+   * 11. REDIRECT TO RESULT
+   * --------------------------------------------------
+   */
+  setTimeout(() => {
+    setShowXP(false);
+
+    sessionStorage.setItem(
+      `achievement-count-${result.attemptId}`,
+      String(
+        result.achievementCount ||
+          0
+      )
+    );
+
+    sessionStorage.setItem(
+      `achievement-reward-${result.attemptId}`,
+      String(
+        result.achievementReward ||
+          0
+      )
+    );
+
+    console.log(
+      "Redirecting to result page..."
+    );
+
+    router.replace(
+      `/exam-result/${result.attemptId}`
+    );
+  }, 5000);
+}
 const answeredCount = Object.keys(answers).length;
 
 const markedCount = markedQuestions.length;
@@ -3716,14 +3957,9 @@ if (cachedQuestion) {
 
   // Prepare the question after this one
     // Prepare the question after this one
-    if (
-      nextIndex + 1 <
-      totalQuestions
-    ) {
-      prefetchQuestion(
-        nextIndex + 1
-      );
-    }
+   void prefetchQuestionsAhead(
+  nextIndex + 1
+);
 
     return;
   }
