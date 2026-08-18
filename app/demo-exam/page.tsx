@@ -272,6 +272,7 @@ export default function DemoExamPage() {
           durationMinutes={
             DEMO_EXAM_CONFIG.duration
           }
+           examStartTime={null}
           liveStudents={0}
           violations={0}
           onTimeUp={submitExam}

@@ -7,59 +7,95 @@ import React, {
 } from "react";
 
 type Props = {
-
   initialTime: number;
-
+  examStartTime: number | null;
   onTimeUp: () => void;
 };
 
 function ExamTimer({
-
   initialTime,
-
+  examStartTime,
   onTimeUp,
-
 }: Props) {
 
-  const [timeLeft,
-    setTimeLeft] =
-    useState(initialTime);
+  const [timeLeft, setTimeLeft] =
+  useState(() => {
+    if (!examStartTime) {
+      return initialTime;
+    }
+
+    const elapsedSeconds =
+      Math.floor(
+        (Date.now() - examStartTime) /
+          1000
+      );
+
+    return Math.max(
+      initialTime - elapsedSeconds,
+      0
+    );
+  });
 const onTimeUpRef = useRef(onTimeUp);
 useEffect(() => {
   onTimeUpRef.current = onTimeUp;
 }, [onTimeUp]);
+const timeUpCalledRef =
+  useRef(false);
 
-  useEffect(() => {
+useEffect(() => {
+  timeUpCalledRef.current =
+    false;
+}, [examStartTime]);
+useEffect(() => {
+  if (!examStartTime) {
+    return;
+  }
 
-    const interval =
-      setInterval(() => {
-
-        setTimeLeft(
-          (prev) => {
-
-            if (prev <= 1) {
-
-              clearInterval(
-                interval
-              );
-
-              onTimeUpRef.current();
-
-              return 0;
-            }
-
-            return prev - 1;
-          }
-        );
-
-      }, 1000);
-
-    return () =>
-      clearInterval(
-        interval
+  const calculateTimeLeft = () => {
+    const elapsedSeconds =
+      Math.floor(
+        (Date.now() - examStartTime) /
+          1000
       );
 
-}, []);
+    const remaining =
+      Math.max(
+        initialTime - elapsedSeconds,
+        0
+      );
+
+    setTimeLeft(
+      remaining
+    );
+
+    if (
+      remaining <= 0 &&
+      !timeUpCalledRef.current
+    ) {
+      timeUpCalledRef.current =
+        true;
+
+      onTimeUpRef.current();
+    }
+  };
+
+  calculateTimeLeft();
+
+  const interval =
+    window.setInterval(
+      calculateTimeLeft,
+      1000
+    );
+
+  return () => {
+    window.clearInterval(
+      interval
+    );
+  };
+}, [
+  examStartTime,
+  initialTime,
+]);
 
   function formatTime(
     seconds: number

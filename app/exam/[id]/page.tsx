@@ -123,10 +123,28 @@ const [pendingSaves, setPendingSaves] =
       null
     );
 const [timerInitialized, setTimerInitialized] = useState(false);
+const [
+  examStartTime,
+  setExamStartTime
+] = useState<number | null>(null);
   const streamRef =
     useRef<MediaStream | null>(
       null
     );
+    const audioContextRef =
+  useRef<AudioContext | null>(null);
+
+const audioAnalyserRef =
+  useRef<AnalyserNode | null>(null);
+
+const audioAnimationRef =
+  useRef<number | null>(null);
+
+const audioVoiceStartRef =
+  useRef<number | null>(null);
+
+const audioViolationRef =
+  useRef(false);
 const [cameraStream,
   setCameraStream] =
   useState<MediaStream | null>(
@@ -464,33 +482,51 @@ function moveCameraAwayFrom(element: HTMLElement | null) {
 
   }, []);
   useEffect(() => {
-
   if (
     !examStarted ||
     timerInitialized ||
-    !currentQuestionData
+    !currentQuestionData ||
+    !examId ||
+    !userId
   ) {
     return;
   }
 
-  // Give React one frame to paint the question
-  requestAnimationFrame(() => {
+  /*
+   * IMPORTANT:
+   * Never overwrite an existing exam start time.
+   *
+   * This is what makes the timer survive
+   * a browser refresh.
+   */
+  const storageKey =
+    `exam-start-time-${examId}-${userId}`;
 
-    localStorage.setItem(
-      `exam-start-time-${examId}-${userId}`,
-      Date.now().toString()
+  const existingStartTime =
+    localStorage.getItem(
+      storageKey
     );
+const startTime =
+  existingStartTime
+    ? Number(existingStartTime)
+    : Date.now();
+ if (!existingStartTime) {
+  localStorage.setItem(
+    storageKey,
+    startTime.toString()
+  );
+}
 
-    setTimerInitialized(true);
+setExamStartTime(
+  startTime
+);
 
-  
-
-  });
+setTimerInitialized(true);
 
 }, [
   examStarted,
-  currentQuestionData,
   timerInitialized,
+  currentQuestionData,
   examId,
   userId,
 ]);
@@ -832,14 +868,26 @@ if (
 
   }, [mounted, examId]);
 
-  useEffect(() => {
+ useEffect(() => {
+  if (
+    !examId ||
+    !userId ||
+    submitted
+  ) {
+    return;
+  }
 
-    localStorage.setItem(
-      `exam-current-question-${examId}-${userId}`,
-      currentQuestion.toString()
-    );
+  localStorage.setItem(
+    `exam-current-question-${examId}-${userId}`,
+    currentQuestion.toString()
+  );
 
-  }, [currentQuestion, examId]);
+}, [
+  currentQuestion,
+  examId,
+  userId,
+  submitted,
+]);
 useEffect(() => {
 
   if (
@@ -1261,6 +1309,229 @@ async function enterExamFullscreen() {
       );
     }
   }
+  function startAudioMonitoring() {
+  const stream =
+    streamRef.current;
+
+  if (!stream) {
+    return;
+  }
+
+  const audioTracks =
+    stream.getAudioTracks();
+
+  if (
+    audioTracks.length === 0
+  ) {
+    console.warn(
+      "No microphone track available"
+    );
+
+    return;
+  }
+
+  /*
+   * Prevent multiple audio monitors.
+   */
+  if (
+    audioContextRef.current
+  ) {
+    return;
+  }
+
+  try {
+    const AudioContextClass =
+      window.AudioContext ||
+      (
+        window as typeof window & {
+          webkitAudioContext?: typeof AudioContext;
+        }
+      ).webkitAudioContext;
+
+    if (!AudioContextClass) {
+      console.warn(
+        "Web Audio API is not supported"
+      );
+
+      return;
+    }
+
+    const audioContext =
+      new AudioContextClass();
+
+    const analyser =
+      audioContext.createAnalyser();
+
+    analyser.fftSize = 2048;
+
+    analyser.smoothingTimeConstant =
+      0.8;
+
+    const source =
+      audioContext.createMediaStreamSource(
+        stream
+      );
+
+    source.connect(
+      analyser
+    );
+
+    audioContextRef.current =
+      audioContext;
+
+    audioAnalyserRef.current =
+      analyser;
+
+    const dataArray =
+      new Uint8Array(
+        analyser.fftSize
+      );
+
+    const checkAudio =
+      () => {
+        /*
+         * Stop if the exam is no longer active.
+         */
+        if (
+          submitted ||
+          !examStarted
+        ) {
+          return;
+        }
+
+        analyser.getByteTimeDomainData(
+          dataArray
+        );
+
+        let sum = 0;
+
+        for (
+          let i = 0;
+          i < dataArray.length;
+          i++
+        ) {
+          const normalized =
+            (dataArray[i] - 128) /
+            128;
+
+          sum +=
+            normalized *
+            normalized;
+        }
+
+        const rms =
+          Math.sqrt(
+            sum /
+              dataArray.length
+          );
+
+        /*
+         * Conservative threshold.
+         *
+         * Normal background noise should generally
+         * remain below this level.
+         */
+        const VOICE_THRESHOLD =
+          0.08;
+
+        const now =
+          Date.now();
+
+        if (
+          rms >=
+          VOICE_THRESHOLD
+        ) {
+          /*
+           * Start sustained-audio timer.
+           */
+          if (
+            audioVoiceStartRef.current ===
+            null
+          ) {
+            audioVoiceStartRef.current =
+              now;
+          }
+
+          const duration =
+            now -
+            audioVoiceStartRef.current;
+
+          /*
+           * Require sustained audio activity
+           * before generating a violation.
+           */
+          if (
+            duration >= 5000 &&
+            !audioViolationRef.current
+          ) {
+            audioViolationRef.current =
+              true;
+
+            handleViolation(
+              "Sustained audio activity detected"
+            );
+          }
+        } else {
+          /*
+           * Audio has stopped.
+           *
+           * Reset the current audio incident.
+           */
+          audioVoiceStartRef.current =
+            null;
+
+          audioViolationRef.current =
+            false;
+        }
+
+        audioAnimationRef.current =
+          requestAnimationFrame(
+            checkAudio
+          );
+      };
+
+    void audioContext.resume();
+
+    checkAudio();
+
+  } catch (error) {
+    console.error(
+      "AUDIO MONITORING ERROR:",
+      error
+    );
+  }
+}
+function stopAudioMonitoring() {
+  if (
+    audioAnimationRef.current !==
+    null
+  ) {
+    cancelAnimationFrame(
+      audioAnimationRef.current
+    );
+
+    audioAnimationRef.current =
+      null;
+  }
+
+  audioVoiceStartRef.current =
+    null;
+
+  audioViolationRef.current =
+    false;
+
+  if (
+    audioContextRef.current
+  ) {
+    void audioContextRef.current.close();
+
+    audioContextRef.current =
+      null;
+  }
+
+  audioAnalyserRef.current =
+    null;
+}
   async function uploadSnapshot() {
   const video = videoRef.current;
 
@@ -1379,27 +1650,43 @@ if (faceCount > 1) {
     multipleFaceStartRef.current =
       Date.now();
 
-  }
+  } else {
 
-  const duration =
-    Date.now() -
-    multipleFaceStartRef.current;
+    const duration =
+      Date.now() -
+      multipleFaceStartRef.current;
 
-  if (
-    duration >= 5000
-  ) {
+    if (
+      duration >= 5000
+    ) {
 
-    handleViolation(
-      "Multiple faces detected"
-    );
+      handleViolation(
+        "Multiple faces detected"
+      );
 
-    multipleFaceStartRef.current =
-      Date.now();
-
+      /*
+       * Mark this incident as handled.
+       *
+       * We DO NOT restart the timer while
+       * the second face is still present.
+       *
+       * The next violation can only happen
+       * after the extra face disappears and
+       * another multiple-face incident begins.
+       */
+      multipleFaceStartRef.current =
+        -1;
+    }
   }
 
 } else {
 
+  /*
+   * No multiple-face condition anymore.
+   *
+   * Reset the incident so a future
+   * second face creates a new violation.
+   */
   multipleFaceStartRef.current =
     null;
 
@@ -1487,9 +1774,7 @@ const imageUrl =
   }
 }
 async function resumeExam() {
-
   if (!sessionToken) {
-
     toast.error(
       "Session missing"
     );
@@ -1497,22 +1782,72 @@ async function resumeExam() {
     return;
   }
 
-await fetchQuestionByIndex(
-  currentQuestion
-);
+  /*
+   * Restore the last question position saved
+   * before the browser was refreshed.
+   */
+  let restoredQuestion =
+    currentQuestion;
 
-// Build a rolling offline buffer.
-void prefetchQuestionsAhead(
-  currentQuestion + 1
-);
+  try {
+    const savedQuestion =
+      localStorage.getItem(
+        `exam-current-question-${examId}-${userId}`
+      );
 
-setExamStarted(
-  true
-);
+    if (
+      savedQuestion !== null
+    ) {
+      const parsedQuestion =
+        Number.parseInt(
+          savedQuestion,
+          10
+        );
 
-toast.success(
-  "Exam session restored"
-);
+      if (
+        Number.isInteger(
+          parsedQuestion
+        ) &&
+        parsedQuestion >= 0
+      ) {
+        restoredQuestion =
+          parsedQuestion;
+      }
+    }
+  } catch (error) {
+    console.warn(
+      "Unable to restore question position:",
+      error
+    );
+  }
+
+  /*
+   * Restore the question position BEFORE
+   * loading the question.
+   */
+  setCurrentQuestion(
+    restoredQuestion
+  );
+
+  await fetchQuestionByIndex(
+    restoredQuestion
+  );
+
+  /*
+   * Continue building the rolling buffer
+   * from the restored position.
+   */
+  void prefetchQuestionsAhead(
+    restoredQuestion + 1
+  );
+
+  setExamStarted(
+    true
+  );
+
+  toast.success(
+    "Exam session restored"
+  );
 }
 useEffect(() => {
   if (!examStarted || submitted) {
@@ -2274,6 +2609,29 @@ if (!newValue) {
   
   return;
 }
+useEffect(() => {
+  if (
+    !examStarted ||
+    submitted
+  ) {
+    return;
+  }
+
+  if (
+    !streamRef.current
+  ) {
+    return;
+  }
+
+  startAudioMonitoring();
+
+  return () => {
+    stopAudioMonitoring();
+  };
+}, [
+  examStarted,
+  submitted,
+]);
 useEffect(() => {
   if (!sessionToken || pendingSaves.length === 0) {
     return;
@@ -3606,9 +3964,18 @@ to-[#EEF3FB]">
   durationMinutes={
     examInfo?.duration || 30
   }
-  liveStudents={liveStudents}
-  violations={violations}
-  onTimeUp={submitExam}
+  examStartTime={
+    examStartTime
+  }
+  liveStudents={
+    liveStudents
+  }
+  violations={
+    violations
+  }
+  onTimeUp={
+    submitExam
+  }
 />
 
         </div>

@@ -6,26 +6,19 @@ import ExamTimer
 from "./ExamTimer";
 
 type Props = {
-
   durationMinutes: number;
-
+  examStartTime: number | null;
   liveStudents: number;
-
   violations: number;
-
   onTimeUp: () => void;
 };
 function ExamTopStats({
-
   durationMinutes,
-
+  examStartTime,
   liveStudents,
-
   violations,
-
   onTimeUp,
-
-}: Props){
+}: Props) {
 
   return (
 
@@ -35,6 +28,9 @@ function ExamTopStats({
 <ExamTimer
   initialTime={
     durationMinutes * 60
+  }
+  examStartTime={
+    examStartTime
   }
   onTimeUp={
     onTimeUp
