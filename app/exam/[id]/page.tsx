@@ -21,7 +21,6 @@ import ExamTopStats from "@/components/exam/ExamTopStats";
 import ProctoringCapture
 from "@/components/exam/ProctoringCapture";
 import useExamAutosave from "@/hooks/useExamAutosave";
-import useExamAnswerSync from "@/hooks/useExamAnswerSync";
 import useLiveStudents from "@/hooks/useLiveStudents";
 import StudentCameraStream
 from "@/components/exam/StudentCameraStream";
@@ -335,22 +334,7 @@ const [
 ] = useState("");
 
 const sessionTokenRef = useRef("");
-const {
-  queueAnswer,
-  syncQueue,
-  pendingCount,
-} = useExamAnswerSync({
-  examId: examId || "",
-  sessionToken,
-});
-useEffect(() => {
-  if (pendingCount > 0) {
-    console.log(
-      "TCD OFFLINE ANSWER QUEUE:",
-      pendingCount
-    );
-  }
-}, [pendingCount]);
+
   const [examInfo,
     setExamInfo] =
     useState<any>(null);
@@ -1427,17 +1411,27 @@ async function resumeExam() {
     return;
   }
 
-  await fetchQuestionByIndex(
-    currentQuestion
-  );
+await fetchQuestionByIndex(
+  currentQuestion
+);
 
-  setExamStarted(
-    true
-  );
+// Start prefetching ahead.
+// These calls do not block exam start.
+void prefetchQuestion(
+  currentQuestion + 1
+);
 
-  toast.success(
-    "Exam session restored"
-  );
+void prefetchQuestion(
+  currentQuestion + 2
+);
+
+setExamStarted(
+  true
+);
+
+toast.success(
+  "Exam session restored"
+);
 }
 useEffect(() => {
 
@@ -1506,125 +1500,91 @@ async function fetchQuestionByIndex(
   index: number
 ) {
   if (!sessionToken) {
+    console.error(
+      "Missing session token"
+    );
 
-  console.error(
-    "Missing session token"
-  );
+    return;
+  }
 
-  return;
-}
+  /*
+   * 1. MEMORY CACHE
+   *
+   * Fastest path.
+   */
+  const cachedQuestion =
+    questionCacheRef.current[index];
 
-const cachedQuestion =
-  questionCacheRef.current[index];
+  if (cachedQuestion) {
+    setCurrentQuestionData(
+      cachedQuestion
+    );
 
-if (cachedQuestion) {
-  setCurrentQuestionData(
-    cachedQuestion
-  );
+    setCurrentQuestion(index);
 
-  setCurrentQuestion(index);
+    return;
+  }
 
-  return;
-}
+  /*
+   * 2. PERSISTENT CACHE
+   *
+   * Recover questions that were already
+   * loaded earlier in this exam.
+   */
+  try {
+    const storageKey =
+      `exam-question-cache-${examId}`;
 
+    const stored =
+      sessionStorage.getItem(
+        storageKey
+      );
 
+    if (stored) {
+      const parsed =
+        JSON.parse(stored);
 
-  const response = await fetch(
-    "/api/exam/question",
-    {
-      method: "POST",
+      const storedQuestion =
+        parsed?.[index];
 
-      headers: {
-        "Content-Type":
-          "application/json",
-      },
+      if (storedQuestion) {
+        questionCacheRef.current[index] =
+          storedQuestion;
 
-      body: JSON.stringify({
-        examId,
-        questionIndex: index,
-        sessionToken,
-      }),
+        setQuestionCache(
+          parsed
+        );
+
+        setCurrentQuestionData(
+          storedQuestion
+        );
+
+        setCurrentQuestion(index);
+
+        return;
+      }
     }
-  );
-
-  const result =
-    await response.json();
-   
-
-  if (
-  response.ok &&
-  result.data
-) {
-
-
-const total =
-  result.totalQuestions || 1;
-
-setTotalQuestions(total);
-
-if (
-  index + 1 < total
-) {
-
-  prefetchQuestion(
-    index + 1
-  );
-
-}
-
-    const question =
-      result.data;
-const shuffledQuestion = {
-  ...question,
-
-  shuffledOptions: [
-    question.option_a,
-    question.option_b,
-    question.option_c,
-    question.option_d,
-  ].sort(() => Math.random() - 0.5),
-};
-questionCacheRef.current[index] =
-  shuffledQuestion;
-
-setQuestionCache((prev) => ({
-  ...prev,
-  [index]: shuffledQuestion,
-}));
-setCurrentQuestionData(
-  shuffledQuestion
-);
-
-setCurrentQuestion(index);
-// Only after displaying it,
-// prefetch the following question
-if (index + 1 < total) {
-  prefetchQuestion(
-    index + 1
-  );
-}
- 
+  } catch (error) {
+    console.warn(
+      "Unable to read cached exam question:",
+      error
+    );
   }
-  
-}
-async function prefetchQuestion(
-  index: number
-) {
-  // Already cached
-  if (
-    questionCacheRef.current[index]
-  ) {
+
+  /*
+   * 3. NETWORK
+   *
+   * Only fetch from the server if the
+   * question is not available locally.
+   */
+  if (!navigator.onLine) {
+    console.warn(
+      "Question is not cached and device is offline:",
+      index
+    );
+
     return;
   }
-
-  // Already being fetched
-  if (
-    prefetchingRef.current.has(index)
-  ) {
-    return;
-  }
-
-  prefetchingRef.current.add(index);
 
   try {
     const response =
@@ -1650,36 +1610,233 @@ async function prefetchQuestion(
       await response.json();
 
     if (
-      response.ok &&
-      result.data
+      !response.ok ||
+      !result.data
     ) {
-      const question =
-        result.data;
+      console.warn(
+        "Question fetch failed:",
+        response.status,
+        result
+      );
 
-      const shuffledQuestion = {
-        ...question,
+      return;
+    }
 
-        shuffledOptions: [
-          question.option_a,
-          question.option_b,
-          question.option_c,
-          question.option_d,
-        ].sort(
-          () =>
-            Math.random() - 0.5
-        ),
+    const total =
+      result.totalQuestions || 1;
+
+    setTotalQuestions(total);
+
+    const question =
+      result.data;
+
+    const shuffledQuestion = {
+      ...question,
+
+      shuffledOptions: [
+        question.option_a,
+        question.option_b,
+        question.option_c,
+        question.option_d,
+      ].sort(
+        () => Math.random() - 0.5
+      ),
+    };
+
+    /*
+     * 4. MEMORY CACHE
+     */
+    questionCacheRef.current[index] =
+      shuffledQuestion;
+
+    /*
+     * 5. REACT CACHE
+     */
+    setQuestionCache((prev) => {
+      const updated = {
+        ...prev,
+        [index]:
+          shuffledQuestion,
       };
 
-      questionCacheRef.current[index] =
-        shuffledQuestion;
+      /*
+       * 6. PERSISTENT CACHE
+       */
+      try {
+        const storageKey =
+          `exam-question-cache-${examId}`;
 
-      setQuestionCache((prev) => ({
-        ...prev,
-        [index]: shuffledQuestion,
-      }));
+        sessionStorage.setItem(
+          storageKey,
+          JSON.stringify(updated)
+        );
+      } catch (error) {
+        console.warn(
+          "Unable to persist exam question cache:",
+          error
+        );
+      }
+
+      return updated;
+    });
+
+    setCurrentQuestionData(
+      shuffledQuestion
+    );
+
+    setCurrentQuestion(index);
+
+    /*
+     * 7. PREFETCH NEXT QUESTION
+     *
+     * Do this only after the current
+     * question has been displayed.
+     */
+    if (index + 1 < total) {
+      prefetchQuestion(
+        index + 1
+      );
     }
   } catch (error) {
-    console.error(
+    console.warn(
+      "Unable to load exam question:",
+      error
+    );
+  }
+}
+async function prefetchQuestion(
+  index: number
+) {
+  // Never prefetch outside the exam.
+  if (
+    index < 0 ||
+    (
+      totalQuestions > 0 &&
+      index >= totalQuestions
+    )
+  ) {
+    return;
+  }
+
+  // Already cached in memory
+  if (
+    questionCacheRef.current[index]
+  ) {
+    return;
+  }
+
+  // Already being fetched
+  if (
+    prefetchingRef.current.has(index)
+  ) {
+    return;
+  }
+
+  // Don't start unnecessary network
+  // requests while offline.
+  if (!navigator.onLine) {
+    return;
+  }
+
+  prefetchingRef.current.add(index);
+
+  try {
+    const response =
+      await fetch(
+        "/api/exam/question",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify({
+            examId,
+            questionIndex: index,
+            sessionToken,
+          }),
+        }
+      );
+
+    if (!response.ok) {
+      console.warn(
+        "Question prefetch failed:",
+        response.status,
+        index
+      );
+
+      return;
+    }
+
+    const result =
+      await response.json();
+
+    if (
+      !result.data
+    ) {
+      return;
+    }
+
+    const question =
+      result.data;
+
+    const shuffledQuestion = {
+      ...question,
+
+      shuffledOptions: [
+        question.option_a,
+        question.option_b,
+        question.option_c,
+        question.option_d,
+      ].sort(
+        () => Math.random() - 0.5
+      ),
+    };
+
+    /*
+     * 1. MEMORY CACHE
+     */
+    questionCacheRef.current[index] =
+      shuffledQuestion;
+
+    /*
+     * 2. REACT CACHE
+     */
+    setQuestionCache((prev) => {
+      const updated = {
+        ...prev,
+        [index]:
+          shuffledQuestion,
+      };
+
+      /*
+       * 3. PERSISTENT CACHE
+       */
+      try {
+        const storageKey =
+          `exam-question-cache-${examId}`;
+
+        sessionStorage.setItem(
+          storageKey,
+          JSON.stringify(updated)
+        );
+      } catch (error) {
+        console.warn(
+          "Unable to persist prefetched question:",
+          error
+        );
+      }
+
+      return updated;
+    });
+  } catch (error) {
+    /*
+     * Prefetch failure should NEVER
+     * interrupt the student's exam.
+     */
+    console.warn(
       "PREFETCH ERROR:",
       error
     );
@@ -1937,10 +2094,7 @@ setPendingSaves(prev => {
   ];
 
 });
-queueAnswer(
-  questionId,
-  newValue
-);
+
 if (!newValue) {
 
   setAnsweredQuestions(
@@ -1968,91 +2122,133 @@ if (!newValue) {
   
   return;
 }
- useEffect(() => {
-
-  if (
-    pendingSaves.length === 0 ||
-    !sessionToken
-  ) {
+useEffect(() => {
+  if (!sessionToken || pendingSaves.length === 0) {
     return;
   }
-setSavingAnswers(true);
+
   const saveAll = async () => {
+    if (savingRef.current) {
+      return;
+    }
 
-  // Prevent multiple save loops
-  if (savingRef.current) return;
-
- savingRef.current = true;
-savingAnswersRef.current = true;
-
-setSavingAnswers(true);
-
-  try {
+    if (!navigator.onLine) {
+      return;
+    }
 
     const queue = [...pendingSaves];
 
-    // Clear the queue that we're about to process
-    setPendingSaves([]);
-
-    for (const item of queue) {
-
-      const response = await fetch(
-  "/api/exam/save-answer",
-  {
-    method: "POST",
-
-    headers: {
-      "Content-Type": "application/json",
-    },
-
-    body: JSON.stringify({
-      examId,
-      questionId: item.questionId,
-      selectedOption: item.selectedOption,
-      sessionToken,
-    }),
-  }
-);
-
-if (!response.ok) {
-
-  const result =
-    await response
-      .json()
-      .catch(() => null);
-
-  throw new Error(
-    result?.error ||
-    "Failed to save answer"
-  );
-}
-
+    if (queue.length === 0) {
+      return;
     }
 
-  } catch (error) {
+    savingRef.current = true;
+    savingAnswersRef.current = true;
+    setSavingAnswers(true);
 
-    console.error("Auto-save failed:", error);
-    
+    try {
+      for (const item of queue) {
+        try {
+          const response = await fetch(
+            "/api/exam/save-answer",
+            {
+              method: "POST",
 
-    // Optional: re-add failed items here for retry
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
 
-  } finally {
+              body: JSON.stringify({
+                examId,
+                questionId:
+                  item.questionId,
+                selectedOption:
+                  item.selectedOption,
+                sessionToken,
+              }),
+            }
+          );
 
-    // ✅ STEP 5 GOES HERE
+          if (!response.ok) {
+            const result =
+              await response
+                .json()
+                .catch(() => null);
 
-    setSavingAnswers(false);
+            throw new Error(
+              result?.error ||
+                "Failed to save answer"
+            );
+          }
 
-savingAnswersRef.current = false;
-savingRef.current = false;
+          /*
+           * Remove ONLY the answer that was
+           * successfully saved.
+           *
+           * If the student changed the answer
+           * while this request was running,
+           * the newer answer will remain queued.
+           */
+          setPendingSaves((current) =>
+            current.filter(
+              (currentItem) =>
+                !(
+                  currentItem.questionId ===
+                    item.questionId &&
+                  currentItem.selectedOption ===
+                    item.selectedOption
+                )
+            )
+          );
+        } catch (error) {
+          /*
+           * IMPORTANT:
+           * Do NOT remove the failed answer.
+           * It stays in pendingSaves and will
+           * be retried when the connection returns.
+           */
+          console.warn(
+            "Answer save failed. Keeping answer in queue.",
+            error
+          );
 
-    
+          break;
+        }
+      }
+    } finally {
+      savingAnswersRef.current = false;
+      savingRef.current = false;
+      setSavingAnswers(false);
+    }
+  };
 
-  }
+  void saveAll();
 
-};
+  const handleOnline = () => {
+    void saveAll();
+  };
 
-  saveAll();
+  window.addEventListener(
+    "online",
+    handleOnline
+  );
 
+  const retryInterval =
+    window.setInterval(() => {
+      void saveAll();
+    }, 5000);
+
+  return () => {
+    window.removeEventListener(
+      "online",
+      handleOnline
+    );
+
+    window.clearInterval(
+      retryInterval
+    );
+  };
 }, [
   pendingSaves,
   sessionToken,
