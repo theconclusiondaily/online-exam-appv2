@@ -264,51 +264,64 @@ if (latestSessionError) {
 }
     // Insert attempt
 
-    const {
-      data: attemptData,
-      error: attemptError,
-    } =  await supabase
-      .from("exam_attempts")
+const {
+  data: attemptData,
+  error: attemptError,
+} = await supabase
+  .from("exam_attempts")
+  .insert({
+    exam_id:
+      examId,
 
-      
-      .insert({
-        exam_id:
-          examId,
+    user_id:
+      userId,
 
-        user_id:
-          userId,
+    answers:
+      (answers || []).reduce(
+        (
+          acc: Record<string, string>,
+          answer: any
+        ) => {
+          acc[answer.question_id] =
+            answer.selected_option;
 
-        score:
-          totalScore,
+          return acc;
+        },
+        {}
+      ),
 
-        percentage,
+    score:
+      totalScore,
 
-        status:
-          "submitted",
+    percentage,
 
-       submitted_at:
-  submittedAt.toISOString(),
+    status:
+      "submitted",
 
-        started_at:
-          session.started_at,
+    submitted_at:
+      submittedAt.toISOString(),
 
-      violations:
-  latestSession?.total_violations || 0,
+    started_at:
+      session.started_at,
 
-        correct_count:
-          correctCount,
+    violations:
+      latestSession?.total_violations || 0,
 
-        wrong_count:
-          wrongCount,
+    correct_count:
+      correctCount,
 
-        accuracy,
+    wrong_count:
+      wrongCount,
 
-        time_taken: timeTaken,
+    accuracy,
 
-       total_questions:
-  totalQuestionsCount
-      })
-      .select();
+    time_taken:
+      timeTaken,
+
+    total_questions:
+      totalQuestionsCount
+  })
+  .select();
 
    
 
