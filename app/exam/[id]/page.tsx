@@ -148,6 +148,10 @@ const videoRef =
   useRef<HTMLVideoElement | null>(null);
   const lastViolationRef =
     useRef(0);
+    const lastViolationReasonRef =
+  useRef<string | null>(
+    null
+  );
     const multipleFaceStartRef =
   useRef<number | null>(null);
     const timerSubmittedRef = useRef(false);
@@ -159,6 +163,10 @@ const snapshotIntervalRef =
   adminWarning,
   setAdminWarning
 ] = useState<string | null>(null);
+const [
+  isFullscreenBlurred,
+  setIsFullscreenBlurred
+] = useState(false);
 const [
   language,
   setLanguage
@@ -1068,78 +1076,134 @@ useEffect(() => {
   });
 
   
-  function handleViolation(
-    reason: string
+ function handleViolation(
+  reason: string
+) {
+  const now = Date.now();
+
+  /*
+   * Prevent the SAME violation from firing repeatedly
+   * within a short period.
+   *
+   * Different violations are still allowed through.
+   */
+  const normalizedReason =
+    reason.trim().toLowerCase();
+
+  const lastReason =
+    lastViolationReasonRef.current;
+
+  const lastTime =
+    lastViolationRef.current;
+
+  if (
+    normalizedReason === lastReason &&
+    now - lastTime < 5000
   ) {
+    return;
+  }
 
-    const now =
-      Date.now();
+  lastViolationRef.current =
+    now;
 
+  lastViolationReasonRef.current =
+    normalizedReason;
+
+  /*
+   * Update local violation count FIRST.
+   *
+   * The exam must never depend on the network
+   * to record a violation.
+   */
+  setViolations((prev) => {
+    const updated =
+      prev + 1;
+
+    /*
+     * Inform the student immediately.
+     */
+    toast.error(
+      `${reason}. Violations: ${updated}/10`
+    );
+
+    /*
+     * Auto-submit at the configured threshold.
+     *
+     * Use a separate timeout so submitExam()
+     * is NOT called from inside the state updater.
+     */
     if (
-      now -
-        lastViolationRef.current <
-      5000
+      updated >= 10
     ) {
-
-      return;
+      setTimeout(() => {
+        void submitExam();
+      }, 500);
     }
 
-    lastViolationRef.current =
-      now;
+    return updated;
+  });
 
-   setViolations(prev => {
+  /*
+   * --------------------------------------------------
+   * SERVER SYNCHRONIZATION
+   * --------------------------------------------------
+   *
+   * These requests are deliberately non-blocking.
+   *
+   * If the network is unavailable, the exam must
+   * continue normally.
+   */
+  if (
+    userId &&
+    examId &&
+    navigator.onLine
+  ) {
+    void supabase
+      .from("exam_sessions")
+      .update({
+        /*
+         * This is only a server-side mirror.
+         * The local React state is authoritative during
+         * temporary network loss.
+         */
+        total_violations:
+          violations + 1,
+      })
+      .eq(
+        "exam_id",
+        examId
+      )
+      .eq(
+        "user_id",
+        userId
+      )
+      .eq(
+        "status",
+        "active"
+      );
 
-  const updated =
-    prev + 1;
-    supabase
-  .from("exam_sessions")
-  .update({
-    total_violations: updated,
-  })
-  .eq("exam_id", examId)
-  .eq("user_id", userId)
-  .eq("status", "active");
-if (
-  userId &&
-  examId
-) {
+    void supabase
+      .from(
+        "proctoring_events"
+      )
+      .insert({
+        attempt_id:
+          examId,
 
-  supabase
-    .from(
-      "proctoring_events"
-    )
-    .insert({
-      attempt_id:
-        examId,
-      student_id:
-        userId,
-      event_type:
-        "violation",
-      violation_reason:
-        reason,
-      created_at:
-        new Date().toISOString(),
-    });
+        student_id:
+          userId,
 
+        event_type:
+          "violation",
+
+        violation_reason:
+          reason,
+
+        created_at:
+          new Date().toISOString(),
+      });
+  }
 }
- toast.error(
-  `${reason}. Violations: ${updated}/10`
-);
-
-  if (updated >= 10) {
-
-   
-
-    setTimeout(() => {
-
-      submitExam();
-
-    }, 500);
-  }
-
-  return updated;
-});
-  }
 
   async function requestPermissions() {
 
@@ -1429,19 +1493,22 @@ toast.success(
 );
 }
 useEffect(() => {
-
-  if (!examStarted || submitted) return;
+  if (!examStarted || submitted) {
+    return;
+  }
 
   const handleFullscreen = () => {
-
     if (!document.fullscreenElement) {
+      setIsFullscreenBlurred(true);
 
       handleViolation(
         "Fullscreen exited"
       );
 
+      return;
     }
 
+    setIsFullscreenBlurred(false);
   };
 
   document.addEventListener(
@@ -1449,16 +1516,20 @@ useEffect(() => {
     handleFullscreen
   );
 
-  return () => {
+  if (!document.fullscreenElement) {
+    setIsFullscreenBlurred(true);
+  }
 
+  return () => {
     document.removeEventListener(
       "fullscreenchange",
       handleFullscreen
     );
-
   };
-
-}, [examStarted, submitted]);
+}, [
+  examStarted,
+  submitted,
+]);
 
 useEffect(() => {
 
@@ -1861,12 +1932,25 @@ async function prefetchQuestionsAhead(
     return;
   }
 
-  const BUFFER_SIZE = 5;
+  const BUFFER_SIZE = 10;
 
-  const endIndex = Math.min(
-    startIndex + BUFFER_SIZE,
-    totalQuestions
-  );
+  /*
+   * Use the latest known total.
+   *
+   * If totalQuestions has not been populated yet,
+   * allow prefetching to proceed. The server response
+   * from prefetchQuestion() will establish the total.
+   */
+  const knownTotal =
+    totalQuestions > 0
+      ? totalQuestions
+      : Number.MAX_SAFE_INTEGER;
+
+  const endIndex =
+    Math.min(
+      startIndex + BUFFER_SIZE,
+      knownTotal
+    );
 
   for (
     let index = startIndex;
@@ -1883,6 +1967,10 @@ async function prefetchQuestionsAhead(
       prefetchingRef.current.has(index)
     ) {
       continue;
+    }
+
+    if (!navigator.onLine) {
+      break;
     }
 
     await prefetchQuestion(index);
@@ -3440,13 +3528,18 @@ to-[#EEF3FB]">
   return (
 
     <div
-      ref={examContainerRef}
-      className="min-h-screen bg-gradient-to-br
-
-from-[#F7F9FC]
-
-to-[#EEF3FB] p-5"
-    >
+  ref={examContainerRef}
+  className={`min-h-screen bg-gradient-to-br
+    from-[#F7F9FC]
+    to-[#EEF3FB]
+    p-5
+    transition-all duration-200
+    ${
+      isFullscreenBlurred
+        ? "blur-md"
+        : ""
+    }`}
+>
 
       <div className="sticky top-0 z-30 bg-gray-50 pb-2 mb-4">
 
