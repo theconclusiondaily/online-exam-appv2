@@ -259,38 +259,56 @@ if (
 }
 
 const reviewData =
-  questionData?.map((q) => ({
+  questionData?.map((q) => {
 
-    question_id: q.id,
+    const rawAnswer =
+      answers[q.id] ??
+      answers[String(q.id)];
 
-    question: q.question,
-    question_text_hi: q.question_text_hi,
+    const selectedOption =
+      rawAnswer === 0 || rawAnswer === "0"
+        ? "A"
+        : rawAnswer === 1 || rawAnswer === "1"
+        ? "B"
+        : rawAnswer === 2 || rawAnswer === "2"
+        ? "C"
+        : rawAnswer === 3 || rawAnswer === "3"
+        ? "D"
+        : rawAnswer || "Not Attempted";
 
-    option_a: q.option_a,
-    option_a_hi: q.option_a_hi,
+    return {
 
-    option_b: q.option_b,
-    option_b_hi: q.option_b_hi,
+      question_id: q.id,
 
-    option_c: q.option_c,
-    option_c_hi: q.option_c_hi,
+      question: q.question,
+      question_text_hi: q.question_text_hi,
 
-    option_d: q.option_d,
-    option_d_hi: q.option_d_hi,
+      option_a: q.option_a,
+      option_a_hi: q.option_a_hi,
 
-    explanation: q.explanation,
-    explanation_hi: q.explanation_hi,
+      option_b: q.option_b,
+      option_b_hi: q.option_b_hi,
 
-    selected_option:
-      answers[q.id] || "Not Attempted",
+      option_c: q.option_c,
+      option_c_hi: q.option_c_hi,
 
-    subject: q.subject,
+      option_d: q.option_d,
+      option_d_hi: q.option_d_hi,
 
-    chapter: q.chapter,
+      explanation: q.explanation,
+      explanation_hi: q.explanation_hi,
 
-    correct_answer: q.correct_answer,
+      selected_option: selectedOption,
 
-  })) || [];
+      subject: q.subject,
+
+      chapter: q.chapter,
+
+      correct_answer: q.correct_answer,
+
+    };
+
+  }) || [];
 setQuestions(
   reviewData
 );
