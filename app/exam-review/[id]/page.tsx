@@ -87,15 +87,25 @@ const {
   `)
   .eq("id", attemptId)
   .eq("user_id", user.id)
-  .single();
+  .maybeSingle();
 
-if (
-  attemptRecordError ||
-  !attemptRecord
-) {
+if (attemptRecordError) {
   console.error(
     "Attempt Error:",
     attemptRecordError
+  );
+
+  setLoading(false);
+  return;
+}
+
+if (!attemptRecord) {
+  console.error(
+    "Attempt not found for user:",
+    {
+      attemptId,
+      userId: user.id,
+    }
   );
 
   setLoading(false);
@@ -469,9 +479,7 @@ setQuestions(
 
   <button
   onClick={() =>
-    router.push(
-      `/exam-result/${examId}`
-    )
+   router.push(`/exam-result/${attemptId}`)
   }
   className="
     px-4

@@ -493,7 +493,7 @@ export default function ExamHistoryTable({
   {/* RESULT */}
 
   <Link
-    href={`/exam-result/${attempt.id}`}
+    href={`/exam-result/${attempt.id}`} 
     className="
       inline-flex
       items-center
