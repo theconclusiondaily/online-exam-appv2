@@ -1204,7 +1204,29 @@ useEffect(() => {
       });
   }
 }
+async function enterExamFullscreen() {
+  try {
+    const element =
+      examContainerRef.current;
 
+    if (!element) {
+      return;
+    }
+
+    await element.requestFullscreen();
+
+    setIsFullscreenBlurred(false);
+  } catch (error) {
+    console.error(
+      "Unable to enter fullscreen:",
+      error
+    );
+
+    toast.error(
+      "Unable to enter fullscreen. Please try again."
+    );
+  }
+}
   async function requestPermissions() {
 
     try {
@@ -3527,18 +3549,19 @@ to-[#EEF3FB]">
 
   return (
 
-    <div
+ <div
   ref={examContainerRef}
-  className={`min-h-screen bg-gradient-to-br
+  className="min-h-screen bg-gradient-to-br
     from-[#F7F9FC]
     to-[#EEF3FB]
-    p-5
-    transition-all duration-200
-    ${
-      isFullscreenBlurred
-        ? "blur-md"
-        : ""
-    }`}
+    p-5"
+>
+<div
+  className={`transition-all duration-200 ${
+    isFullscreenBlurred
+      ? "blur-md pointer-events-none select-none"
+      : ""
+  }`}
 >
 
       <div className="sticky top-0 z-30 bg-gray-50 pb-2 mb-4">
@@ -4619,5 +4642,40 @@ animate-[tcdPop_.25s_ease-out]
 
 )}
 </div>
+{isFullscreenBlurred && (
+  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/70 backdrop-blur-sm">
+    <div className="mx-6 w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-2xl">
+
+      <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
+        <span className="text-3xl">
+          🔒
+        </span>
+      </div>
+
+      <h2 className="text-2xl font-bold text-slate-900">
+        Fullscreen Required
+      </h2>
+
+      <p className="mt-3 text-sm leading-6 text-slate-500">
+        Your examination has been paused because
+        fullscreen mode was exited.
+      </p>
+
+      <p className="mt-2 text-sm font-medium text-slate-700">
+        Return to fullscreen to continue your examination.
+      </p>
+
+      <button
+        type="button"
+        onClick={enterExamFullscreen}
+        className="mt-7 w-full rounded-2xl bg-[#0F3D91] px-6 py-4 text-base font-bold text-white shadow-lg transition hover:bg-[#0C3278] active:scale-[0.98]"
+      >
+        ENTER FULLSCREEN
+      </button>
+
+    </div>
+  </div>
+)}
+ </div>
 );
 }
