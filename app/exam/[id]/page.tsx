@@ -21,6 +21,7 @@ import ExamTopStats from "@/components/exam/ExamTopStats";
 import ProctoringCapture
 from "@/components/exam/ProctoringCapture";
 import useExamAutosave from "@/hooks/useExamAutosave";
+import useExamAnswerSync from "@/hooks/useExamAnswerSync";
 import useLiveStudents from "@/hooks/useLiveStudents";
 import StudentCameraStream
 from "@/components/exam/StudentCameraStream";
@@ -334,7 +335,22 @@ const [
 ] = useState("");
 
 const sessionTokenRef = useRef("");
-
+const {
+  queueAnswer,
+  syncQueue,
+  pendingCount,
+} = useExamAnswerSync({
+  examId: examId || "",
+  sessionToken,
+});
+useEffect(() => {
+  if (pendingCount > 0) {
+    console.log(
+      "TCD OFFLINE ANSWER QUEUE:",
+      pendingCount
+    );
+  }
+}, [pendingCount]);
   const [examInfo,
     setExamInfo] =
     useState<any>(null);
@@ -1921,6 +1937,10 @@ setPendingSaves(prev => {
   ];
 
 });
+queueAnswer(
+  questionId,
+  newValue
+);
 if (!newValue) {
 
   setAnsweredQuestions(
