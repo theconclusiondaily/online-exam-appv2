@@ -857,14 +857,56 @@ if (
     true
   );
 }
-    if (savedAnswers) {
+   if (savedAnswers) {
+  try {
+    const restoredAnswers =
+      JSON.parse(
+        savedAnswers
+      );
 
+    if (
+      restoredAnswers &&
+      typeof restoredAnswers ===
+        "object"
+    ) {
       setAnswers(
-        JSON.parse(
-          savedAnswers
-        )
+        restoredAnswers
+      );
+
+      /*
+       * Rebuild the pending save queue
+       * after a browser refresh.
+       *
+       * This ensures answers that were saved
+       * locally but not yet synchronized with
+       * Supabase are sent to the server again.
+       */
+      const restoredPendingSaves =
+        Object.entries(
+          restoredAnswers
+        ).map(
+          ([
+            questionId,
+            selectedOption,
+          ]) => ({
+            questionId,
+            selectedOption:
+              selectedOption as
+                string | null,
+          })
+        );
+
+      setPendingSaves(
+        restoredPendingSaves
       );
     }
+  } catch (error) {
+    console.warn(
+      "Unable to restore saved answers:",
+      error
+    );
+  }
+}
 
   }, [mounted, examId]);
 
@@ -2566,6 +2608,22 @@ setAnswers(
     [questionId]: newValue,
   })
 );
+const updatedAnswers = {
+  ...answers,
+  [questionId]: newValue,
+};
+
+try {
+  localStorage.setItem(
+    `exam-answers-${examId}-${userId}`,
+    JSON.stringify(updatedAnswers)
+  );
+} catch (error) {
+  console.warn(
+    "Unable to persist answer locally:",
+    error
+  );
+}
 setPendingSaves(prev => {
 
   const filtered = prev.filter(
