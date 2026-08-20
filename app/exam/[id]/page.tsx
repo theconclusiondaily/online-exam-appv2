@@ -23,9 +23,6 @@ import useLiveStudents from "@/hooks/useLiveStudents";
 import StudentCameraStream
 from "@/components/exam/StudentCameraStream";
 import {
-  getFaceDetector
-} from "@/lib/faceDetection";
-import {
   fetchExam,
 } from "@/services/exam.service";
 import {
@@ -161,6 +158,155 @@ const [
 );
 const videoRef =
   useRef<HTMLVideoElement | null>(null);
+  const faceDetectionWorkerRef =
+  useRef<Worker | null>(null);
+  const faceDetectionBusyRef =
+  useRef(false);
+  const pendingSnapshotCanvasRef =
+  useRef<HTMLCanvasElement | null>(
+    null
+  );
+  useEffect(() => {
+
+  if (
+    typeof window === "undefined"
+  ) {
+    return;
+  }
+
+  const worker =
+    new Worker(
+      new URL(
+        "@/workers/faceDetection.worker.ts",
+        import.meta.url
+      )
+    );
+
+  faceDetectionWorkerRef.current =
+    worker;
+
+return () => {
+
+  worker.terminate();
+
+  faceDetectionWorkerRef.current =
+    null;
+
+  faceDetectionBusyRef.current =
+    false;
+
+  pendingSnapshotCanvasRef.current =
+    null;
+
+};
+
+}, []);
+useEffect(() => {
+  
+  const worker =
+    faceDetectionWorkerRef.current;
+
+  if (!worker) {
+    return;
+  }
+  if (
+  faceDetectionBusyRef.current
+) {
+  return;
+}
+
+faceDetectionBusyRef.current =
+  true;
+  const handleMessage = (
+    event: MessageEvent
+  ) => {
+
+    const {
+      type,
+      faceCount,
+    } = event.data;
+
+    if (type === "error") {
+
+  console.error(
+    "Face detection failed:",
+    event.data.error
+  );
+
+  faceDetectionBusyRef.current =
+    false;
+
+  pendingSnapshotCanvasRef.current =
+    null;
+
+  return;
+}
+
+if (type !== "result") {
+  return;
+}
+
+    handleFaceDetectionResult(
+  faceCount
+);
+
+const canvas =
+  pendingSnapshotCanvasRef.current;
+
+pendingSnapshotCanvasRef.current =
+  null;
+
+if (canvas) {
+
+  void uploadProctoringSnapshot(
+    canvas,
+    faceCount
+  );
+}
+faceDetectionBusyRef.current =
+  false;
+  }
+
+  worker.addEventListener(
+    "message",
+    handleMessage
+  );
+const handleError = (
+  error: ErrorEvent
+) => {
+
+  console.error(
+    "Face detection worker error:",
+    error.message
+  );
+
+  faceDetectionBusyRef.current =
+    false;
+
+  pendingSnapshotCanvasRef.current =
+    null;
+};
+
+worker.addEventListener(
+  "error",
+  handleError
+);
+  return () => {
+
+  worker.removeEventListener(
+    "message",
+    handleMessage
+  );
+
+  worker.removeEventListener(
+    "error",
+    handleError
+  );
+
+};
+
+}, []);
+
   const lastViolationRef =
     useRef(0);
     const lastViolationReasonRef =
@@ -1673,9 +1819,97 @@ async function uploadProctoringSnapshot(
   }
 }
 
+function handleFaceDetectionResult(
+  faceCount: number
+) {
 
+  /*
+   * Save the face scan in the background.
+   * It must never block question navigation.
+   */
+  void supabase
+    .from("proctoring_events")
+    .insert({
+      attempt_id: examId,
+      student_id: userId,
+      event_type: "face_scan",
+      face_count: faceCount,
+    });
+
+  /*
+   * No face detection
+   */
+  if (faceCount === 0) {
+
+    if (!noFaceSince) {
+
+      setNoFaceSince(
+        Date.now()
+      );
+
+    } else {
+
+      const duration =
+        Date.now() -
+        noFaceSince;
+
+      if (duration >= 30000) {
+
+        handleViolation(
+          "Face not visible for 30 seconds"
+        );
+
+        setNoFaceSince(
+          Date.now()
+        );
+      }
+    }
+
+  } else {
+
+    setNoFaceSince(null);
+  }
+
+  /*
+   * Multiple faces
+   */
+  if (faceCount > 1) {
+
+    if (
+      multipleFaceStartRef.current ===
+      null
+    ) {
+
+      multipleFaceStartRef.current =
+        Date.now();
+
+    } else {
+
+      const duration =
+        Date.now() -
+        multipleFaceStartRef.current;
+
+      if (duration >= 5000) {
+
+        handleViolation(
+          "Multiple faces detected"
+        );
+
+        multipleFaceStartRef.current =
+          -1;
+      }
+    }
+
+  } else {
+
+    multipleFaceStartRef.current =
+      null;
+  }
+}
   async function uploadSnapshot() {
-  const video = videoRef.current;
+
+  const video =
+    videoRef.current;
 
   if (
     !video ||
@@ -1709,134 +1943,47 @@ async function uploadProctoringSnapshot(
     240
   );
 
-  let faceCount = 0;
+  const worker =
+    faceDetectionWorkerRef.current;
 
-  try {
-    const detector =
-      await getFaceDetector();
-
-    const result =
-      detector.detect(canvas);
-
-    faceCount =
-      result?.detections?.length ?? 0;
-
-  } catch (error) {
-    console.error(
-      "FACE DETECTION SKIPPED:",
-      error
-    );
-
+  if (!worker) {
     return;
   }
 
-  // Keep your existing Supabase insert
-  // and faceCount logic below unchanged.
-  await supabase
-  .from(
-    "proctoring_events"
-  )
-  .insert({
-    attempt_id:
-      examId,
-    student_id:
-      userId,
-    event_type:
-      "face_scan",
-    face_count:
-      faceCount,
-  });
- if (faceCount === 0) {
+  try {
 
-  if (!noFaceSince) {
+    /*
+     * Keep this canvas for the
+     * background snapshot upload.
+     */
+    pendingSnapshotCanvasRef.current =
+      canvas;
 
-    setNoFaceSince(
-      Date.now()
+    const imageBitmap =
+      await createImageBitmap(
+        canvas
+      );
+
+    worker.postMessage(
+      {
+        imageBitmap,
+      },
+      [imageBitmap]
     );
 
-  } else {
+ } catch (error) {
 
-    const duration =
+  console.error(
+    "Unable to send frame to face detection worker:",
+    error
+  );
 
-      Date.now() -
-      noFaceSince;
+  faceDetectionBusyRef.current =
+    false;
 
-    if (
-      duration >= 30000
-    ) {
-
-      handleViolation(
-        "Face not visible for 30 seconds"
-      );
-
-      setNoFaceSince(
-        Date.now()
-      );
-
-    }
-
-  }
-
-} else {
-
-  setNoFaceSince(null);
-
-}
-
-if (faceCount > 1) {
-
-  if (
-    multipleFaceStartRef.current === null
-  ) {
-
-    multipleFaceStartRef.current =
-      Date.now();
-
-  } else {
-
-    const duration =
-      Date.now() -
-      multipleFaceStartRef.current;
-
-    if (
-      duration >= 5000
-    ) {
-
-      handleViolation(
-        "Multiple faces detected"
-      );
-
-      /*
-       * Mark this incident as handled.
-       *
-       * We DO NOT restart the timer while
-       * the second face is still present.
-       *
-       * The next violation can only happen
-       * after the extra face disappears and
-       * another multiple-face incident begins.
-       */
-      multipleFaceStartRef.current =
-        -1;
-    }
-  }
-
-} else {
-
-  /*
-   * No multiple-face condition anymore.
-   *
-   * Reset the incident so a future
-   * second face creates a new violation.
-   */
-  multipleFaceStartRef.current =
+  pendingSnapshotCanvasRef.current =
     null;
-
 }
-void uploadProctoringSnapshot(
-  canvas,
-  faceCount
-);
 }
 async function resumeExam() {
   if (!sessionToken) {
@@ -2850,13 +2997,18 @@ useEffect(() => {
     return;
   }
 
-  snapshotIntervalRef.current =
-    setInterval(
-      () => {
-        uploadSnapshot();
-      },
-      15000
-    );
+ snapshotIntervalRef.current =
+  setInterval(() => {
+
+    if (
+      faceDetectionBusyRef.current
+    ) {
+      return;
+    }
+
+    void uploadSnapshot();
+
+  }, 15000);
 
   return () => {
 
