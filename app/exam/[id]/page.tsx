@@ -1576,6 +1576,104 @@ function stopAudioMonitoring() {
   audioAnalyserRef.current =
     null;
 }
+
+
+async function uploadProctoringSnapshot(
+  canvas: HTMLCanvasElement,
+  faceCount: number
+) {
+  try {
+
+    const blob =
+      await new Promise<Blob | null>(
+        (resolve) =>
+          canvas.toBlob(
+            resolve,
+            "image/jpeg",
+            0.7
+          )
+      );
+
+    if (!blob) {
+      return;
+    }
+
+    const fileName =
+      `${userId}/${examId}/${Date.now()}.jpg`;
+
+    const {
+      data: uploadData,
+      error,
+    } =
+      await supabase.storage
+        .from("proctoring")
+        .upload(
+          fileName,
+          blob,
+          {
+            upsert: false,
+          }
+        );
+
+    if (error) {
+
+      console.error(
+        "Snapshot Upload Error:",
+        error
+      );
+
+      return;
+    }
+
+    const {
+      data: publicUrlData,
+    } =
+      supabase.storage
+        .from("proctoring")
+        .getPublicUrl(
+          uploadData.path
+        );
+
+    const imageUrl =
+      publicUrlData.publicUrl;
+
+    const {
+      error:
+        snapshotInsertError,
+    } =
+      await supabase
+        .from(
+          "proctoring_snapshots"
+        )
+        .insert({
+          attempt_id: null,
+          student_id: userId,
+          image_url: imageUrl,
+          face_count: faceCount,
+        });
+
+    if (
+      snapshotInsertError
+    ) {
+
+      console.error(
+        "Snapshot DB Error:",
+        snapshotInsertError
+      );
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Background snapshot error:",
+      error
+    );
+
+  }
+}
+
+
   async function uploadSnapshot() {
   const video = videoRef.current;
 
@@ -1735,87 +1833,10 @@ if (faceCount > 1) {
     null;
 
 }
-  const blob =
-    await new Promise<Blob | null>(
-      (resolve) =>
-        canvas.toBlob(
-          resolve,
-          "image/jpeg",
-          0.7
-        )
-    );
-
-  if (!blob) {
-    return;
-  }
-
-  const fileName =
-    `${userId}/${examId}/${Date.now()}.jpg`;
-
-const {
-  data: uploadData,
-  error,
-} = await supabase.storage
-
-  .from("proctoring")
-
-  .upload(
-    fileName,
-    blob,
-    {
-      upsert: false,
-    }
-  );
-  if (error) {
-
-  console.error(
-    "Snapshot Upload Error:",
-    error
-  );
-
-  return;
-}
-const {
-  data: publicUrlData,
-} = supabase.storage
-
-  .from("proctoring")
-
-  .getPublicUrl(
-    uploadData.path
-  );
-
-const imageUrl =
-  publicUrlData.publicUrl;
-  await supabase
-
-  .from(
-    "proctoring_snapshots"
-  )
-
-  .insert({
-
-    attempt_id:null,
-
-    student_id:
-      userId,
-
-    image_url:
-      imageUrl,
-
-    face_count:
-      faceCount,
-
-  });
-
-  if (error) {
-
-    console.error(
-      "Snapshot Upload Error:",
-      error
-    );
-
-  }
+void uploadProctoringSnapshot(
+  canvas,
+  faceCount
+);
 }
 async function resumeExam() {
   if (!sessionToken) {
