@@ -4312,11 +4312,12 @@ font-black
 
          
  <div className="text-2xl leading-loose font-medium text-[#243B6B] mb-10">
- <MathJax dynamic>
+ <div>
   {language === "hi"
-    ? currentQuestionData?.question_text_hi || currentQuestionData?.question
+    ? currentQuestionData?.question_text_hi ||
+      currentQuestionData?.question
     : currentQuestionData?.question}
-</MathJax>
+</div>
 </div>
 
 
