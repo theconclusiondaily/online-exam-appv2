@@ -14,17 +14,14 @@ import {
 import dynamic from "next/dynamic";
 
 import { toast } from "sonner";
-import MathText from "@/components/common/MathText";
+import ExamQuestionPanel from "@/components/exam/ExamQuestionPanel";
 import { supabase } from "@/lib/supabase/client";
 import TCDLoader from "@/components/common/TCDLoader";
 import ExamTopStats from "@/components/exam/ExamTopStats";
-import ProctoringCapture
-from "@/components/exam/ProctoringCapture";
 import useExamAutosave from "@/hooks/useExamAutosave";
 import useLiveStudents from "@/hooks/useLiveStudents";
 import StudentCameraStream
 from "@/components/exam/StudentCameraStream";
-import { MathJax } from "better-react-mathjax";
 import {
   getFaceDetector
 } from "@/lib/faceDetection";
@@ -4311,97 +4308,16 @@ font-black
 </div>
 
          
- <div className="text-2xl leading-loose font-medium text-[#243B6B] mb-10">
- <MathJax dynamic>
-  {language === "hi"
-    ? currentQuestionData?.question_text_hi || currentQuestionData?.question
-    : currentQuestionData?.question}
-</MathJax>
-</div>
-
-
-          <div className="space-y-4">
-
-            {(
-  currentQuestionData?.shuffledOptions ??
-  [
-    currentQuestionData?.option_a,
-    currentQuestionData?.option_b,
-    currentQuestionData?.option_c,
-    currentQuestionData?.option_d,
-  ].filter(Boolean)
-).map(
-  (option: string, index: number) => {
-
-    const optionKey =
-      option ===
-      currentQuestionData.option_a
-        ? "A"
-        : option ===
-          currentQuestionData.option_b
-        ? "B"
-        : option ===
-          currentQuestionData.option_c
-        ? "C"
-        : "D";
-
-    const displayLabel =
-      ["A", "B", "C", "D"][index];
-
-    const optionText =
-      language === "hi"
-        ? (
-            optionKey === "A"
-              ? currentQuestionData.option_a_hi ||
-                currentQuestionData.option_a
-              : optionKey === "B"
-              ? currentQuestionData.option_b_hi ||
-                currentQuestionData.option_b
-              : optionKey === "C"
-              ? currentQuestionData.option_c_hi ||
-                currentQuestionData.option_c
-              : currentQuestionData.option_d_hi ||
-                currentQuestionData.option_d
-          )
-        : option;
-
-
-  return (
-                  <button
-                    key={`${option}-${index}`}
-
-                    onClick={() =>
-  selectAnswer(
-    currentQuestionData.id,
-    optionKey
-  )
-}
-
-                    className={`w-full text-left p-3 rounded-xl border text-lg font-medium transition-colors
-
-                      ${
-                        answers[currentQuestionData.id] === optionKey
-
-                          ? "bg-[#243B6B] text-white border-[#243B6B] shadow-lg"
-
-                          : "bg-white text-[#243B6B] border-gray-200 hover:border-[#243B6B] hover:bg-[#243B6B]/5"
-                      }
-                    `}
-                  >
-
-                    <span className="font-bold mr-2">
-  {displayLabel}.
-</span>
-
-<MathText
-  text={optionText}
+<ExamQuestionPanel
+  question={currentQuestionData}
+  language={language}
+  selectedAnswer={
+    currentQuestionData
+      ? answers[currentQuestionData.id] ?? null
+      : null
+  }
+  onSelectAnswer={selectAnswer}
 />
-
-                  </button>
-                )
-})}
-
-          </div>
 
         </div>
 
