@@ -131,14 +131,14 @@ const [
     useRef<MediaStream | null>(
       null
     );
-    const audioContextRef =
+   const audioContextRef =
   useRef<AudioContext | null>(null);
 
 const audioAnalyserRef =
   useRef<AnalyserNode | null>(null);
 
-const audioAnimationRef =
-  useRef<number | null>(null);
+const audioIntervalRef =
+  useRef<ReturnType<typeof setInterval> | null>(null);
 
 const audioVoiceStartRef =
   useRef<number | null>(null);
@@ -207,25 +207,22 @@ const [
 ] = useState<any>(null);
     
 useEffect(() => {
-
- 
   const activeButton =
     document.getElementById(
       `question-${currentQuestion}`
     );
 
-  if (activeButton) {
-
-    activeButton.scrollIntoView({
-
-      behavior: "smooth",
-
-      inline: "center",
-
-      block: "nearest",
-    });
+  if (!activeButton) {
+    return;
   }
 
+  requestAnimationFrame(() => {
+    activeButton.scrollIntoView({
+      behavior: "auto",
+      inline: "center",
+      block: "nearest",
+    });
+  });
 }, [currentQuestion]);
 
 const [
@@ -1526,10 +1523,15 @@ async function enterExamFullscreen() {
             false;
         }
 
-        audioAnimationRef.current =
-          requestAnimationFrame(
-            checkAudio
-          );
+        if (
+  !audioIntervalRef.current
+) {
+  audioIntervalRef.current =
+    setInterval(
+      checkAudio,
+      100
+    );
+}
       };
 
     void audioContext.resume();
@@ -1545,16 +1547,16 @@ async function enterExamFullscreen() {
 }
 function stopAudioMonitoring() {
   if (
-    audioAnimationRef.current !==
-    null
-  ) {
-    cancelAnimationFrame(
-      audioAnimationRef.current
-    );
+  audioIntervalRef.current !==
+  null
+) {
+  clearInterval(
+    audioIntervalRef.current
+  );
 
-    audioAnimationRef.current =
-      null;
-  }
+  audioIntervalRef.current =
+    null;
+}
 
   audioVoiceStartRef.current =
     null;
@@ -2285,30 +2287,7 @@ async function prefetchQuestion(
     /*
      * 2. REACT + SESSION CACHE
      */
-    setQuestionCache((prev) => {
-      const updated = {
-        ...prev,
-        [index]:
-          shuffledQuestion,
-      };
-
-      try {
-        const storageKey =
-          `exam-question-cache-${examId}`;
-
-        sessionStorage.setItem(
-          storageKey,
-          JSON.stringify(updated)
-        );
-      } catch (error) {
-        console.warn(
-          "Unable to persist question cache:",
-          error
-        );
-      }
-
-      return updated;
-    });
+  
   } catch (error) {
     /*
      * Prefetch failure must never
@@ -2331,15 +2310,8 @@ async function prefetchQuestionsAhead(
     return;
   }
 
-  const BUFFER_SIZE = 10;
+  const BUFFER_SIZE = 5;
 
-  /*
-   * Use the latest known total.
-   *
-   * If totalQuestions has not been populated yet,
-   * allow prefetching to proceed. The server response
-   * from prefetchQuestion() will establish the total.
-   */
   const knownTotal =
     totalQuestions > 0
       ? totalQuestions
@@ -2350,6 +2322,8 @@ async function prefetchQuestionsAhead(
       startIndex + BUFFER_SIZE,
       knownTotal
     );
+
+  const indexesToPrefetch: number[] = [];
 
   for (
     let index = startIndex;
@@ -2368,12 +2342,34 @@ async function prefetchQuestionsAhead(
       continue;
     }
 
-    if (!navigator.onLine) {
-      break;
-    }
-
-    await prefetchQuestion(index);
+    indexesToPrefetch.push(index);
   }
+
+  if (
+    indexesToPrefetch.length === 0
+  ) {
+    return;
+  }
+
+  /*
+   * Prefetch concurrently.
+   *
+   * This changes:
+   *
+   * Q11 → Q12 → Q13 → Q14
+   *
+   * into:
+   *
+   * Q11 ┐
+   * Q12 ├── fetched together
+   * Q13 │
+   * Q14 ┘
+   */
+ for (
+  const index of indexesToPrefetch
+) {
+  void prefetchQuestion(index);
+}
 }
   async function startExam() {
 
@@ -2860,39 +2856,74 @@ useEffect(() => {
   cameraStream
 ]);
 useEffect(() => {
-  if (!examStarted) return;
+  if (!examStarted) {
+    return;
+  }
 
   const checkCameraPosition = () => {
-    const ids = [
-      "next-button",
-      "previous-button",
-      "submit-button",
-      "mark-review-button",
-    ];
+    const nextButton =
+      document.getElementById(
+        "next-button"
+      );
 
-    for (const id of ids) {
-      const element = document.getElementById(id);
+    const previousButton =
+      document.getElementById(
+        "previous-button"
+      );
 
-      if (element) {
-        moveCameraAwayFrom(element);
-      }
-    }
+    const submitButton =
+      document.getElementById(
+        "submit-button"
+      );
+
+    const markReviewButton =
+      document.getElementById(
+        "mark-review-button"
+      );
+
+    moveCameraAwayFrom(nextButton);
+    moveCameraAwayFrom(previousButton);
+    moveCameraAwayFrom(submitButton);
+    moveCameraAwayFrom(
+      markReviewButton
+    );
   };
 
-  // First check
- requestAnimationFrame(() => {
-  checkCameraPosition();
-});
+  /*
+   * Check once after the question changes.
+   */
+  requestAnimationFrame(() => {
+    checkCameraPosition();
+  });
 
-  // Check whenever the page scrolls or rotates
-  window.addEventListener("scroll", checkCameraPosition);
-  window.addEventListener("resize", checkCameraPosition);
+  /*
+   * Do NOT run camera calculations on
+   * every scroll event.
+   *
+   * This is important for smooth question
+   * scrolling on slower devices.
+   */
+  const handleResize = () => {
+    requestAnimationFrame(() => {
+      checkCameraPosition();
+    });
+  };
+
+  window.addEventListener(
+    "resize",
+    handleResize
+  );
 
   return () => {
-    window.removeEventListener("scroll", checkCameraPosition);
-    window.removeEventListener("resize", checkCameraPosition);
+    window.removeEventListener(
+      "resize",
+      handleResize
+    );
   };
-}, [examStarted, currentQuestion]);
+}, [
+  examStarted,
+  currentQuestion,
+]);
 
 useEffect(() => {
 
@@ -4289,27 +4320,48 @@ font-black
           <div className="space-y-4">
 
             {(
-  currentQuestionData?.shuffledOptions ?? [
+  currentQuestionData?.shuffledOptions ??
+  [
     currentQuestionData?.option_a,
     currentQuestionData?.option_b,
     currentQuestionData?.option_c,
     currentQuestionData?.option_d,
   ].filter(Boolean)
-).map((option: string, index: number) => {
+).map(
+  (option: string, index: number) => {
 
- // Original database key used for scoring
-const optionKey =
-  option === currentQuestionData.option_a
-    ? "A"
-    : option === currentQuestionData.option_b
-    ? "B"
-    : option === currentQuestionData.option_c
-    ? "C"
-    : "D";
+    const optionKey =
+      option ===
+      currentQuestionData.option_a
+        ? "A"
+        : option ===
+          currentQuestionData.option_b
+        ? "B"
+        : option ===
+          currentQuestionData.option_c
+        ? "C"
+        : "D";
 
-// Visible label based on shuffled position
-const displayLabel =
-  ["A", "B", "C", "D"][index];
+    const displayLabel =
+      ["A", "B", "C", "D"][index];
+
+    const optionText =
+      language === "hi"
+        ? (
+            optionKey === "A"
+              ? currentQuestionData.option_a_hi ||
+                currentQuestionData.option_a
+              : optionKey === "B"
+              ? currentQuestionData.option_b_hi ||
+                currentQuestionData.option_b
+              : optionKey === "C"
+              ? currentQuestionData.option_c_hi ||
+                currentQuestionData.option_c
+              : currentQuestionData.option_d_hi ||
+                currentQuestionData.option_d
+          )
+        : option;
+
 
   return (
                   <button
@@ -4339,19 +4391,7 @@ const displayLabel =
 </span>
 
 <MathText
-  text={
-    language === "hi"
-      ? (
-          optionKey === "A"
-            ? currentQuestionData.option_a_hi || currentQuestionData.option_a
-            : optionKey === "B"
-            ? currentQuestionData.option_b_hi || currentQuestionData.option_b
-            : optionKey === "C"
-            ? currentQuestionData.option_c_hi || currentQuestionData.option_c
-            : currentQuestionData.option_d_hi || currentQuestionData.option_d
-        )
-      : option
-  }
+  text={optionText}
 />
 
                   </button>
@@ -4369,19 +4409,65 @@ const displayLabel =
         <button
   id="previous-button"
   onClick={async () => {
-
   const prevIndex =
     Math.max(
       currentQuestion - 1,
       0
     );
 
+  if (
+    prevIndex === currentQuestion
+  ) {
+    return;
+  }
+
+  /*
+   * If the previous question is already
+   * cached, display it immediately.
+   */
+  const cachedQuestion =
+    questionCacheRef.current[
+      prevIndex
+    ];
+
+  if (cachedQuestion) {
+    // CRITICAL PATH — show question immediately
+    setCurrentQuestionData(
+      cachedQuestion
+    );
+
+    setCurrentQuestion(
+      prevIndex
+    );
+
+    /*
+     * Background work only after the
+     * question has been handed to React.
+     */
+    requestAnimationFrame(() => {
+      moveCameraAwayFrom(
+        document.getElementById(
+          "previous-button"
+        )
+      );
+    });
+
+    return;
+  }
+
+  /*
+   * Fallback if the previous question
+   * was not cached.
+   */
   await fetchQuestionByIndex(
     prevIndex
   );
-   requestAnimationFrame(() => {
+
+  requestAnimationFrame(() => {
     moveCameraAwayFrom(
-      document.getElementById("previous-button")
+      document.getElementById(
+        "previous-button"
+      )
     );
   });
 }}
@@ -4481,7 +4567,7 @@ hover:bg-[#C89A1F]
   questionCacheRef.current[nextIndex];
 
 if (cachedQuestion) {
-
+  // CRITICAL PATH — show question immediately
   setCurrentQuestionData(
     cachedQuestion
   );
@@ -4490,20 +4576,30 @@ if (cachedQuestion) {
     nextIndex
   );
 
+  /*
+   * Everything below is background work.
+   * Give React/browser a chance to paint
+   * the new question first.
+   */
   requestAnimationFrame(() => {
     moveCameraAwayFrom(
-      document.getElementById("next-button")
+      document.getElementById(
+        "next-button"
+      )
     );
+
+    if (
+      nextIndex + 1 <
+      totalQuestions
+    ) {
+      void prefetchQuestion(
+        nextIndex + 1
+      );
+    }
   });
 
-  // Prepare the question after this one
-    // Prepare the question after this one
-   void prefetchQuestionsAhead(
-  nextIndex + 1
-);
-
-    return;
-  }
+  return;
+}
 
   // Fallback if prefetch has not completed
   await fetchQuestionByIndex(
