@@ -337,13 +337,18 @@ const [
     useState<any>({});
 const questionCacheRef =
   useRef<Record<number, any>>({});
-  const prefetchingRef =
-  useRef<Set<number>>(new Set());
-  const questionNavigationLockRef =
-  useRef(false);
   const [currentQuestion,
     setCurrentQuestion] =
     useState(0);
+  const prefetchingRef =
+  useRef<
+    Map<number, Promise<any>>
+  >(new Map());
+  const questionNavigationLockRef =
+  useRef(false);
+  const pendingNavigationRef =
+  useRef(0);
+   
     
     const [attemptId, setAttemptId] =
   useState<string | null>(null);
@@ -1072,6 +1077,33 @@ if (
   examId,
   userId,
   submitted,
+]);
+useEffect(() => {
+
+  if (!examStarted) {
+    return;
+  }
+
+  if (!sessionToken) {
+    return;
+  }
+
+  /*
+   * Start loading questions ahead of the
+   * student's current position.
+   *
+   * This runs in the background and does
+   * NOT block the current question.
+   */
+  void prefetchQuestionsAhead(
+    currentQuestion + 1
+  );
+
+}, [
+  currentQuestion,
+  examStarted,
+  sessionToken,
+  totalQuestions,
 ]);
 useEffect(() => {
 
@@ -2145,17 +2177,20 @@ async function fetchQuestionByIndex(
   /*
    * 1. MEMORY CACHE
    *
-   * Fastest path.
+   * Fastest possible path.
    */
   const cachedQuestion =
     questionCacheRef.current[index];
 
   if (cachedQuestion) {
+
     setCurrentQuestionData(
       cachedQuestion
     );
 
-    setCurrentQuestion(index);
+    setCurrentQuestion(
+      index
+    );
 
     return;
   }
@@ -2163,10 +2198,11 @@ async function fetchQuestionByIndex(
   /*
    * 2. PERSISTENT CACHE
    *
-   * Recover questions that were already
-   * loaded earlier in this exam.
+   * Recover questions loaded earlier
+   * in this exam.
    */
   try {
+
     const storageKey =
       `exam-question-cache-${examId}`;
 
@@ -2176,6 +2212,7 @@ async function fetchQuestionByIndex(
       );
 
     if (stored) {
+
       const parsed =
         JSON.parse(stored);
 
@@ -2183,36 +2220,50 @@ async function fetchQuestionByIndex(
         parsed?.[index];
 
       if (storedQuestion) {
-        questionCacheRef.current[index] =
-          storedQuestion;
 
+        /*
+         * Restore memory cache.
+         */
+        questionCacheRef.current[
+          index
+        ] = storedQuestion;
+
+        /*
+         * Restore React cache.
+         */
         setQuestionCache(
           parsed
         );
 
+        /*
+         * Show immediately.
+         */
         setCurrentQuestionData(
           storedQuestion
         );
 
-        setCurrentQuestion(index);
+        setCurrentQuestion(
+          index
+        );
 
         return;
       }
     }
+
   } catch (error) {
+
     console.warn(
       "Unable to read cached exam question:",
       error
     );
+
   }
 
   /*
-   * 3. NETWORK
-   *
-   * Only fetch from the server if the
-   * question is not available locally.
+   * 3. OFFLINE CHECK
    */
   if (!navigator.onLine) {
+
     console.warn(
       "Question is not cached and device is offline:",
       index
@@ -2221,122 +2272,69 @@ async function fetchQuestionByIndex(
     return;
   }
 
+  /*
+   * 4. SHARED NETWORK LOADER
+   *
+   * IMPORTANT:
+   *
+   * Do NOT fetch directly here.
+   *
+   * prefetchQuestion() now owns all
+   * network requests.
+   *
+   * If another prefetch is already
+   * downloading this question, we reuse
+   * that SAME Promise.
+   */
   try {
-    const response =
-      await fetch(
-        "/api/exam/question",
-        {
-          method: "POST",
 
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
+    const question =
+  await Promise.race([
+    prefetchQuestion(index),
 
-          body: JSON.stringify({
-            examId,
-            questionIndex: index,
-            sessionToken,
-          }),
-        }
-      );
+    new Promise<null>((resolve) =>
+      setTimeout(
+        () => resolve(null),
+        5000
+      )
+    ),
+  ]);
 
-    const result =
-      await response.json();
+    if (!question) {
 
-    if (
-      !response.ok ||
-      !result.data
-    ) {
       console.warn(
-        "Question fetch failed:",
-        response.status,
-        result
+        "Unable to load question:",
+        index
       );
 
       return;
     }
 
-    const total =
-      result.totalQuestions || 1;
-
-    setTotalQuestions(total);
-
-    const question =
-      result.data;
-
-    const shuffledQuestion = {
-      ...question,
-
-      shuffledOptions: [
-        question.option_a,
-        question.option_b,
-        question.option_c,
-        question.option_d,
-      ].sort(
-        () => Math.random() - 0.5
-      ),
-    };
-
     /*
-     * 4. MEMORY CACHE
+     * prefetchQuestion() has already:
+     *
+     * - updated memory cache
+     * - shuffled options
+     * - updated React cache
+     * - updated sessionStorage
+     *
+     * We only need to display it.
      */
-    questionCacheRef.current[index] =
-      shuffledQuestion;
-
-    /*
-     * 5. REACT CACHE
-     */
-    setQuestionCache((prev) => {
-      const updated = {
-        ...prev,
-        [index]:
-          shuffledQuestion,
-      };
-
-      /*
-       * 6. PERSISTENT CACHE
-       */
-      try {
-        const storageKey =
-          `exam-question-cache-${examId}`;
-
-        sessionStorage.setItem(
-          storageKey,
-          JSON.stringify(updated)
-        );
-      } catch (error) {
-        console.warn(
-          "Unable to persist exam question cache:",
-          error
-        );
-      }
-
-      return updated;
-    });
-
     setCurrentQuestionData(
-      shuffledQuestion
+      question
     );
 
-    setCurrentQuestion(index);
+    setCurrentQuestion(
+      index
+    );
 
-    /*
-     * 7. PREFETCH NEXT QUESTION
-     *
-     * Do this only after the current
-     * question has been displayed.
-     */
-    if (index + 1 < total) {
-      prefetchQuestion(
-        index + 1
-      );
-    }
   } catch (error) {
+
     console.warn(
       "Unable to load exam question:",
       error
     );
+
   }
 }
 async function prefetchQuestion(
@@ -2350,126 +2348,201 @@ async function prefetchQuestion(
       index >= totalQuestions
     )
   ) {
-    return;
+    return null;
   }
 
   // Already cached in memory.
-  if (
-    questionCacheRef.current[index]
-  ) {
-    return;
+  const cachedQuestion =
+    questionCacheRef.current[index];
+
+  if (cachedQuestion) {
+    return cachedQuestion;
   }
 
   // Already being fetched.
-  if (
-    prefetchingRef.current.has(index)
-  ) {
-    return;
+  // Reuse the SAME network request.
+  const existingRequest =
+    prefetchingRef.current.get(index);
+
+  if (existingRequest) {
+    return existingRequest;
   }
 
   // Do not create network requests while offline.
   if (!navigator.onLine) {
-    return;
+    return null;
   }
 
-  prefetchingRef.current.add(index);
+  const requestPromise =
+    (async () => {
 
-  try {
-    const response =
-      await fetch(
-        "/api/exam/question",
-        {
-          method: "POST",
+      try {
 
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
+        const response =
+          await fetch(
+            "/api/exam/question",
+            {
+              method: "POST",
 
-          body: JSON.stringify({
-            examId,
-            questionIndex: index,
-            sessionToken,
-          }),
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body: JSON.stringify({
+                examId,
+                questionIndex: index,
+                sessionToken,
+              }),
+            }
+          );
+
+        if (!response.ok) {
+
+          console.warn(
+            "Question prefetch failed:",
+            response.status,
+            index
+          );
+
+          return null;
         }
-      );
 
-    if (!response.ok) {
-      console.warn(
-        "Question prefetch failed:",
-        response.status,
-        index
-      );
+        const result =
+          await response.json();
 
-      return;
-    }
+        if (!result.data) {
+          return null;
+        }
 
-    const result =
-      await response.json();
+        /*
+         * Keep totalQuestions updated
+         * from the server response.
+         */
+        const serverTotal =
+          result.totalQuestions;
 
-    if (
-      !result.data
-    ) {
-      return;
-    }
+        if (
+          typeof serverTotal ===
+            "number" &&
+          serverTotal > 0
+        ) {
+          setTotalQuestions(
+            serverTotal
+          );
+        }
 
-    /*
-     * Keep totalQuestions updated from
-     * the server response.
-     */
-    const serverTotal =
-      result.totalQuestions;
+        const question =
+          result.data;
 
-    if (
-      typeof serverTotal ===
-      "number" &&
-      serverTotal > 0
-    ) {
-      setTotalQuestions(
-        serverTotal
-      );
-    }
+        /*
+         * Shuffle ONCE.
+         *
+         * The same question object stays
+         * in the cache, so navigating back
+         * will never reshuffle it.
+         */
+        const shuffledQuestion = {
+          ...question,
 
-    const question =
-      result.data;
+          shuffledOptions: [
+            question.option_a,
+            question.option_b,
+            question.option_c,
+            question.option_d,
+          ].sort(
+            () => Math.random() - 0.5
+          ),
+        };
 
-    const shuffledQuestion = {
-      ...question,
+        /*
+         * 1. MEMORY CACHE
+         *
+         * This is the fastest path used
+         * by Next/Previous.
+         */
+        questionCacheRef.current[index] =
+          shuffledQuestion;
 
-      shuffledOptions: [
-        question.option_a,
-        question.option_b,
-        question.option_c,
-        question.option_d,
-      ].sort(
-        () => Math.random() - 0.5
-      ),
-    };
+        /*
+         * 2. REACT + SESSION CACHE
+         */
+        setQuestionCache((prev) => {
 
-    /*
-     * 1. MEMORY CACHE
-     */
-    questionCacheRef.current[index] =
-      shuffledQuestion;
+          const updated = {
+            ...prev,
+            [index]:
+              shuffledQuestion,
+          };
 
-    /*
-     * 2. REACT + SESSION CACHE
-     */
-  
-  } catch (error) {
-    /*
-     * Prefetch failure must never
-     * interrupt the exam.
-     */
-    console.warn(
-      "PREFETCH ERROR:",
-      error
-    );
-  } finally {
-    prefetchingRef.current.delete(
-      index
-    );
-  }
+          try {
+
+            const storageKey =
+              `exam-question-cache-${examId}`;
+
+            sessionStorage.setItem(
+              storageKey,
+              JSON.stringify(updated)
+            );
+
+          } catch (error) {
+
+            console.warn(
+              "Unable to persist question cache:",
+              error
+            );
+
+          }
+
+          return updated;
+        });
+
+        return shuffledQuestion;
+
+      } catch (error) {
+
+        /*
+         * Prefetch failure must never
+         * interrupt the exam.
+         */
+        console.warn(
+          "PREFETCH ERROR:",
+          error
+        );
+
+        return null;
+
+      } finally {
+
+        /*
+         * The request has finished.
+         *
+         * Remove it so a future request
+         * can be created if necessary.
+         */
+        prefetchingRef.current.delete(
+          index
+        );
+      }
+
+    })();
+
+  /*
+   * IMPORTANT:
+   *
+   * Store the Promise BEFORE returning.
+   *
+   * Any other caller asking for this
+   * question now receives this exact
+   * same Promise instead of creating
+   * another network request.
+   */
+  prefetchingRef.current.set(
+    index,
+    requestPromise
+  );
+
+  return requestPromise;
 }
 async function prefetchQuestionsAhead(
   startIndex: number
@@ -2478,7 +2551,7 @@ async function prefetchQuestionsAhead(
     return;
   }
 
-  const BUFFER_SIZE = 5;
+  const BUFFER_SIZE = 10;
 
   const knownTotal =
     totalQuestions > 0
@@ -2493,26 +2566,32 @@ async function prefetchQuestionsAhead(
 
   const indexesToPrefetch: number[] = [];
 
-  for (
-    let index = startIndex;
-    index < endIndex;
-    index++
+  const requests: Promise<any>[] = [];
+
+for (
+  let index = startIndex;
+  index < endIndex;
+  index++
+) {
+
+  if (
+    questionCacheRef.current[index]
   ) {
-    if (
-      questionCacheRef.current[index]
-    ) {
-      continue;
-    }
-
-    if (
-      prefetchingRef.current.has(index)
-    ) {
-      continue;
-    }
-
-    indexesToPrefetch.push(index);
+    continue;
   }
 
+  if (!navigator.onLine) {
+    break;
+  }
+
+  requests.push(
+    prefetchQuestion(index)
+  );
+}
+
+void Promise.allSettled(
+  requests
+);
   if (
     indexesToPrefetch.length === 0
   ) {
@@ -4662,69 +4741,139 @@ hover:bg-[#C89A1F]
 
   <button
   id="next-button"
-  onClick={async() => {
-    
-  const nextIndex =
-    currentQuestion + 1;
+  onClick={async () => {
 
+  /*
+   * If another navigation is currently
+   * loading, remember this click.
+   *
+   * We do NOT discard rapid clicks.
+   */
   if (
-    nextIndex >= totalQuestions
+    questionNavigationLockRef.current
   ) {
+
+    pendingNavigationRef.current += 1;
+
     return;
   }
-if (
-  questionNavigationLockRef.current
-) {
-  return;
-}
 
-questionNavigationLockRef.current =
-  true;
-  // If already prefetched, switch instantly
-  const cachedQuestion =
-  questionCacheRef.current[nextIndex];
+  questionNavigationLockRef.current =
+    true;
 
-if (cachedQuestion) {
+  /*
+   * This local variable is critical.
+   *
+   * React state updates are asynchronous,
+   * so we must NOT repeatedly read
+   * currentQuestion while processing
+   * rapid clicks.
+   */
+  let targetIndex =
+    currentQuestion;
 
-  setCurrentQuestionData(
-    cachedQuestion
-  );
+  try {
 
-  setCurrentQuestion(
-    nextIndex
-  );
+    /*
+     * Process the current click first,
+     * then any clicks that arrived while
+     * navigation was busy.
+     */
+    while (true) {
 
-  requestAnimationFrame(() => {
+      const nextIndex =
+        targetIndex + 1;
 
-       questionNavigationLockRef.current =
-      false;
+      /*
+       * End of exam.
+       */
+      if (
+        nextIndex >= totalQuestions
+      ) {
+        break;
+      }
 
-  });
-  if (
-      nextIndex + 1 <
-      totalQuestions
-    ) {
-      void prefetchQuestion(
-        nextIndex + 1
-      );
-    }
-  
-  return;
-}
+      /*
+       * Move our navigation pointer
+       * immediately.
+       */
+      targetIndex =
+        nextIndex;
 
-  // Fallback if prefetch has not completed
- try {
+      /*
+       * FAST PATH:
+       *
+       * Question already exists in memory.
+       */
+      const cachedQuestion =
+        questionCacheRef.current[
+          nextIndex
+        ];
 
+      if (cachedQuestion) {
+
+        setCurrentQuestionData(
+          cachedQuestion
+        );
+
+        setCurrentQuestion(
+          nextIndex
+        );
+
+      } else {
+
+  /*
+   * The question is not in memory yet.
+   *
+   * fetchQuestionByIndex() will first check
+   * sessionStorage and then reuse the existing
+   * prefetch Promise if one is already running.
+   */
   await fetchQuestionByIndex(
     nextIndex
   );
-
-} finally {
-
-  questionNavigationLockRef.current =
-    false;
-
 }
+
+      /*
+       * Was another Next click made
+       * while this question was loading?
+       */
+      if (
+        pendingNavigationRef.current >
+        0
+      ) {
+
+        pendingNavigationRef.current -=
+          1;
+
+        /*
+         * Continue immediately to
+         * the next requested question.
+         */
+        continue;
+      }
+
+      /*
+       * No more pending clicks.
+       */
+      break;
+    }
+
+  } finally {
+
+    questionNavigationLockRef.current =
+      false;
+
+    /*
+     * Safety reset.
+     */
+    if (
+      pendingNavigationRef.current < 0
+    ) {
+      pendingNavigationRef.current =
+        0;
+    }
+  }
 
 }}
 
