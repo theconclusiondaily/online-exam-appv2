@@ -196,9 +196,12 @@ const questionCacheRef =
   useRef<Record<number, any>>({});
   const prefetchingRef =
   useRef<Set<number>>(new Set());
+  const questionNavigationLockRef =
+  useRef(false);
   const [currentQuestion,
     setCurrentQuestion] =
     useState(0);
+    
     const [attemptId, setAttemptId] =
   useState<string | null>(null);
 const [
@@ -4409,6 +4412,14 @@ font-black
         <button
   id="previous-button"
   onClick={async () => {
+    if (
+  questionNavigationLockRef.current
+) {
+  return;
+}
+
+questionNavigationLockRef.current =
+  true;
   const prevIndex =
     Math.max(
       currentQuestion - 1,
@@ -4431,37 +4442,47 @@ font-black
     ];
 
   if (cachedQuestion) {
-    // CRITICAL PATH — show question immediately
-    setCurrentQuestionData(
-      cachedQuestion
+
+  setCurrentQuestionData(
+    cachedQuestion
+  );
+
+  setCurrentQuestion(
+    prevIndex
+  );
+
+  requestAnimationFrame(() => {
+
+    moveCameraAwayFrom(
+      document.getElementById(
+        "previous-button"
+      )
     );
 
-    setCurrentQuestion(
-      prevIndex
-    );
+    questionNavigationLockRef.current =
+      false;
 
-    /*
-     * Background work only after the
-     * question has been handed to React.
-     */
-    requestAnimationFrame(() => {
-      moveCameraAwayFrom(
-        document.getElementById(
-          "previous-button"
-        )
-      );
-    });
+  });
 
-    return;
-  }
+  return;
+}
 
   /*
    * Fallback if the previous question
    * was not cached.
    */
+ try {
+
   await fetchQuestionByIndex(
     prevIndex
   );
+
+} finally {
+
+  questionNavigationLockRef.current =
+    false;
+
+}
 
   requestAnimationFrame(() => {
     moveCameraAwayFrom(
@@ -4553,6 +4574,14 @@ hover:bg-[#C89A1F]
   <button
   id="next-button"
   onClick={async() => {
+    if (
+  questionNavigationLockRef.current
+) {
+  return;
+}
+
+questionNavigationLockRef.current =
+  true;
   const nextIndex =
     currentQuestion + 1;
 
@@ -4567,7 +4596,7 @@ hover:bg-[#C89A1F]
   questionCacheRef.current[nextIndex];
 
 if (cachedQuestion) {
-  // CRITICAL PATH — show question immediately
+
   setCurrentQuestionData(
     cachedQuestion
   );
@@ -4576,19 +4605,19 @@ if (cachedQuestion) {
     nextIndex
   );
 
-  /*
-   * Everything below is background work.
-   * Give React/browser a chance to paint
-   * the new question first.
-   */
   requestAnimationFrame(() => {
+
     moveCameraAwayFrom(
       document.getElementById(
         "next-button"
       )
     );
 
-    if (
+    questionNavigationLockRef.current =
+      false;
+
+  });
+  if (
       nextIndex + 1 <
       totalQuestions
     ) {
@@ -4596,15 +4625,23 @@ if (cachedQuestion) {
         nextIndex + 1
       );
     }
-  });
-
+  
   return;
 }
 
   // Fallback if prefetch has not completed
+ try {
+
   await fetchQuestionByIndex(
-  nextIndex
-);
+    nextIndex
+  );
+
+} finally {
+
+  questionNavigationLockRef.current =
+    false;
+
+}
 
 requestAnimationFrame(() => {
   moveCameraAwayFrom(
