@@ -4490,14 +4490,7 @@ hover:bg-[#C89A1F]
   <button
   id="next-button"
   onClick={async() => {
-    if (
-  questionNavigationLockRef.current
-) {
-  return;
-}
-
-questionNavigationLockRef.current =
-  true;
+    
   const nextIndex =
     currentQuestion + 1;
 
@@ -4506,7 +4499,14 @@ questionNavigationLockRef.current =
   ) {
     return;
   }
+if (
+  questionNavigationLockRef.current
+) {
+  return;
+}
 
+questionNavigationLockRef.current =
+  true;
   // If already prefetched, switch instantly
   const cachedQuestion =
   questionCacheRef.current[nextIndex];
@@ -4523,13 +4523,7 @@ if (cachedQuestion) {
 
   requestAnimationFrame(() => {
 
-    moveCameraAwayFrom(
-      document.getElementById(
-        "next-button"
-      )
-    );
-
-    questionNavigationLockRef.current =
+       questionNavigationLockRef.current =
       false;
 
   });
@@ -4559,11 +4553,6 @@ if (cachedQuestion) {
 
 }
 
-requestAnimationFrame(() => {
-  moveCameraAwayFrom(
-    document.getElementById("next-button")
-  );
-});
 }}
 
       className="
