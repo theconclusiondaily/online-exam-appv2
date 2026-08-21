@@ -34,7 +34,10 @@ async function getDetector() {
 self.onmessage = async (
   event: MessageEvent
 ) => {
-  const { imageBitmap } = event.data;
+  const { 
+    imageBitmap,
+requestId,
+} = event.data;
 
   if (!imageBitmap) {
     return;
@@ -52,21 +55,23 @@ self.onmessage = async (
 
     imageBitmap.close();
 
-    self.postMessage({
-      type: "result",
-      faceCount,
-    });
+   self.postMessage({
+  type: "result",
+  faceCount,
+  requestId,
+});
 
   } catch (error) {
 
     imageBitmap.close();
 
-    self.postMessage({
-      type: "error",
-      error:
-        error instanceof Error
-          ? error.message
-          : String(error),
-    });
+   self.postMessage({
+  type: "error",
+  error:
+    error instanceof Error
+      ? error.message
+      : String(error),
+  requestId,
+});
   }
 };

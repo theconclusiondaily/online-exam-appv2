@@ -158,14 +158,22 @@ const [
 );
 const videoRef =
   useRef<HTMLVideoElement | null>(null);
-  const faceDetectionWorkerRef =
+ const faceDetectionWorkerRef =
   useRef<Worker | null>(null);
-  const faceDetectionBusyRef =
+
+const faceDetectionBusyRef =
   useRef(false);
-  const pendingSnapshotCanvasRef =
-  useRef<HTMLCanvasElement | null>(
-    null
-  );
+
+const faceDetectionRequestIdRef =
+  useRef(0);
+
+const pendingSnapshotRef =
+  useRef<
+    Map<
+      number,
+      HTMLCanvasElement
+    >
+  >(new Map());
   useEffect(() => {
 
   if (
@@ -195,8 +203,7 @@ return () => {
   faceDetectionBusyRef.current =
     false;
 
-  pendingSnapshotCanvasRef.current =
-    null;
+  pendingSnapshotRef.current.clear();
 
 };
 
@@ -218,13 +225,14 @@ useEffect(() => {
 faceDetectionBusyRef.current =
   true;
   const handleMessage = (
-    event: MessageEvent
-  ) => {
+  event: MessageEvent
+) => {
 
-    const {
-      type,
-      faceCount,
-    } = event.data;
+  const {
+    type,
+    faceCount,
+    requestId,
+  } = event.data;
 
     if (type === "error") {
 
@@ -236,8 +244,9 @@ faceDetectionBusyRef.current =
   faceDetectionBusyRef.current =
     false;
 
-  pendingSnapshotCanvasRef.current =
-    null;
+  pendingSnapshotRef.current.delete(
+  requestId
+);
 
   return;
 }
@@ -246,15 +255,18 @@ if (type !== "result") {
   return;
 }
 
-    handleFaceDetectionResult(
+   handleFaceDetectionResult(
   faceCount
 );
 
 const canvas =
-  pendingSnapshotCanvasRef.current;
+  pendingSnapshotRef.current.get(
+    requestId
+  );
 
-pendingSnapshotCanvasRef.current =
-  null;
+pendingSnapshotRef.current.delete(
+  requestId
+);
 
 if (canvas) {
 
@@ -263,6 +275,7 @@ if (canvas) {
     faceCount
   );
 }
+
 faceDetectionBusyRef.current =
   false;
   }
@@ -283,8 +296,7 @@ const handleError = (
   faceDetectionBusyRef.current =
     false;
 
-  pendingSnapshotCanvasRef.current =
-    null;
+ pendingSnapshotRef.current.clear();
 };
 
 worker.addEventListener(
@@ -1982,28 +1994,41 @@ function handleFaceDetectionResult(
     return;
   }
 
-  try {
+ let requestId: number | null =
+  null;
 
-    /*
-     * Keep this canvas for the
-     * background snapshot upload.
-     */
-    pendingSnapshotCanvasRef.current =
-      canvas;
+try {
 
-    const imageBitmap =
-      await createImageBitmap(
-        canvas
-      );
+  /*
+   * Give this detection request a
+   * unique ID.
+   */
+  requestId =
+    ++faceDetectionRequestIdRef.current;
 
-    worker.postMessage(
-      {
-        imageBitmap,
-      },
-      [imageBitmap]
+  /*
+   * Associate this exact canvas with
+   * this exact Worker request.
+   */
+  pendingSnapshotRef.current.set(
+    requestId,
+    canvas
+  );
+
+  const imageBitmap =
+    await createImageBitmap(
+      canvas
     );
 
- } catch (error) {
+  worker.postMessage(
+    {
+      imageBitmap,
+      requestId,
+    },
+    [imageBitmap]
+  );
+
+} catch (error) {
 
   console.error(
     "Unable to send frame to face detection worker:",
@@ -2013,10 +2038,15 @@ function handleFaceDetectionResult(
   faceDetectionBusyRef.current =
     false;
 
-  pendingSnapshotCanvasRef.current =
-    null;
+  if (requestId !== null) {
+
+    pendingSnapshotRef.current.delete(
+      requestId
+    );
+
+  }
 }
-}
+  }
 async function resumeExam() {
   if (!sessionToken) {
     toast.error(
