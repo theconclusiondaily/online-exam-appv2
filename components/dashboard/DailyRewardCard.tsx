@@ -89,7 +89,7 @@ export default function DailyRewardCard({
             text-[#D4A017]
           "
         >
-          +5
+          +2
         </div>
 
         <div
