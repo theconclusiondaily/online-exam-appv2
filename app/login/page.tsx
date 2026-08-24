@@ -584,7 +584,7 @@ growth.
 )}
 
 {verified === "false" && (
-  <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+  <div className="mb-4 rounded-xl border border-red-200 bg-green-50 p-4 text-sm text-red-700">
     ✅ Email verified successfully. You can now log in.
   </div>
 )}
