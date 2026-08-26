@@ -330,7 +330,18 @@ useEffect(() => {
             }),
           }
         );
+if (!orderResponse.ok) {
 
+  const errorData =
+    await orderResponse.json().catch(
+      () => null
+    );
+
+  throw new Error(
+    errorData?.error ||
+      "Unable to create payment order."
+  );
+}
       const orderData =
         await orderResponse.json();
 
@@ -527,24 +538,31 @@ if (
       );
 
       razorpay.open();
-    } catch (error) {
-      console.error(
-        "ADD MONEY ERROR:",
-        error
-      );
+   } catch (error) {
 
-      setPaymentLoading(false);
+  console.error(
+    "ADD MONEY ERROR:",
+    error
+  );
 
-     toast.error(
-  "Unable to start payment",
-  {
-    description:
-      error instanceof Error
-        ? error.message
-        : "Please try again.",
-  }
-);
+  setPaymentLoading(false);
+
+  const message =
+    error instanceof Error
+      ? error.message
+      : "Please try again.";
+
+  toast.error(
+    message.includes(
+      "Payments are temporarily unavailable"
+    )
+      ? "Payments temporarily unavailable"
+      : "Unable to start payment",
+    {
+      description: message,
     }
+  );
+}
   }
 
   // ==========================================
@@ -942,22 +960,19 @@ if (
         {/* Buttons */}
 
         <div className="grid grid-cols-2 gap-3 mt-6">
-          <button
-            onClick={() =>
-              setShowAddMoney(true)
-            }
-            className="
-              rounded-xl
-              bg-tcd-blue
-              text-white
-              py-3
-              font-semibold
-              hover:opacity-90
-              transition
-            "
-          >
-            Add Money
-          </button>
+         <button
+  disabled
+  className="
+    rounded-xl
+    bg-gray-300
+    text-gray-500
+    py-3
+    font-semibold
+    cursor-not-allowed
+  "
+>
+  Payments Temporarily Unavailable
+</button>
 
          <button
   onClick={() =>

@@ -4,11 +4,22 @@ import { createClient } from "@/lib/supabase/server";
 import { razorpay } from "@/lib/razorpay/server";
 
 export const runtime = "nodejs";
-
+const PAYMENTS_ENABLED = false;
 export async function POST(
   request: NextRequest
 ) {
   try {
+    if (!PAYMENTS_ENABLED) {
+  return NextResponse.json(
+    {
+      error:
+        "Payments are temporarily unavailable. Please try again later.",
+    },
+    {
+      status: 503,
+    }
+  );
+}
     const supabase =
       await createClient();
 
@@ -158,6 +169,7 @@ export async function POST(
     let razorpayOrder;
 
     try {
+      
       razorpayOrder =
         await razorpay.orders.create({
           amount:
