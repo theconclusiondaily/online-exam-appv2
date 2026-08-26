@@ -349,9 +349,37 @@ if (leaderboardError) {
     };
     if (attemptError) {
   throw new Error(
-        attemptError.message,);
-      
-};
+    attemptError.message,
+  );
+}
+
+// Create feedback request for the newly submitted attempt.
+// Failure here must NEVER break exam submission.
+try {
+  const newAttemptId = attemptData?.[0]?.id;
+
+  if (newAttemptId) {
+    const { error: feedbackRequestError } =
+      await supabase.rpc(
+        "create_exam_feedback_request",
+        {
+          p_attempt_id: newAttemptId,
+        }
+      );
+
+    if (feedbackRequestError) {
+      console.error(
+        "FEEDBACK REQUEST ERROR:",
+        feedbackRequestError
+      );
+    }
+  }
+} catch (feedbackError) {
+  console.error(
+    "FEEDBACK REQUEST CREATION FAILED:",
+    feedbackError
+  );
+}
 await updateWeeklyChallenges(
   userId,
   totalScore,

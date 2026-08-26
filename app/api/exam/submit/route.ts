@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { finalizeExam } from "@/lib/exam/finalizeExam";
+import { sendPendingFeedbackEmail } from "@/lib/email/sendPendingFeedbackEmail";
 
 export async function POST(
   req: NextRequest
@@ -235,6 +236,21 @@ const result = await finalizeExam({
   examId,
   session,
 });
+
+// Send feedback email after successful exam finalization.
+// Email failure must NEVER make the exam submission fail.
+if (result?.success && result?.attemptId) {
+  try {
+    await sendPendingFeedbackEmail(
+      result.attemptId
+    );
+  } catch (emailError) {
+    console.error(
+      "FEEDBACK EMAIL FAILED:",
+      emailError
+    );
+  }
+}
 
 return NextResponse.json(result);
 

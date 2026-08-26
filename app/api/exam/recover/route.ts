@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { finalizeExam } from "@/lib/exam/finalizeExam";
+import { sendPendingFeedbackEmail } from "@/lib/email/sendPendingFeedbackEmail";
 
 export async function GET() {
-
   try {
-
     const supabase =
       await createClient();
 
@@ -17,80 +16,73 @@ export async function GET() {
       data: sessions,
       error,
     } = await supabase
-
       .from("exam_sessions")
-
       .select("*")
-
       .eq("status", "active")
-
       .lt("expires_at", now);
 
     if (error) {
-
       throw error;
-
     }
 
     if (!sessions?.length) {
-
       return NextResponse.json({
         success: true,
         recovered: 0,
       });
-
     }
 
     let recovered = 0;
 
     for (const session of sessions) {
-
       try {
+        const result = await finalizeExam({
+          supabase,
+          userId: session.user_id,
+          examId: session.exam_id,
+          session,
+        });
 
-        await finalizeExam({
-  supabase,
-  userId: session.user_id,
-  examId: session.exam_id,
-  session,
-});
+        if (result?.success && result?.attemptId) {
+          try {
+            await sendPendingFeedbackEmail(
+              result.attemptId
+            );
+          } catch (emailError) {
+            console.error(
+              "FEEDBACK EMAIL FAILED:",
+              emailError
+            );
+          }
+        }
 
-recovered++;
+        if (result?.success) {
+  recovered++;
+}
 
       } catch (err) {
-
         console.error(
           "Recovery failed:",
           session.id,
           err
         );
-
       }
-
     }
 
     return NextResponse.json({
-
       success: true,
-
       recovered,
-
     });
-
   } catch (err) {
-
     console.error(err);
 
     return NextResponse.json(
       {
-        error:
-          "Recovery failed",
+        error: "Recovery failed",
       },
       {
         status: 500,
       }
     );
-
   }
-
 }
-
