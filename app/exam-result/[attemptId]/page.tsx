@@ -15,6 +15,11 @@ export default function ExamResultPage() {
 
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState<any>(null);
+  const [feedbackEmailSent, setFeedbackEmailSent] =
+  useState(false);
+
+const [feedbackEmail, setFeedbackEmail] =
+  useState<string | null>(null);
 const [rank, setRank] =
   useState<number | null>(
     null
@@ -98,7 +103,34 @@ if (!attempt) {
 }
 
 setResult(attempt);
+const {
+  data: feedbackRequest,
+  error: feedbackError,
+} = await supabase
+  .from("exam_feedback_requests")
+  .select(`
+    email,
+    sent_at
+  `)
+  .eq(
+    "attempt_id",
+    attemptId
+  )
+  .maybeSingle();
 
+if (feedbackError) {
+  console.error(
+    "FEEDBACK REQUEST STATUS ERROR:",
+    feedbackError
+  );
+}
+
+if (feedbackRequest?.sent_at) {
+  setFeedbackEmailSent(true);
+  setFeedbackEmail(
+    feedbackRequest.email
+  );
+}
 const examId =
   attempt.exam_id;
 const savedCount =
@@ -738,6 +770,95 @@ const isTopper =
         
 
       </div>
+
+{feedbackEmailSent && (
+  <div
+    className="
+      bg-white
+      rounded-2xl
+      border
+      border-green-200
+      shadow-sm
+      p-5
+      mb-4
+    "
+  >
+    <div className="flex items-start gap-4">
+
+      <div
+        className="
+          flex
+          items-center
+          justify-center
+          w-12
+          h-12
+          rounded-full
+          bg-green-100
+          text-green-600
+          text-2xl
+          flex-shrink-0
+        "
+      >
+        ✓
+      </div>
+
+      <div className="flex-1">
+
+        <h2
+          className="
+            text-lg
+            font-bold
+            text-tcd-blue
+          "
+        >
+          📩 Feedback Form Sent
+        </h2>
+
+        <p
+          className="
+            mt-1
+            text-sm
+            text-gray-600
+            leading-relaxed
+          "
+        >
+          We've sent a feedback form to{" "}
+          <span className="font-semibold text-tcd-blue">
+            {feedbackEmail}
+          </span>
+          .
+        </p>
+
+        <p
+          className="
+            mt-2
+            text-sm
+            text-gray-500
+          "
+        >
+          It takes less than a minute. Your feedback
+          helps us improve the TCD examination
+          experience for future students.
+        </p>
+
+        <p
+          className="
+            mt-2
+            text-xs
+            text-gray-400
+          "
+        >
+          Didn't receive it? Please check your spam
+          or promotions folder.
+        </p>
+
+      </div>
+
+    </div>
+  </div>
+)}
+
+
 <div
   className="
     bg-white

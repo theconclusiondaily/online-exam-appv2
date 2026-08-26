@@ -392,36 +392,37 @@ export default function FeedbackPage() {
           </p>
 
           <div className="flex justify-center gap-2 sm:gap-4">
-            {[1, 2, 3, 4, 5].map((value) => {
-              const selected =
-                overallRating === value;
+           {[1, 2, 3, 4, 5].map((value) => {
+  const selected =
+    overallRating !== null &&
+    value <= overallRating;
 
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() =>
-                    setOverallRating(value)
-                  }
-                  className={`
-                    w-12 h-12 sm:w-14 sm:h-14
-                    rounded-2xl
-                    border-2
-                    text-2xl
-                    transition-all
-                    duration-200
-                    ${
-                      selected
-                        ? "border-tcd-gold bg-tcd-gold/20 scale-110 shadow-lg"
-                        : "border-gray-200 bg-white hover:border-tcd-gold/60 hover:scale-105"
-                    }
-                  `}
-                  aria-label={`${value} out of 5`}
-                >
-                  {selected ? "★" : "☆"}
-                </button>
-              );
-            })}
+  return (
+    <button
+      key={value}
+      type="button"
+      onClick={() =>
+        setOverallRating(value)
+      }
+      className={`
+        w-12 h-12 sm:w-14 sm:h-14
+        rounded-2xl
+        border-2
+        text-2xl
+        transition-all
+        duration-200
+        ${
+          selected
+            ? "border-tcd-gold bg-tcd-gold/20 text-tcd-gold scale-110 shadow-lg"
+            : "border-gray-200 bg-white text-gray-300 hover:border-tcd-gold/60 hover:text-tcd-gold hover:scale-105"
+        }
+      `}
+      aria-label={`${value} out of 5`}
+    >
+      ★
+    </button>
+  );
+})}
           </div>
 
           <div className="flex justify-between max-w-sm mx-auto mt-3 text-xs text-gray-500">
