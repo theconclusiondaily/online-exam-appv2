@@ -78,17 +78,37 @@ export default function WhyChooseTCD() {
               whileHover={{
                 y: -6,
               }}
-              className="rounded-3xl border border-gray-200 bg-white p-8 shadow-sm"
+              className="
+  rounded-2xl
+  border
+  border-gray-200/80
+  bg-white
+  p-5
+  shadow-sm
+  transition-all
+  duration-300
+  hover:-translate-y-0.5
+  hover:shadow-md
+"
             >
-              <div className="mb-6 inline-flex rounded-2xl bg-brand/10 p-4 text-brand">
-                <Icon className="h-7 w-7" />
-              </div>
+              <div
+  className="
+    mb-4
+    inline-flex
+    rounded-xl
+    bg-brand/10
+    p-3
+    text-brand
+  "
+>
+  <Icon className="h-6 w-6" />
+</div>
 
-              <h3 className="text-xl font-bold text-brand">
+             <h3 className="text-lg font-semibold text-brand">
                 {item.title}
               </h3>
 
-              <p className="mt-3 leading-7 text-brand-muted">
+              <p className="mt-2 text-sm leading-6 text-brand-muted">
                 {item.description}
               </p>
             </motion.div>

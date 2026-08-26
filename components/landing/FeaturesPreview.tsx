@@ -86,7 +86,7 @@ export default function FeaturesPreview() {
           </p>
         </motion.div>
 
-        <div className="mt-16 grid gap-8 md:grid-cols-2 xl:grid-cols-4">
+       <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
 
           {features.map((feature, index) => {
             const Icon = feature.icon;
@@ -100,17 +100,40 @@ export default function FeaturesPreview() {
                 transition={{
                   delay: index * 0.05,
                 }}
-                className="group rounded-3xl border border-slate-800 bg-slate-900 p-8 transition-all duration-300 hover:-translate-y-2 hover:border-blue-500 hover:shadow-2xl"
-              >
-                <div className="mb-6 inline-flex rounded-2xl bg-blue-600/10 p-4 text-blue-400 transition group-hover:bg-blue-600 group-hover:text-white">
-                  <Icon className="h-8 w-8" />
-                </div>
+                className="
+  group
+  rounded-2xl
+  border
+  border-slate-800
+  bg-slate-900
+  p-5
+  transition-all
+  duration-300
+  hover:-translate-y-1
+  hover:border-blue-500
+  hover:shadow-xl
+">
+                <div
+  className="
+    mb-4
+    inline-flex
+    rounded-xl
+    bg-blue-600/10
+    p-3
+    text-blue-400
+    transition
+    group-hover:bg-blue-600
+    group-hover:text-white
+  "
+>
+  <Icon className="h-6 w-6" />
+</div>
 
-                <h3 className="text-xl font-semibold text-white">
+                <h3 className="text-lg font-semibold text-white">
                   {feature.title}
                 </h3>
 
-                <p className="mt-4 text-slate-400 leading-7">
+                <p className="mt-2 text-sm leading-6 text-slate-400">
                   {feature.description}
                 </p>
               </motion.div>

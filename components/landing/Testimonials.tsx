@@ -35,20 +35,31 @@ export default function Testimonials() {
         subtitle="Early feedback from users exploring THE CONCLUSION DAILY platform."
       />
 
-      <div className="mt-16 grid gap-8 md:grid-cols-3">
+      <div className="mt-12 grid gap-5 md:grid-cols-3">
         {testimonials.map((item, index) => (
           <motion.div
             key={index}
             whileHover={{ y: -6 }}
-            className="rounded-3xl border border-gray-200 bg-white p-8 shadow-sm"
+            className="
+  rounded-2xl
+  border
+  border-gray-200/80
+  bg-white
+  p-5
+  shadow-sm
+  transition-all
+  duration-300
+  hover:-translate-y-0.5
+  hover:shadow-md
+"
           >
-            <Quote className="mb-5 h-8 w-8 text-brand" />
+            <Quote className="mb-4 h-6 w-6 text-brand" />
 
-            <p className="leading-7 text-brand-muted">
+            <p className="text-sm leading-6 text-brand-muted">
               "{item.quote}"
             </p>
 
-            <div className="mt-8">
+            <div className="mt-6">
               <h3 className="font-bold text-brand">
                 {item.name}
               </h3>

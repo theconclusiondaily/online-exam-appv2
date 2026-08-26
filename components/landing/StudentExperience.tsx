@@ -40,7 +40,7 @@ export default function StudentExperience() {
             subtitle="Prepare with realistic computer-based tests, compete with students across India, and measure your growth with detailed analytics."
           />
 
-          <div className="mt-10 space-y-5">
+          <div className="mt-8 space-y-3">
 
             {features.map((feature) => (
 
@@ -48,11 +48,11 @@ export default function StudentExperience() {
                 key={feature}
                 className="flex items-center gap-4"
               >
-                <div className="rounded-full bg-brand/10 p-2 text-brand">
-                  <CheckCircle2 className="h-5 w-5" />
-                </div>
+                <div className="rounded-full bg-brand/10 p-1.5 text-brand">
+  <CheckCircle2 className="h-4 w-4" />
+</div>
 
-                <span className="font-medium text-brand">
+              <span className="text-sm font-medium text-brand">
                   {feature}
                 </span>
 
@@ -62,7 +62,7 @@ export default function StudentExperience() {
 
           </div>
 
-          <div className="mt-10">
+          <div className="mt-8">
 
             <GradientButton href="/signup">
 

@@ -43,7 +43,7 @@ export default function CompetitionExperience() {
   return (
     <Section>
 
-      <div className="grid items-center gap-20 lg:grid-cols-2">
+      <div className="grid items-center gap-12 lg:grid-cols-2">
 
         {/* Left */}
 
@@ -59,30 +59,54 @@ export default function CompetitionExperience() {
             subtitle="Learning becomes more engaging when every test contributes to your growth through rankings, XP, and achievements."
           />
 
-          <div className="mt-10 space-y-5">
+         <div className="mt-8 space-y-3">
 
             {highlights.map((item) => {
               const Icon = item.icon;
 
               return (
                 <div
-                  key={item.title}
-                  className="flex gap-4 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
-                >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand/10 text-brand">
-                    <Icon className="h-6 w-6" />
-                  </div>
+  key={item.title}
+  className="
+    flex
+    gap-3
+    rounded-2xl
+    border border-gray-200/80
+    bg-white
+    p-4
+    shadow-sm
+    transition-all
+    duration-300
+    hover:-translate-y-0.5
+    hover:shadow-md
+  "
+>
+  <div
+    className="
+      flex
+      h-10
+      w-10
+      shrink-0
+      items-center
+      justify-center
+      rounded-xl
+      bg-brand/10
+      text-brand
+    "
+  >
+    <Icon className="h-5 w-5" />
+  </div>
 
-                  <div>
-                    <h3 className="font-bold text-brand">
-                      {item.title}
-                    </h3>
+  <div className="min-w-0">
+    <h3 className="font-semibold text-brand">
+      {item.title}
+    </h3>
 
-                    <p className="mt-1 text-sm leading-6 text-brand-muted">
-                      {item.description}
-                    </p>
-                  </div>
-                </div>
+    <p className="mt-1 text-xs leading-5 text-brand-muted">
+      {item.description}
+    </p>
+  </div>
+</div>
               );
             })}
 

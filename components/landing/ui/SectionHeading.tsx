@@ -49,8 +49,7 @@ export default function SectionHeading({
         {badge && (
           <span
             className={clsx(
-              "inline-flex items-center rounded-full border border-brand/20 bg-brand/10 px-4 py-2 text-sm font-semibold tracking-wide text-brand"
-            )}
+              "inline-flex items-center rounded-full border border-brand/20 bg-brand/10 px-3 py-1.5 text-xs font-semibold tracking-wide text-brand" )}
           >
             {badge}
           </span>
@@ -62,9 +61,9 @@ export default function SectionHeading({
 )}
         <h2
           className={clsx(
-            "mt-6 font-black tracking-tight",
-            "text-4xl leading-tight",
-            "lg:text-5xl",
+            "mt-4 font-black tracking-tight",
+            "text-3xl leading-tight",
+"lg:text-4xl",
             "text-brand"
           )}
         >
@@ -74,7 +73,7 @@ export default function SectionHeading({
         {subtitle && (
           <p
             className={clsx(
-              "mt-6 text-lg leading-8 text-brand-muted"
+              "mt-4 text-base leading-7 text-brand-muted"
             )}
           >
             {subtitle}

@@ -54,8 +54,8 @@ const containerClasses = {
 const spacingClasses = {
   sm: "py-10 lg:py-12",
   md: "py-12 lg:py-16",
-  lg: "py-16 lg:py-20",
-  xl: "py-20 lg:py-24",
+  lg: "py-14 lg:py-16",
+  xl: "py-16 lg:py-20",
 };
 
 export default function Section({
