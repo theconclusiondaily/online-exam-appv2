@@ -29,7 +29,7 @@ export const navigation: NavigationItem[] = [
   },
   {
     title: "Institutes",
-    href: "/#institutes",
+    href: "/institutes",
   },
   {
     title: "AI Security",
@@ -54,7 +54,7 @@ export const footerNavigation = {
 },
 {
   title: "Institutes",
-  href: "/#institutes",
+  href: "/institutes",
 },
     {
       title: "Contact",

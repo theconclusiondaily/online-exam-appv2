@@ -13,9 +13,35 @@ import { WhyChooseTCD } from "@/components/landing/features/WhyChooseTCD";
 import { FeaturesCTA } from "@/components/landing/features/FeaturesCTA";
 
 export const metadata: Metadata = {
-  title: "Features | The Conclusion Daily",
+  title: "Online Exam Platform Features | The Conclusion Daily",
   description:
-    "Discover everything The Conclusion Daily offers for students, teachers, coaching institutes, and schools. Secure online exams, live leaderboards, rewards, analytics, AI-powered proctoring, and much more.",
+    "Explore The Conclusion Daily's online examination platform features for students, teachers, and educational institutions, including practice tests, live competitions, performance analytics, AI-assisted security, rewards, and institute management.",
+  alternates: {
+    canonical: "https://www.theconclusiondaily.com/features",
+  },
+  openGraph: {
+    title: "Online Exam Platform Features | The Conclusion Daily",
+    description:
+      "Practice, compete, analyze performance, and manage examinations with powerful tools built for students, teachers, and educational institutions.",
+    url: "https://www.theconclusiondaily.com/features",
+    siteName: "The Conclusion Daily",
+    type: "website",
+    images: [
+      {
+        url: "https://www.theconclusiondaily.com/logo.png",
+        width: 512,
+        height: 512,
+        alt: "The Conclusion Daily",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Online Exam Platform Features | The Conclusion Daily",
+    description:
+      "Explore online examination, analytics, competition, security, rewards, and institute management features.",
+    images: ["https://www.theconclusiondaily.com/logo.png"],
+  },
 };
 
 export default function FeaturesPage() {

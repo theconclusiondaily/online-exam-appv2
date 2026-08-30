@@ -50,10 +50,7 @@ export const metadata: Metadata = {
     },
   },
 
-  alternates: {
-    canonical: COMPANY.website,
-  },
-
+  
   openGraph: {
     type: "website",
     url: COMPANY.website,
@@ -114,6 +111,23 @@ export default function RootLayout({
   type="application/ld+json"
   dangerouslySetInnerHTML={{
     __html: JSON.stringify(organizationSchema),
+  }}
+/>
+<script
+  id="website-schema"
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "@id": "https://www.theconclusiondaily.com/#website",
+      url: "https://www.theconclusiondaily.com/",
+      name: "The Conclusion Daily",
+      alternateName: "TCD",
+      publisher: {
+        "@id": "https://www.theconclusiondaily.com/#organization",
+      },
+    }),
   }}
 />
     <AuthProvider>

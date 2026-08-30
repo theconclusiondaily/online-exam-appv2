@@ -10,9 +10,35 @@ import SectionHeading from "@/components/landing/ui/SectionHeading";
 import ContactContent from "@/components/legal/ContactContent";
 
 export const metadata: Metadata = {
-  title: "Contact Us",
+  title: "Contact The Conclusion Daily | Support & Enquiries",
   description:
-    "Get in touch with The Conclusion Daily (TCD). We'd love to hear from students, teachers, institutes, and partners.",
+    "Contact The Conclusion Daily for support, institute partnerships, business enquiries, questions, and feedback. Get in touch with our team at business@theconclusiondaily.com.",
+  alternates: {
+    canonical: "https://www.theconclusiondaily.com/contact",
+  },
+  openGraph: {
+    title: "Contact The Conclusion Daily | Support & Enquiries",
+    description:
+      "Get in touch with The Conclusion Daily for support, institute partnerships, business enquiries, questions, and feedback.",
+    url: "https://www.theconclusiondaily.com/contact",
+    siteName: "The Conclusion Daily",
+    type: "website",
+    images: [
+      {
+        url: "https://www.theconclusiondaily.com/logo.png",
+        width: 512,
+        height: 512,
+        alt: "The Conclusion Daily",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Contact The Conclusion Daily | Support & Enquiries",
+    description:
+      "Contact The Conclusion Daily for support, partnerships, business enquiries, questions, and feedback.",
+    images: ["https://www.theconclusiondaily.com/logo.png"],
+  },
 };
 
 export default function ContactPage() {

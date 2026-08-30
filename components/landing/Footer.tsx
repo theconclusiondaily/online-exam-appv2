@@ -102,7 +102,7 @@ export default function Footer() {
             <ul className="mt-6 space-y-4 text-sm text-white/45">
               <li>
                 <Link
-                  href="/#institutes"
+                  href="/institutes"
                   className="transition-colors duration-200 hover:text-white"
                 >
                   Institute Platform
