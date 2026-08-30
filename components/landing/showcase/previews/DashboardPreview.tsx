@@ -14,29 +14,51 @@ import {
 
 export default function DashboardPreview() {
   return (
-    <div className="space-y-6">
+    <div
+  className="
+    relative
+    overflow-hidden
+    rounded-[28px]
+    border
+    border-white/10
+    bg-[#0B1730]
+    p-5
+    shadow-2xl
+    sm:p-6
+  "
+>
 
       {/* Header */}
 
       <div className="flex items-center justify-between">
 
         <div>
-          <p className="text-sm text-gray-500">
-            Welcome back 👋
+          <p className="text-xs font-medium uppercase tracking-wider text-white/45">
+           Sample User
           </p>
 
-          <h2 className="mt-1 text-3xl font-black text-brand">
+          <h2 className="mt-1 text-2xl font-black tracking-tight text-white sm:text-3xl">
             Maadhav
           </h2>
         </div>
 
         <div className="flex items-center gap-3">
 
-          <button className="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm">
-            <Bell className="h-5 w-5 text-brand" />
+          <button
+  className="
+    rounded-xl
+    border
+    border-white/10
+    bg-white/[0.05]
+    p-2.5
+    transition
+    hover:bg-white/10
+  "
+>
+           <Bell className="h-5 w-5 text-white/70" />
           </button>
 
-          <div className="h-12 w-12 rounded-2xl bg-brand text-white flex items-center justify-center font-bold">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-brand-gold/30 bg-brand-gold/10 font-bold text-brand-gold">
             M
           </div>
 
@@ -46,7 +68,7 @@ export default function DashboardPreview() {
 
       {/* Top Metrics */}
 
-      <div className="grid gap-5 md:grid-cols-3">
+ <div className="grid gap-3 md:grid-cols-3">
 
         <MetricCard
           icon={<Wallet className="h-6 w-6" />}
@@ -73,33 +95,41 @@ export default function DashboardPreview() {
 
       {/* Main Grid */}
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-3">
 
         {/* Upcoming Exam */}
 
         <motion.div
           whileHover={{ y: -5 }}
-          className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2"
+          className="
+  rounded-2xl
+  border
+  border-white/10
+  bg-white/[0.04]
+  p-5
+  shadow-none
+  lg:col-span-2
+"
         >
           <div className="flex items-center justify-between">
 
             <div>
 
-              <p className="text-sm text-gray-500">
+            <p className="text-xs font-medium uppercase tracking-wider text-white/45">
                 Upcoming Exam
               </p>
 
-              <h3 className="mt-2 text-2xl font-bold text-brand">
+              <h3 className="mt-2 text-xl font-bold tracking-tight text-white sm:text-2xl">
                 NEET Physics Grand Test
               </h3>
 
             </div>
 
-            <BookOpen className="h-10 w-10 text-brand" />
+            <BookOpen className="h-8 w-8 text-brand-gold" />
 
           </div>
 
-          <div className="mt-8 flex items-center gap-8">
+         <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-4">
 
             <Info
               icon={<Calendar className="h-5 w-5" />}
@@ -115,7 +145,23 @@ export default function DashboardPreview() {
 
           </div>
 
-          <button className="mt-8 flex items-center gap-2 rounded-2xl bg-brand px-6 py-3 font-semibold text-white transition hover:scale-105">
+          <button className="
+  mt-6
+  flex
+  items-center
+  gap-2
+  rounded-xl
+  border
+  border-brand-gold/30
+  bg-brand-gold
+  px-5
+  py-2.5
+  text-sm
+  font-bold
+  text-brand
+  transition
+  hover:scale-[1.02]
+">
             Enter Exam
             <ChevronRight className="h-5 w-5" />
           </button>
@@ -126,7 +172,17 @@ export default function DashboardPreview() {
 
         <motion.div
           whileHover={{ y: -5 }}
-          className="rounded-3xl bg-gradient-to-br from-brand to-brand-light p-6 text-white shadow-lg"
+          className="
+  rounded-2xl
+  border
+  border-brand-gold/20
+  bg-gradient-to-br
+  from-brand-gold/15
+  via-white/[0.04]
+  to-white/[0.02]
+  p-5
+  text-white
+"
         >
 
           <p className="text-sm opacity-80">
@@ -137,10 +193,10 @@ export default function DashboardPreview() {
             Physics Master
           </h3>
 
-          <div className="mt-10 flex items-center gap-4">
+         <div className="mt-8 flex items-center gap-3">
 
-            <div className="rounded-2xl bg-white/20 p-3">
-              <Trophy className="h-8 w-8" />
+            <div className="rounded-xl border border-brand-gold/20 bg-brand-gold/10 p-2.5">
+              <Trophy className="h-7 w-7 text-brand-gold" />
             </div>
 
             <div>
@@ -163,29 +219,37 @@ export default function DashboardPreview() {
 
       {/* Progress */}
 
-      <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+      <div
+  className="
+    rounded-2xl
+    border
+    border-white/10
+    bg-white/[0.04]
+    p-5
+  "
+>
 
         <div className="flex items-center justify-between">
 
           <div>
 
-            <p className="text-sm text-gray-500">
+            <p className="text-xs font-medium uppercase tracking-wider text-white/45">
               Level Progress
             </p>
 
-            <h3 className="mt-2 text-2xl font-bold text-brand">
+            <h3 className="mt-1 text-xl font-black tracking-tight text-white">
               Level 14
             </h3>
 
           </div>
 
-          <span className="rounded-full bg-brand/10 px-4 py-2 text-sm font-semibold text-brand">
+          <span className="rounded-full border border-brand-gold/20 bg-brand-gold/10 px-3 py-1.5 text-sm font-bold text-brand-gold">
             82%
           </span>
 
         </div>
 
-        <div className="mt-6 h-3 overflow-hidden rounded-full bg-gray-200">
+        <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/10">
 
           <motion.div
             initial={{ width: 0 }}
@@ -193,7 +257,7 @@ export default function DashboardPreview() {
             transition={{
               duration: 1.5,
             }}
-            className="h-full rounded-full bg-brand"
+            className="h-full rounded-full bg-brand-gold"
           />
 
         </div>
@@ -219,27 +283,46 @@ function MetricCard({
 }) {
   return (
     <motion.div
-      whileHover={{ y: -4 }}
-      className="rounded-3xl border border-gray-200 bg-white p-5 shadow-sm"
+      whileHover={{ y: -2 }}
+      className="
+        rounded-2xl
+        border
+        border-white/10
+        bg-white/[0.04]
+        p-4
+        transition-colors
+        hover:border-brand-gold/20
+        hover:bg-white/[0.06]
+      "
     >
-      <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
 
-        <div>
+        <div
+          className={`
+            flex
+            h-10
+            w-10
+            shrink-0
+            items-center
+            justify-center
+            rounded-xl
+            border
+            border-brand-gold/20
+            bg-brand-gold/10
+            text-brand-gold
+          `}
+        >
+          {icon}
+        </div>
 
-          <p className="text-sm text-gray-500">
+        <div className="min-w-0">
+          <p className="text-xs font-medium uppercase tracking-wider text-white/45">
             {title}
           </p>
 
-          <h3 className="mt-2 text-2xl font-black text-brand">
+          <h3 className="mt-1 truncate text-lg font-black tracking-tight text-white sm:text-xl">
             {value}
           </h3>
-
-        </div>
-
-        <div
-          className={`flex h-14 w-14 items-center justify-center rounded-2xl text-white ${color}`}
-        >
-          {icon}
         </div>
 
       </div>
@@ -261,17 +344,17 @@ function Info({
   return (
     <div className="flex items-center gap-3">
 
-      <div className="rounded-xl bg-brand/10 p-3 text-brand">
+      <div className="rounded-xl border border-brand-gold/20 bg-brand-gold/10 p-2.5 text-brand-gold">
         {icon}
       </div>
 
       <div>
 
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-white/40">
           {title}
         </p>
 
-        <p className="font-semibold text-brand">
+        <p className="font-semibold text-white">
           {value}
         </p>
 

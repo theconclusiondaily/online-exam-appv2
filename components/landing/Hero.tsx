@@ -25,11 +25,71 @@ export default function Hero({
   data,
 }: HeroProps) {
   return (
-    <Section className="relative min-h-screen flex items-center pt-24">
+    <Section
+  className="
+    relative
+    min-h-screen
+    flex
+    items-center
+    overflow-hidden
+    bg-[#050B1A]
+    pt-28
+    pb-16
+  "
+>
 
-      <GlowBackground />
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+  <div
+    className="
+      absolute
+      -left-32
+      top-20
+      h-96
+      w-96
+      rounded-full
+      bg-brand-gold/10
+      blur-3xl
+    "
+  />
 
-      <div className="relative z-10 grid lg:grid-cols-2 gap-20 items-center">
+  <div
+    className="
+      absolute
+      right-0
+      top-1/3
+      h-[32rem]
+      w-[32rem]
+      rounded-full
+      bg-blue-400/10
+      blur-3xl
+    "
+  />
+
+  <div
+    className="
+      absolute
+      inset-x-0
+      bottom-0
+      h-px
+      bg-gradient-to-r
+      from-transparent
+      via-brand-gold/40
+      to-transparent
+    "
+  />
+</div>
+
+      <div
+  className="
+    relative
+    z-10
+    grid
+    items-center
+    gap-12
+   lg:grid-cols-[0.85fr_1.15fr]
+    lg:gap-10
+  "
+>
 
         {/* LEFT */}
 
@@ -41,23 +101,21 @@ export default function Hero({
 
           {/* Badge */}
 
-          <div className="inline-flex items-center gap-2 rounded-full border border-brand-gold/30 bg-white/80 backdrop-blur-xl px-5 py-2">
+        <div className="inline-flex items-center gap-2 rounded-full border border-brand-gold/20 bg-brand-gold/10 px-3 py-1.5 backdrop-blur-xl">
+  <Award className="h-4 w-4 text-brand-gold" />
 
-            <Award className="h-5 w-5 text-brand-gold" />
-
-            <span className="text-sm font-semibold text-brand">
-              Hope & Faith
-            </span>
-
-          </div>
+  <span className="text-xs font-bold uppercase tracking-wider text-brand-gold">
+    Hope & Faith
+  </span>
+</div>
 
           {/* Heading */}
 
-          <h1 className="mt-8 text-5xl md:text-6xl xl:text-7xl font-black leading-[1.05] tracking-tight text-brand">
+          <h1 className="mt-8 max-w-2xl text-5xl font-black leading-[1.05] tracking-tight text-white md:text-6xl xl:text-[4.5rem]">
 
             India's
 
-            <span className="block mt-2 text-brand-gold">
+            <span className="mt-2 block text-brand-gold drop-shadow-[0_0_24px_rgba(234,179,8,0.15)]">
               Competitive
             </span>
 
@@ -73,7 +131,7 @@ export default function Hero({
 
           {/* Description */}
 
-          <p className="mt-8 max-w-xl text-lg leading-8 text-brand-muted">
+          <p className="mt-7 max-w-xl text-lg leading-8 text-white/60">
 
             {COMPANY.heroDescription}
 
@@ -81,9 +139,12 @@ export default function Hero({
 
           {/* CTA */}
 
-          <div className="mt-10 flex flex-wrap gap-4">
+         <div className="mt-10 flex items-center gap-4">
 
-            <GradientButton  href="https://exam.theconclusiondaily.com/signup"
+           <GradientButton
+  size="md"
+  className="shrink-0 whitespace-nowrap"
+  href="https://exam.theconclusiondaily.com/signup"
   target="_blank"
   rel="noopener noreferrer">
 
@@ -93,47 +154,59 @@ export default function Hero({
 
             </GradientButton>
 
-            <OutlineButton href="/login">
+            <OutlineButton
+  size="md"
+  className="shrink-0 whitespace-nowrap"
+  href="/login"
+>
   Login
 </OutlineButton>
 
           </div>
-<div className="mt-12 grid grid-cols-2 gap-4 md:grid-cols-4">
-  <div className="rounded-2xl border border-gray-200 bg-white/80 p-5 backdrop-blur-xl">
-    <p className="text-sm text-brand-muted">Live Exams</p>
-    <h3 className="mt-2 text-3xl font-black text-brand">
+<div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-5 border-y border-white/10 py-6 sm:grid-cols-4">
+  <div>
+    <p className="text-2xl font-black tracking-tight text-white sm:text-3xl">
       {data.stats.exams}
-    </h3>
+    </p>
+    <p className="mt-1 text-xs font-medium uppercase tracking-wider text-white/50">
+      Live Exams
+    </p>
   </div>
 
-  <div className="rounded-2xl border border-gray-200 bg-white/80 p-5 backdrop-blur-xl">
-    <p className="text-sm text-brand-muted">Students</p>
-    <h3 className="mt-2 text-3xl font-black text-brand">
+  <div>
+    <p className="text-2xl font-black tracking-tight text-white sm:text-3xl">
       {data.stats.students}
-    </h3>
+    </p>
+    <p className="mt-1 text-xs font-medium uppercase tracking-wider text-white/50">
+      Students
+    </p>
   </div>
 
-  <div className="rounded-2xl border border-gray-200 bg-white/80 p-5 backdrop-blur-xl">
-    <p className="text-sm text-brand-muted">Institutes</p>
-    <h3 className="mt-2 text-3xl font-black text-brand">
+  <div>
+    <p className="text-2xl font-black tracking-tight text-white sm:text-3xl">
       {data.stats.institutes}
-    </h3>
+    </p>
+    <p className="mt-1 text-xs font-medium uppercase tracking-wider text-white/50">
+      Institutes
+    </p>
   </div>
 
-  <div className="rounded-2xl border border-gray-200 bg-white/80 p-5 backdrop-blur-xl">
-    <p className="text-sm text-brand-muted">Questions</p>
-    <h3 className="mt-2 text-3xl font-black text-brand">
+  <div>
+    <p className="text-2xl font-black tracking-tight text-white sm:text-3xl">
       {data.stats.questions}
-    </h3>
+    </p>
+    <p className="mt-1 text-xs font-medium uppercase tracking-wider text-white/50">
+      Questions
+    </p>
   </div>
 </div>
           {/* Highlights */}
 
-          <div className="mt-12 flex flex-wrap gap-6">
+          <div className="mt-8 flex flex-wrap gap-x-8 gap-y-4">
 
             <div className="flex items-center gap-3">
 
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand text-white">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-brand-gold/30 bg-brand-gold/10 text-brand-gold">
 
                 <ShieldCheck size={20} />
 
@@ -141,17 +214,13 @@ export default function Hero({
 
               <div>
 
-                <p className="font-semibold text-brand">
+                <p className="font-semibold text-white">
+  Secure Exams
+</p>
 
-                  Secure Exams
-
-                </p>
-
-                <p className="text-sm text-brand-muted">
-
-                  AI Proctoring
-
-                </p>
+<p className="text-sm text-white/45">
+  AI Proctoring
+</p>
 
               </div>
 
@@ -159,7 +228,7 @@ export default function Hero({
 
             <div className="flex items-center gap-3">
 
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-gold text-white">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-brand-gold/30 bg-brand-gold/10 text-brand-gold">
 
                 <Trophy size={20} />
 
@@ -167,17 +236,13 @@ export default function Hero({
 
               <div>
 
-                <p className="font-semibold text-brand">
+               <p className="font-semibold text-white">
+  Rewards
+</p>
 
-                  Rewards
-
-                </p>
-
-                <p className="text-sm text-brand-muted">
-
-                  Scholarships & Cash
-
-                </p>
+<p className="text-sm text-white/45">
+  Scholarships & Cash
+</p>
 
               </div>
 
@@ -199,28 +264,44 @@ export default function Hero({
         >
 
        {data.featuredExam && (
-  <div className="mb-6 rounded-3xl border border-brand/10 bg-white/90 p-6 shadow-lg backdrop-blur-xl">
+  <div className="
+  mb-5
+  rounded-2xl
+  border
+  border-white/10
+  bg-white/[0.04]
+  p-5
+  backdrop-blur-xl
+">
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-sm text-brand-muted">Featured Exam</p>
+       <p className="text-xs font-bold uppercase tracking-wider text-brand-gold">
+  Featured Exam
+</p>
 
-        <h3 className="mt-2 text-xl font-bold text-brand">
+       <h3 className="mt-2 text-lg font-bold tracking-tight text-white sm:text-xl">
           {data.featuredExam.title}
         </h3>
 
-        <p className="mt-2 text-sm text-brand-muted">
+        <p className="mt-2 text-sm text-white/50">
           Prize Pool: {data.featuredExam.rewardPool}
         </p>
       </div>
 
-      <span className="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white">
+      <span className="rounded-full border border-brand-gold/20 bg-brand-gold/10 px-3 py-1.5 text-xs font-bold text-brand-gold">
         {data.featuredExam.status}
       </span>
     </div>
   </div>
 )}
 
-<ProductShowcase mode="dashboard" />
+<div className="relative">
+  <div className="absolute -inset-6 rounded-[40px] bg-brand-gold/5 blur-3xl" />
+
+  <div className="relative">
+    <ProductShowcase mode="dashboard" />
+  </div>
+</div>
 
         </motion.div>
 
@@ -254,14 +335,14 @@ export default function Hero({
             w-8
             rounded-full
             border-2
-            border-brand
+            border-white/20
             flex
             justify-center
             pt-2
           "
         >
 
-          <div className="h-3 w-3 rounded-full bg-brand" />
+          <div className="h-3 w-3 rounded-full bg-brand-gold" />
 
         </motion.div>
 

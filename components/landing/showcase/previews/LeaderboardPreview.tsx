@@ -10,6 +10,7 @@ import {
   TrendingUp,
   Star,
 } from "lucide-react";
+
 type MedalType = "gold" | "silver" | "bronze";
 
 interface LeaderboardItem {
@@ -19,6 +20,7 @@ interface LeaderboardItem {
   xp: string;
   medal: MedalType;
 }
+
 const leaderboard: LeaderboardItem[] = [
   {
     rank: 1,
@@ -45,78 +47,119 @@ const leaderboard: LeaderboardItem[] = [
 
 export default function LeaderboardPreview() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 bg-[#07101F] p-4 sm:p-5">
 
       {/* Header */}
-
-      <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-
-        <div className="flex items-center justify-between">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="
+          rounded-2xl
+          border
+          border-white/10
+          bg-white/[0.035]
+          p-5
+          shadow-[0_20px_60px_rgba(0,0,0,0.25)]
+        "
+      >
+        <div className="flex items-center justify-between gap-4">
 
           <div>
-
-            <p className="text-sm text-gray-500">
+            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-brand-gold">
               National Competition
             </p>
 
-            <h2 className="mt-1 text-3xl font-black text-brand">
+            <h2 className="mt-1 text-2xl font-black tracking-tight text-white sm:text-3xl">
               Live Leaderboard
             </h2>
 
+            <p className="mt-1 text-xs text-white/40">
+              See where you stand among top performers.
+            </p>
           </div>
 
-          <div className="rounded-2xl bg-brand p-4 text-white">
-            <Trophy className="h-8 w-8" />
+          <div
+            className="
+              flex
+              h-12
+              w-12
+              shrink-0
+              items-center
+              justify-center
+              rounded-2xl
+              border
+              border-brand-gold/30
+              bg-brand-gold/10
+              text-brand-gold
+            "
+          >
+            <Trophy className="h-6 w-6" />
           </div>
 
         </div>
-
-      </div>
+      </motion.div>
 
       {/* Top 3 */}
+      <div className="grid gap-3 md:grid-cols-3">
 
-      <div className="grid gap-5 md:grid-cols-3">
-
-        {leaderboard.map((student) => (
+        {leaderboard.map((student, index) => (
           <LeaderboardCard
             key={student.rank}
             {...student}
+            index={index}
           />
         ))}
 
       </div>
 
       {/* Current User */}
-
       <motion.div
-        whileHover={{ y: -4 }}
+        whileHover={{ y: -3 }}
+        transition={{ duration: 0.2 }}
         className="
-          rounded-3xl
-          border-2
-          border-brand
+          rounded-2xl
+          border
+          border-brand-gold/35
           bg-gradient-to-r
-          from-brand/5
-          to-brand-gold/5
-          p-6
-          shadow-md
+          from-brand-gold/[0.08]
+          via-white/[0.035]
+          to-brand-gold/[0.04]
+          p-4
+          shadow-[0_0_35px_rgba(234,179,8,0.05)]
         "
       >
+        <div className="flex items-center justify-between gap-4">
 
-        <div className="flex items-center justify-between">
+          {/* User rank */}
+          <div className="flex min-w-0 items-center gap-3">
 
-          <div className="flex items-center gap-5">
-
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand text-2xl font-black text-white">
+            <div
+              className="
+                flex
+                h-12
+                w-12
+                shrink-0
+                items-center
+                justify-center
+                rounded-xl
+                border
+                border-brand-gold/30
+                bg-brand-gold/10
+                text-lg
+                font-black
+                text-brand-gold
+              "
+            >
               18
             </div>
 
-            <div>
+            <div className="min-w-0">
 
-              <h3 className="text-xl font-bold text-brand">
+              <h3 className="font-bold text-white">
                 You
               </h3>
 
-              <p className="text-gray-500">
+              <p className="mt-0.5 text-xs text-white/45">
                 96.8% Accuracy
               </p>
 
@@ -124,52 +167,51 @@ export default function LeaderboardPreview() {
 
           </div>
 
+          {/* XP */}
           <div className="text-right">
 
-            <div className="flex items-center justify-end gap-2 text-green-600">
+            <div className="flex items-center justify-end gap-1.5 text-xs font-bold text-emerald-400">
 
-              <ArrowUp size={18} />
+              <ArrowUp className="h-3.5 w-3.5" />
 
-              <span className="font-semibold">
+              <span>
                 +24 Positions
               </span>
 
             </div>
 
-            <p className="mt-2 text-2xl font-black text-brand">
+            <p className="mt-1 text-lg font-black tracking-tight text-white sm:text-xl">
               14,820 XP
             </p>
 
           </div>
 
         </div>
-
       </motion.div>
 
       {/* Statistics */}
-
-      <div className="grid gap-5 md:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
 
         <StatCard
-          icon={<TrendingUp />}
+          icon={<TrendingUp className="h-4 w-4" />}
           title="XP Earned"
           value="14,820"
         />
 
         <StatCard
-          icon={<Star />}
+          icon={<Star className="h-4 w-4" />}
           title="Achievements"
           value="18"
         />
 
         <StatCard
-          icon={<Medal />}
+          icon={<Medal className="h-4 w-4" />}
           title="Institute Rank"
           value="#1"
         />
 
         <StatCard
-          icon={<Trophy />}
+          icon={<Trophy className="h-4 w-4" />}
           title="National Rank"
           value="#18"
         />
@@ -188,52 +230,113 @@ function LeaderboardCard({
   score,
   xp,
   medal,
+  index,
 }: {
   rank: number;
   name: string;
   score: string;
   xp: string;
-  medal: "gold" | "silver" | "bronze";
+  medal: MedalType;
+  index: number;
 }) {
   const medalStyles = {
-    gold: "bg-yellow-100 text-yellow-600",
-    silver: "bg-gray-100 text-gray-600",
-    bronze: "bg-orange-100 text-orange-600",
+    gold: {
+      wrapper:
+        "border-brand-gold/35 bg-brand-gold/10 text-brand-gold",
+      crown: "text-brand-gold",
+    },
+
+    silver: {
+      wrapper:
+        "border-white/15 bg-white/[0.06] text-white/65",
+      crown: "text-white/60",
+    },
+
+    bronze: {
+      wrapper:
+        "border-orange-400/25 bg-orange-400/10 text-orange-300",
+      crown: "text-orange-300",
+    },
   };
+
+  const style = medalStyles[medal];
 
   return (
     <motion.div
-      whileHover={{
-        y: -6,
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        duration: 0.4,
+        delay: index * 0.08,
       }}
-      className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm"
+      whileHover={{ y: -4 }}
+      className="
+        group
+        rounded-2xl
+        border
+        border-white/10
+        bg-white/[0.035]
+        p-4
+        transition-colors
+        duration-300
+        hover:border-brand-gold/20
+        hover:bg-white/[0.055]
+      "
     >
 
-      <div className="flex items-center justify-between">
+      {/* Rank */}
+      <div className="flex items-center justify-between gap-3">
 
         <div
-          className={`rounded-2xl p-3 ${medalStyles[medal]}`}
+          className={`
+            flex
+            h-9
+            w-9
+            items-center
+            justify-center
+            rounded-xl
+            border
+            ${style.wrapper}
+          `}
         >
-          <Crown className="h-6 w-6" />
+          <Crown
+            className={`h-5 w-5 ${style.crown}`}
+          />
         </div>
 
-        <span className="text-3xl font-black text-brand">
+        <span className="text-2xl font-black tracking-tight text-white">
           #{rank}
         </span>
 
       </div>
 
-      <h3 className="mt-6 text-xl font-bold text-brand">
+      {/* Student */}
+      <h3 className="mt-5 text-base font-bold leading-tight text-white sm:text-lg">
         {name}
       </h3>
 
-      <p className="mt-2 text-gray-500">
-        {score}
+      {/* Score */}
+      <p className="mt-1.5 text-xs text-white/45">
+        {score} Accuracy
       </p>
 
-      <div className="mt-6 flex items-center justify-between">
+      {/* XP */}
+      <div className="mt-4">
 
-        <span className="rounded-full bg-brand/10 px-3 py-2 text-sm font-semibold text-brand">
+        <span
+          className="
+            inline-flex
+            rounded-full
+            border
+            border-brand-gold/20
+            bg-brand-gold/[0.07]
+            px-3
+            py-1.5
+            text-xs
+            font-bold
+            text-brand-gold
+          "
+        >
           {xp}
         </span>
 
@@ -256,34 +359,49 @@ function StatCard({
 }) {
   return (
     <motion.div
-      whileHover={{
-        y: -4,
-      }}
+      whileHover={{ y: -3 }}
+      transition={{ duration: 0.2 }}
       className="
-        rounded-3xl
+        rounded-2xl
         border
-        border-gray-200
-        bg-white
-        p-5
-        shadow-sm
+        border-white/10
+        bg-white/[0.03]
+        p-3
+        transition-colors
+        hover:border-brand-gold/20
+        hover:bg-white/[0.05]
       "
     >
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
 
-        <div>
+        <div className="min-w-0">
 
-          <p className="text-sm text-gray-500">
+          <p className="truncate text-[10px] font-bold uppercase tracking-wider text-white/35">
             {title}
           </p>
 
-          <h3 className="mt-2 text-2xl font-black text-brand">
+          <h3 className="mt-1 text-base font-black tracking-tight text-white">
             {value}
           </h3>
 
         </div>
 
-        <div className="rounded-2xl bg-brand/10 p-3 text-brand">
+        <div
+          className="
+            flex
+            h-8
+            w-8
+            shrink-0
+            items-center
+            justify-center
+            rounded-lg
+            border
+            border-brand-gold/20
+            bg-brand-gold/10
+            text-brand-gold
+          "
+        >
           {icon}
         </div>
 

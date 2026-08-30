@@ -8,7 +8,6 @@ import {
   Gift,
   Plus,
   Wallet,
-  Lock,
 } from "lucide-react";
 
 const transactions = [
@@ -40,51 +39,86 @@ const transactions = [
 
 export default function WalletPreview() {
   return (
-    <div className="space-y-6">
-
-      {/* Wallet Header */}
+    <div className="space-y-4">
+      {/* ================================================================ */}
+      {/* WALLET CARD                                                      */}
+      {/* ================================================================ */}
 
       <motion.div
-        whileHover={{ y: -4 }}
+        whileHover={{ y: -2 }}
         className="
           overflow-hidden
-          rounded-[32px]
-          bg-brand
-          from-brand
-          via-brand-light
-          to-brand
-          p-8
+          rounded-[28px]
+          border
+          border-white/10
+          bg-gradient-to-br
+          from-[#334a7d]
+          via-[#243a69]
+          to-[#172747]
+          p-6
           text-white
-          shadow-xl
+          shadow-2xl
         "
       >
+        {/* Wallet Header */}
 
-        <div className="flex items-center justify-between">
-
+        <div className="flex items-start justify-between">
           <div>
-
-            <p className="text-sm opacity-80">
+            <p
+              className="
+                text-xs
+                font-bold
+                uppercase
+                tracking-[0.18em]
+                text-brand-gold
+              "
+            >
               TCD Wallet
             </p>
 
-            <h2 className="mt-3 text-5xl font-black">
+            <h2
+              className="
+                mt-2
+                text-4xl
+                font-black
+                tracking-tight
+                text-white
+                sm:text-5xl
+              "
+            >
               763.5
             </h2>
 
-            <p className="mt-2 opacity-80">
+            <p className="mt-1 text-sm font-medium text-white/65">
               Available Credits
             </p>
-
           </div>
 
-          <div className="rounded-3xl bg-white/20 p-5 backdrop-blur-xl">
-            <Wallet className="h-10 w-10" />
-          </div>
+          {/* Wallet Icon */}
 
+          <div
+            className="
+              flex
+              h-14
+              w-14
+              items-center
+              justify-center
+              rounded-2xl
+              border
+              border-brand-gold/50
+              bg-white/[0.08]
+              text-brand-gold
+              sm:h-16
+              sm:w-16
+            "
+          >
+            <Wallet className="h-7 w-7 sm:h-8 sm:w-8" />
+          </div>
         </div>
 
-        <div className="mt-8 grid grid-cols-3 gap-4">
+        {/* Balance Cards */}
 
+        <div className="mt-6 grid grid-cols-3 gap-3">
           <BalanceCard
             label="Available"
             value="763.5"
@@ -99,15 +133,14 @@ export default function WalletPreview() {
             label="Bonus"
             value="85"
           />
-
         </div>
-
       </motion.div>
 
-      {/* Actions */}
+      {/* ================================================================ */}
+      {/* WALLET ACTIONS                                                   */}
+      {/* ================================================================ */}
 
-      <div className="grid gap-4 md:grid-cols-3">
-
+      <div className="grid grid-cols-3 gap-3">
         <ActionButton
           icon={<Plus className="h-5 w-5" />}
           label="Add Money"
@@ -122,73 +155,84 @@ export default function WalletPreview() {
           icon={<Gift className="h-5 w-5" />}
           label="Rewards"
         />
-
       </div>
 
-      {/* Recent Transactions */}
+      {/* ================================================================ */}
+      {/* RECENT TRANSACTIONS                                              */}
+      {/* ================================================================ */}
 
-      <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-
+      <div
+        className="
+          overflow-hidden
+          rounded-[28px]
+          border
+          border-white/10
+          bg-[#0b1426]
+          p-5
+          shadow-xl
+        "
+      >
         <div className="flex items-center justify-between">
-
           <div>
-
-            <p className="text-sm text-gray-500">
+            <p
+              className="
+                text-xs
+                font-bold
+                uppercase
+                tracking-[0.16em]
+                text-brand-gold
+              "
+            >
               Recent Activity
             </p>
 
-            <h3 className="mt-1 text-2xl font-black text-brand">
+            <h3
+              className="
+                mt-1
+                text-2xl
+                font-black
+                tracking-tight
+                text-white
+              "
+            >
               Transactions
             </h3>
-
           </div>
 
-          <CreditCard className="h-8 w-8 text-brand" />
-
+          <div
+            className="
+              flex
+              h-10
+              w-10
+              items-center
+              justify-center
+              rounded-xl
+              border
+              border-brand-gold/50
+              bg-brand-gold/[0.04]
+              text-brand-gold
+            "
+          >
+            <CreditCard className="h-5 w-5" />
+          </div>
         </div>
 
-        <div className="mt-6 space-y-4">
-
+        <div className="mt-5 space-y-2">
           {transactions.map((item) => (
             <TransactionRow
               key={item.title + item.time}
               {...item}
             />
           ))}
-
         </div>
-
       </div>
-
-      {/* Wallet Summary */}
-
-      <div className="grid gap-5 md:grid-cols-3">
-
-        <SummaryCard
-          icon={<Wallet />}
-          title="Lifetime Won"
-          value="8,250 Credits"
-        />
-
-        <SummaryCard
-          icon={<Gift />}
-          title="Bonuses"
-          value="1,420 Credits"
-        />
-
-        <SummaryCard
-          icon={<Lock />}
-          title="Locked Balance"
-          value="120 Credits"
-        />
-
-      </div>
-
     </div>
   );
 }
 
-/* -------------------------------------------------------------------------- */
+/* ========================================================================= */
+/* BALANCE CARD                                                             */
+/* ========================================================================= */
 
 function BalanceCard({
   label,
@@ -198,21 +242,31 @@ function BalanceCard({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl bg-white/15 p-4 backdrop-blur-lg">
-
-      <p className="text-sm opacity-80">
+    <div
+      className="
+        rounded-2xl
+        border
+        border-white/10
+        bg-white/[0.08]
+        px-3
+        py-3
+        backdrop-blur-xl
+      "
+    >
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-white/50 sm:text-xs">
         {label}
       </p>
 
-      <h3 className="mt-2 text-2xl font-bold">
+      <h3 className="mt-1 text-lg font-black text-white sm:text-xl">
         {value}
       </h3>
-
     </div>
   );
 }
 
-/* -------------------------------------------------------------------------- */
+/* ========================================================================= */
+/* ACTION BUTTON                                                            */
+/* ========================================================================= */
 
 function ActionButton({
   icon,
@@ -224,33 +278,48 @@ function ActionButton({
   return (
     <motion.button
       whileHover={{
-        y: -4,
+        y: -3,
       }}
       whileTap={{
         scale: 0.98,
       }}
       className="
         flex
+        min-w-0
         items-center
         justify-center
-        gap-3
-        rounded-3xl
+        gap-2
+        rounded-2xl
         border
-        border-gray-200
-        bg-white
-        py-5
+        border-white/10
+        bg-[#0b1426]
+        px-2
+        py-4
+        text-sm
         font-semibold
-        text-brand
-        shadow-sm
+        text-white
+        shadow-lg
+        transition-all
+        duration-300
+        hover:border-brand-gold/30
+        hover:bg-[#101b31]
+        sm:gap-3
       "
     >
-      {icon}
-      {label}
+      <span className="shrink-0 text-brand-gold">
+        {icon}
+      </span>
+
+      <span className="truncate">
+        {label}
+      </span>
     </motion.button>
   );
 }
 
-/* -------------------------------------------------------------------------- */
+/* ========================================================================= */
+/* TRANSACTION ROW                                                          */
+/* ========================================================================= */
 
 function TransactionRow({
   title,
@@ -271,109 +340,80 @@ function TransactionRow({
   return (
     <motion.div
       whileHover={{
-        x: 4,
+        x: 3,
       }}
       className="
         flex
         items-center
         justify-between
+        gap-3
         rounded-2xl
         border
-        border-gray-100
-        p-4
+        border-white/[0.06]
+        bg-white/[0.025]
+        px-3
+        py-3
+        transition-colors
+        hover:bg-white/[0.05]
       "
     >
-
-      <div className="flex items-center gap-4">
+      <div className="flex min-w-0 items-center gap-3">
+        {/* Transaction Icon */}
 
         <div
-          className={`rounded-xl p-3 ${
-            positive
-              ? "bg-green-100 text-green-600"
-              : "bg-red-100 text-red-600"
-          }`}
+          className={`
+            flex
+            h-9
+            w-9
+            shrink-0
+            items-center
+            justify-center
+            rounded-xl
+            border
+            ${
+              positive
+                ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-400"
+                : "border-red-400/25 bg-red-400/10 text-red-400"
+            }
+          `}
         >
           {positive ? (
-            <ArrowDownLeft className="h-5 w-5" />
+            <ArrowDownLeft className="h-4 w-4" />
           ) : (
-            <ArrowUpRight className="h-5 w-5" />
+            <ArrowUpRight className="h-4 w-4" />
           )}
         </div>
 
-        <div>
+        {/* Transaction Details */}
 
-          <h4 className="font-semibold text-brand">
+        <div className="min-w-0">
+          <h4 className="truncate text-xs font-semibold text-white sm:text-sm">
             {title}
           </h4>
 
-          <p className="text-sm text-gray-500">
+          <p className="mt-0.5 text-[10px] text-white/40 sm:text-xs">
             {time}
           </p>
-
         </div>
-
       </div>
 
+      {/* Amount */}
+
       <span
-        className={`font-bold ${
-          positive
-            ? "text-green-600"
-            : "text-red-600"
-        }`}
+        className={`
+          shrink-0
+          text-xs
+          font-bold
+          sm:text-sm
+          ${
+            positive
+              ? "text-emerald-400"
+              : "text-red-400"
+          }
+        `}
       >
         {amount}
       </span>
-
-    </motion.div>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
-
-function SummaryCard({
-  icon,
-  title,
-  value,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  value: string;
-}) {
-  return (
-    <motion.div
-      whileHover={{
-        y: -4,
-      }}
-      className="
-        rounded-3xl
-        border
-        border-gray-200
-        bg-white
-        p-6
-        shadow-sm
-      "
-    >
-
-      <div className="flex items-center justify-between">
-
-        <div>
-
-          <p className="text-sm text-gray-500">
-            {title}
-          </p>
-
-          <h3 className="mt-2 text-2xl font-black text-brand">
-            {value}
-          </h3>
-
-        </div>
-
-        <div className="rounded-2xl bg-brand/10 p-3 text-brand">
-          {icon}
-        </div>
-
-      </div>
-
     </motion.div>
   );
 }

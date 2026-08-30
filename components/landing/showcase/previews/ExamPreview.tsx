@@ -1,264 +1,494 @@
 "use client";
 
-import { motion } from "framer-motion";
 import {
   Camera,
   CheckCircle2,
   Clock3,
-  Expand,
   Flag,
+  Maximize2,
   ShieldCheck,
 } from "lucide-react";
 
-const options = [
-  "The acceleration remains constant.",
-  "The velocity continuously increases.",
-  "The acceleration becomes zero.",
-  "The velocity decreases uniformly.",
-];
-
 export default function ExamPreview() {
   return (
-    <div className="space-y-6">
+    <div className="w-full bg-white p-6 sm:p-7">
+      {/* ================================================================
+          LIVE EXAMINATION
+      ================================================================= */}
 
-      {/* Top Bar */}
+      <div
+        className="
+          rounded-[1.75rem]
+          border
+          border-slate-200
+          bg-white
+          px-6
+          py-6
+          shadow-[0_12px_32px_rgba(15,23,42,0.07)]
+        "
+      >
+        {/* Label */}
 
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-red-500" />
 
-        <div>
-
-          <p className="text-sm text-gray-500">
+          <span
+            className="
+              text-[10px]
+              font-bold
+              uppercase
+              tracking-[0.16em]
+              text-brand-gold
+            "
+          >
             Live Examination
-          </p>
+          </span>
+        </div>
 
-          <h2 className="mt-1 text-2xl font-black text-brand">
-            NEET Physics Grand Test
+        {/* Main information */}
+
+        <div className="mt-5">
+          <h2
+            className="
+              text-[1.65rem]
+              font-black
+              leading-[1.12]
+              tracking-tight
+              text-brand
+              sm:text-[1.8rem]
+            "
+          >
+            NEET Physics
+            <br />
+            Grand Test
           </h2>
 
+          <p
+            className="
+              mt-2
+              max-w-[15rem]
+              text-xs
+              leading-5
+              text-slate-500
+            "
+          >
+            Computer-based examination environment
+          </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        {/* Status row */}
 
-          <StatusBadge
-            icon={<Clock3 size={16} />}
-            label="24:18 Remaining"
-            color="bg-red-50 text-red-600"
-          />
+        <div
+          className="
+            mt-6
+            flex
+            flex-wrap
+            gap-2
+          "
+        >
+          {/* Timer */}
 
-          <StatusBadge
-            icon={<Camera size={16} />}
-            label="Camera Active"
-            color="bg-green-50 text-green-600"
-          />
+          <div
+            className="
+              inline-flex
+              h-8
+              items-center
+              gap-1.5
+              rounded-full
+              border
+              border-red-100
+              bg-red-50
+              px-3
+              text-[10px]
+              font-semibold
+              text-red-500
+            "
+          >
+            <Clock3 className="h-3 w-3" />
+            24:18 Remaining
+          </div>
 
-          <StatusBadge
-            icon={<Expand size={16} />}
-            label="Fullscreen"
-            color="bg-blue-50 text-blue-600"
-          />
+          {/* Camera */}
 
+          <div
+            className="
+              inline-flex
+              h-8
+              items-center
+              gap-1.5
+              rounded-full
+              border
+              border-emerald-100
+              bg-emerald-50
+              px-3
+              text-[10px]
+              font-semibold
+              text-emerald-600
+            "
+          >
+            <Camera className="h-3 w-3" />
+            Camera Active
+          </div>
+
+          {/* Fullscreen */}
+
+          <div
+            className="
+              inline-flex
+              h-8
+              items-center
+              gap-1.5
+              rounded-full
+              border
+              border-blue-100
+              bg-blue-50
+              px-3
+              text-[10px]
+              font-semibold
+              text-blue-500
+            "
+          >
+            <Maximize2 className="h-3 w-3" />
+            Fullscreen
+          </div>
         </div>
 
+        {/* Security */}
+
+        <div
+          className="
+            mt-6
+            flex
+            items-center
+            gap-2
+            border-t
+            border-slate-100
+            pt-4
+          "
+        >
+          <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+
+          <span className="text-[9px] font-medium text-slate-500">
+            Secure examination session
+          </span>
+
+          <span className="h-1 w-1 rounded-full bg-slate-300" />
+
+          <span className="text-[9px] font-medium text-slate-400">
+            AI proctoring enabled
+          </span>
+        </div>
       </div>
 
-      {/* Main Layout */}
+      {/* ================================================================
+          EXAM WORKSPACE
+      ================================================================= */}
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_260px]">
+      <div
+        className="
+          mt-5
+          grid
+          gap-5
+          lg:grid-cols-[1.18fr_0.82fr]
+        "
+      >
+        {/* ==============================================================
+            QUESTION
+        ============================================================== */}
 
-        {/* Question */}
+        <div
+          className="
+            rounded-[1.75rem]
+            border
+            border-slate-200
+            bg-white
+            p-5
+            shadow-[0_10px_28px_rgba(15,23,42,0.06)]
+          "
+        >
+          {/* Question controls */}
 
-        <div className="rounded-3xl border border-gray-200 bg-white p-8 shadow-sm">
-
-          <div className="flex items-center justify-between">
-
-            <span className="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white">
-              Question 14 of 45
-            </span>
-
-            <button className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-brand hover:bg-gray-50">
-              <Flag size={16} />
-              Mark for Review
-            </button>
-
-          </div>
-
-          <h3 className="mt-8 text-2xl font-bold leading-9 text-brand">
-
-            A particle moves along a straight line with constant
-            acceleration. Which statement is always true?
-
-          </h3>
-
-          <div className="mt-10 space-y-4">
-
-            {options.map((option, index) => (
-              <motion.button
-                key={option}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                className={`flex w-full items-start gap-4 rounded-2xl border p-5 text-left transition ${
-                  index === 1
-                    ? "border-brand bg-brand/5"
-                    : "border-gray-200 bg-white hover:border-brand/40"
-                }`}
-              >
-                <div
-                  className={`mt-1 flex h-8 w-8 items-center justify-center rounded-full font-bold ${
-                    index === 1
-                      ? "bg-brand text-white"
-                      : "bg-gray-100 text-gray-600"
-                  }`}
-                >
-                  {String.fromCharCode(65 + index)}
-                </div>
-
-                <span className="font-medium text-gray-700">
-                  {option}
-                </span>
-              </motion.button>
-            ))}
-
-          </div>
-
-          {/* Bottom Buttons */}
-
-          <div className="mt-10 flex flex-wrap justify-between gap-4">
-
-            <button className="rounded-2xl border border-gray-200 px-6 py-3 font-semibold text-brand hover:bg-gray-50">
-              Previous
-            </button>
-
-            <div className="flex gap-3">
-
-              <button className="rounded-2xl border border-brand px-6 py-3 font-semibold text-brand hover:bg-brand/5">
-                Save & Next
-              </button>
-
-              <button className="rounded-2xl bg-brand px-6 py-3 font-semibold text-white hover:bg-brand-light">
-                Submit Exam
-              </button>
-
+          <div className="flex items-center justify-between gap-2">
+            <div
+              className="
+                rounded-full
+                bg-brand
+                px-3.5
+                py-2
+                text-[10px]
+                font-bold
+                leading-none
+                text-white
+              "
+            >
+              Question{" "}
+              <span className="ml-1 opacity-70">
+                14 of 45
+              </span>
             </div>
 
+            <div
+              className="
+                flex
+                items-center
+                gap-1.5
+                rounded-xl
+                border
+                border-slate-200
+                px-2.5
+                py-2
+                text-[9px]
+                font-semibold
+                text-slate-600
+              "
+            >
+              <Flag className="h-3 w-3" />
+
+              <span>Mark for Review</span>
+            </div>
           </div>
 
+          {/* Question text */}
+
+          <div className="mt-7">
+            <p
+              className="
+                text-[1.05rem]
+                font-bold
+                leading-[1.55]
+                tracking-tight
+                text-brand
+                sm:text-[1.15rem]
+              "
+            >
+              A particle moves along a straight line
+              with constant acceleration. Which
+              statement is always true?
+            </p>
+          </div>
+
+          {/* Answers */}
+
+          <div className="mt-6 space-y-2.5">
+            <Answer
+              letter="A"
+              text="The acceleration remains constant."
+            />
+
+            <Answer
+              letter="B"
+              text="The velocity continuously increases."
+              active
+            />
+
+            <Answer
+              letter="C"
+              text="The displacement remains constant."
+            />
+
+            <Answer
+              letter="D"
+              text="The particle moves with uniform velocity."
+            />
+          </div>
         </div>
 
-        {/* Sidebar */}
+        {/* ==============================================================
+            SIDEBAR
+        ============================================================== */}
 
         <div className="space-y-5">
+          {/* AI Proctoring */}
 
-          {/* Security */}
-
-          <div className="rounded-3xl border border-gray-200 bg-white p-5 shadow-sm">
-
+          <div
+            className="
+              rounded-[1.75rem]
+              border
+              border-slate-200
+              bg-white
+              p-5
+              shadow-[0_10px_28px_rgba(15,23,42,0.06)]
+            "
+          >
             <div className="flex items-center gap-3">
-
-              <ShieldCheck className="h-8 w-8 text-green-600" />
+              <div
+                className="
+                  flex
+                  h-9
+                  w-9
+                  shrink-0
+                  items-center
+                  justify-center
+                  rounded-xl
+                  border
+                  border-emerald-100
+                  bg-emerald-50
+                  text-emerald-600
+                "
+              >
+                <ShieldCheck className="h-4.5 w-4.5" />
+              </div>
 
               <div>
-
-                <p className="text-sm text-gray-500">
+                <p className="text-[10px] text-slate-400">
                   AI Proctoring
                 </p>
 
-                <h4 className="font-bold text-green-600">
+                <p className="text-xs font-bold text-emerald-600">
                   Secure
-                </h4>
-
+                </p>
               </div>
-
             </div>
 
             <div className="mt-5 space-y-3">
-
-              <SecurityItem text="Face Detected" />
-
-              <SecurityItem text="Camera Active" />
-
-              <SecurityItem text="Fullscreen Enabled" />
-
-              <SecurityItem text="No Violations" />
-
+              <SecurityStatus text="Face Detected" />
+              <SecurityStatus text="Camera Active" />
+              <SecurityStatus text="Fullscreen Enabled" />
+              <SecurityStatus text="No Violations" />
             </div>
-
           </div>
 
           {/* Question Palette */}
 
-          <div className="rounded-3xl border border-gray-200 bg-white p-5 shadow-sm">
+          <div
+            className="
+              rounded-[1.75rem]
+              border
+              border-slate-200
+              bg-white
+              p-5
+              shadow-[0_10px_28px_rgba(15,23,42,0.06)]
+            "
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-brand">
+                Question Palette
+              </h3>
 
-            <h4 className="font-bold text-brand">
-              Question Palette
-            </h4>
-
-            <div className="mt-5 grid grid-cols-5 gap-3">
-
-              {Array.from({ length: 20 }).map((_, i) => (
-                <div
-                  key={i}
-                  className={`flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold ${
-                    i === 13
-                      ? "bg-brand text-white"
-                      : i < 10
-                      ? "bg-green-100 text-green-700"
-                      : "bg-gray-100 text-gray-600"
-                  }`}
-                >
-                  {i + 1}
-                </div>
-              ))}
-
+              <span className="text-[8px] text-slate-400">
+                45 Questions
+              </span>
             </div>
 
+            <div className="mt-4 grid grid-cols-5 gap-1.5">
+              {Array.from({ length: 20 }, (_, index) => {
+                const number = index + 1;
+
+                const answered = number <= 10;
+                const current = number === 14;
+
+                return (
+                  <div
+                    key={number}
+                    className={`
+                      flex
+                      h-8
+                      items-center
+                      justify-center
+                      rounded-lg
+                      text-[9px]
+                      font-semibold
+                      ${
+                        current
+                          ? "bg-brand text-white"
+                          : answered
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-slate-100 text-slate-500"
+                      }
+                    `}
+                  >
+                    {number}
+                  </div>
+                );
+              })}
+            </div>
           </div>
-
         </div>
-
       </div>
-
     </div>
   );
 }
 
-/* -------------------------------------------------------------------------- */
+/* ========================================================================
+   ANSWER
+======================================================================== */
 
-function StatusBadge({
-  icon,
-  label,
-  color,
+function Answer({
+  letter,
+  text,
+  active = false,
 }: {
-  icon: React.ReactNode;
-  label: string;
-  color: string;
+  letter: string;
+  text: string;
+  active?: boolean;
 }) {
   return (
     <div
-      className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${color}`}
+      className={`
+        flex
+        items-center
+        gap-3
+        rounded-xl
+        border
+        px-3
+        py-3
+        ${
+          active
+            ? "border-brand bg-brand/[0.035]"
+            : "border-slate-200 bg-white"
+        }
+      `}
     >
-      {icon}
-      {label}
+      <div
+        className={`
+          flex
+          h-7
+          w-7
+          shrink-0
+          items-center
+          justify-center
+          rounded-lg
+          text-[10px]
+          font-bold
+          ${
+            active
+              ? "bg-brand text-white"
+              : "bg-slate-100 text-slate-500"
+          }
+        `}
+      >
+        {letter}
+      </div>
+
+      <p
+        className={`
+          text-[10px]
+          leading-4
+          ${
+            active
+              ? "font-semibold text-brand"
+              : "text-slate-600"
+          }
+        `}
+      >
+        {text}
+      </p>
     </div>
   );
 }
 
-function SecurityItem({
-  text,
-}: {
-  text: string;
-}) {
+/* ========================================================================
+   SECURITY STATUS
+======================================================================== */
+
+function SecurityStatus({ text }: { text: string }) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2.5">
+      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
 
-      <CheckCircle2
-        size={18}
-        className="text-green-600"
-      />
-
-      <span className="text-sm font-medium text-gray-700">
+      <span className="text-[10px] font-medium text-slate-600">
         {text}
       </span>
-
     </div>
   );
 }

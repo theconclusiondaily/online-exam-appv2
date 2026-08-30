@@ -45,15 +45,16 @@ export default function GradientButton({
   rel={rel}
   aria-disabled={disabled}
   className={clsx(
-        "inline-flex items-center justify-center gap-2",
-        "rounded-2xl",
-        "font-semibold",
-        "transition-all duration-300",
-        "bg-brand text-white",
-        "shadow-lg shadow-brand/20",
-        "hover:-translate-y-0.5",
-        "hover:shadow-2xl hover:shadow-brand/30",
-        "focus:outline-none focus:ring-4 focus:ring-brand/20",
+        "rounded-xl",
+"border border-brand-gold/30",
+"font-bold",
+"transition-all duration-300",
+"bg-brand-gold text-brand",
+"shadow-lg shadow-brand-gold/10",
+"hover:-translate-y-0.5",
+"hover:bg-brand-gold/90",
+"hover:shadow-xl hover:shadow-brand-gold/20",
+"focus:outline-none focus:ring-4 focus:ring-brand-gold/20",
         disabled && [
           "pointer-events-none",
           "opacity-50",

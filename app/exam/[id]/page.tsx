@@ -209,114 +209,122 @@ return () => {
 
 }, []);
 useEffect(() => {
-  
   const worker =
     faceDetectionWorkerRef.current;
 
   if (!worker) {
     return;
   }
-  if (
-  faceDetectionBusyRef.current
-) {
-  return;
-}
 
-faceDetectionBusyRef.current =
-  true;
   const handleMessage = (
-  event: MessageEvent
-) => {
-
-  const {
-    type,
-    faceCount,
-    requestId,
-  } = event.data;
+    event: MessageEvent
+  ) => {
+    const {
+      type,
+      faceCount,
+      requestId,
+    } = event.data;
 
     if (type === "error") {
+      console.error(
+        "Face detection failed:",
+        event.data.error
+      );
 
-  console.error(
-    "Face detection failed:",
-    event.data.error
-  );
+      faceDetectionBusyRef.current =
+        false;
 
-  faceDetectionBusyRef.current =
-    false;
+      if (requestId !== undefined) {
+        pendingSnapshotRef.current.delete(
+          requestId
+        );
+      }
 
-  pendingSnapshotRef.current.delete(
-  requestId
-);
+      return;
+    }
 
-  return;
-}
+    if (type !== "result") {
+      return;
+    }
 
-if (type !== "result") {
-  return;
-}
+    /*
+     * Process the detection result.
+     */
+    handleFaceDetectionResult(
+      faceCount
+    );
 
-   handleFaceDetectionResult(
-  faceCount
-);
+    /*
+     * Recover the canvas belonging to
+     * this specific detection request.
+     */
+    const canvas =
+      pendingSnapshotRef.current.get(
+        requestId
+      );
 
-const canvas =
-  pendingSnapshotRef.current.get(
-    requestId
-  );
+    pendingSnapshotRef.current.delete(
+      requestId
+    );
 
-pendingSnapshotRef.current.delete(
-  requestId
-);
+    /*
+     * Upload the snapshot in the background.
+     * This must never block the next detection.
+     */
+    if (canvas) {
+      void uploadProctoringSnapshot(
+        canvas,
+        faceCount
+      );
+    }
 
-if (canvas) {
+    /*
+     * Worker is ready for another frame.
+     */
+    faceDetectionBusyRef.current =
+      false;
+  };
 
-  void uploadProctoringSnapshot(
-    canvas,
-    faceCount
-  );
-}
+  const handleError = (
+    error: ErrorEvent
+  ) => {
+    console.error(
+      "Face detection worker error:",
+      error.message
+    );
 
-faceDetectionBusyRef.current =
-  false;
-  }
+    faceDetectionBusyRef.current =
+      false;
 
+    pendingSnapshotRef.current.clear();
+  };
+
+  /*
+   * ALWAYS register the listeners.
+   * The busy flag belongs to frame submission,
+   * not Worker initialization.
+   */
   worker.addEventListener(
     "message",
     handleMessage
   );
-const handleError = (
-  error: ErrorEvent
-) => {
 
-  console.error(
-    "Face detection worker error:",
-    error.message
-  );
-
-  faceDetectionBusyRef.current =
-    false;
-
- pendingSnapshotRef.current.clear();
-};
-
-worker.addEventListener(
-  "error",
-  handleError
-);
-  return () => {
-
-  worker.removeEventListener(
-    "message",
-    handleMessage
-  );
-
-  worker.removeEventListener(
+  worker.addEventListener(
     "error",
     handleError
   );
 
-};
+  return () => {
+    worker.removeEventListener(
+      "message",
+      handleMessage
+    );
 
+    worker.removeEventListener(
+      "error",
+      handleError
+    );
+  };
 }, []);
 
   const lastViolationRef =
@@ -1951,7 +1959,6 @@ function handleFaceDetectionResult(
   }
 }
   async function uploadSnapshot() {
-
   const video =
     videoRef.current;
 
@@ -1961,6 +1968,23 @@ function handleFaceDetectionResult(
     video.videoWidth === 0 ||
     video.videoHeight === 0
   ) {
+    return;
+  }
+
+  /*
+   * Never send another frame while the
+   * previous detection is still running.
+   */
+  if (
+    faceDetectionBusyRef.current
+  ) {
+    return;
+  }
+
+  const worker =
+    faceDetectionWorkerRef.current;
+
+  if (!worker) {
     return;
   }
 
@@ -1987,66 +2011,62 @@ function handleFaceDetectionResult(
     240
   );
 
-  const worker =
-    faceDetectionWorkerRef.current;
+  let requestId: number | null =
+    null;
 
-  if (!worker) {
-    return;
-  }
+  try {
+    /*
+     * Lock detection BEFORE creating
+     * the Worker request.
+     */
+    faceDetectionBusyRef.current =
+      true;
 
- let requestId: number | null =
-  null;
+    /*
+     * Give this detection request
+     * a unique ID.
+     */
+    requestId =
+      ++faceDetectionRequestIdRef.current;
 
-try {
-
-  /*
-   * Give this detection request a
-   * unique ID.
-   */
-  requestId =
-    ++faceDetectionRequestIdRef.current;
-
-  /*
-   * Associate this exact canvas with
-   * this exact Worker request.
-   */
-  pendingSnapshotRef.current.set(
-    requestId,
-    canvas
-  );
-
-  const imageBitmap =
-    await createImageBitmap(
+    /*
+     * Associate this exact canvas with
+     * this exact Worker request.
+     */
+    pendingSnapshotRef.current.set(
+      requestId,
       canvas
     );
 
-  worker.postMessage(
-    {
-      imageBitmap,
-      requestId,
-    },
-    [imageBitmap]
-  );
+    const imageBitmap =
+      await createImageBitmap(
+        canvas
+      );
 
-} catch (error) {
-
-  console.error(
-    "Unable to send frame to face detection worker:",
-    error
-  );
-
-  faceDetectionBusyRef.current =
-    false;
-
-  if (requestId !== null) {
-
-    pendingSnapshotRef.current.delete(
-      requestId
+    worker.postMessage(
+      {
+        imageBitmap,
+        requestId,
+      },
+      [imageBitmap]
     );
 
+  } catch (error) {
+    console.error(
+      "Unable to send frame to face detection worker:",
+      error
+    );
+
+    faceDetectionBusyRef.current =
+      false;
+
+    if (requestId !== null) {
+      pendingSnapshotRef.current.delete(
+        requestId
+      );
+    }
   }
 }
-  }
 async function resumeExam() {
   if (!sessionToken) {
     toast.error(
@@ -3098,7 +3118,6 @@ useEffect(() => {
 
 
 useEffect(() => {
-
   if (
     !examStarted ||
     !cameraStream
@@ -3106,33 +3125,46 @@ useEffect(() => {
     return;
   }
 
- snapshotIntervalRef.current =
-  setInterval(() => {
+  /*
+   * Clear any previous interval before
+   * creating a new one.
+   */
+  if (
+    snapshotIntervalRef.current
+  ) {
+    clearInterval(
+      snapshotIntervalRef.current
+    );
 
-    if (
-      faceDetectionBusyRef.current
-    ) {
-      return;
-    }
+    snapshotIntervalRef.current =
+      null;
+  }
 
-    void uploadSnapshot();
-
-  }, 15000);
+  /*
+   * Take one proctoring snapshot every
+   * 15 seconds.
+   *
+   * uploadSnapshot() itself also checks
+   * faceDetectionBusyRef, so overlapping
+   * detections are prevented there.
+   */
+  snapshotIntervalRef.current =
+    setInterval(() => {
+      void uploadSnapshot();
+    }, 15000);
 
   return () => {
-
     if (
       snapshotIntervalRef.current
     ) {
-
       clearInterval(
         snapshotIntervalRef.current
       );
 
+      snapshotIntervalRef.current =
+        null;
     }
-
   };
-
 }, [
   examStarted,
   cameraStream

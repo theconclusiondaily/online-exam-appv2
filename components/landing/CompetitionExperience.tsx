@@ -41,72 +41,127 @@ const highlights = [
 
 export default function CompetitionExperience() {
   return (
-    <Section>
+    <Section className="relative overflow-hidden bg-[#050B1A]">
 
-      <div className="grid items-center gap-12 lg:grid-cols-2">
+      {/* Background Glow */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
 
-        {/* Left */}
+        <div
+          className="
+            absolute
+            -left-40
+            top-1/3
+            h-96
+            w-96
+            rounded-full
+            bg-brand-gold/5
+            blur-3xl
+          "
+        />
 
+        <div
+          className="
+            absolute
+            -right-40
+            top-1/4
+            h-[32rem]
+            w-[32rem]
+            rounded-full
+            bg-blue-500/5
+            blur-3xl
+          "
+        />
+
+      </div>
+
+      {/* Main Content */}
+      <div
+        className="
+          relative
+          z-10
+          grid
+          items-center
+          gap-12
+          lg:grid-cols-[0.9fr_1.1fr]
+          lg:gap-16
+        "
+      >
+
+        {/* LEFT */}
         <motion.div
           initial={{ opacity: 0, x: -40 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
+
           <SectionHeading
-            badge="Competition"
+            badge="COMPETITION"
             title="Compete. Improve. Get Recognized."
             subtitle="Learning becomes more engaging when every test contributes to your growth through rankings, XP, and achievements."
+            dark
           />
 
-         <div className="mt-8 space-y-3">
+          {/* Highlights */}
+          <div className="mt-8 space-y-3">
 
             {highlights.map((item) => {
               const Icon = item.icon;
 
               return (
-                <div
-  key={item.title}
-  className="
-    flex
-    gap-3
-    rounded-2xl
-    border border-gray-200/80
-    bg-white
-    p-4
-    shadow-sm
-    transition-all
-    duration-300
-    hover:-translate-y-0.5
-    hover:shadow-md
-  "
->
-  <div
-    className="
-      flex
-      h-10
-      w-10
-      shrink-0
-      items-center
-      justify-center
-      rounded-xl
-      bg-brand/10
-      text-brand
-    "
-  >
-    <Icon className="h-5 w-5" />
-  </div>
+                <motion.div
+                  key={item.title}
+                  whileHover={{ x: 4 }}
+                  transition={{ duration: 0.2 }}
+                  className="
+                    group
+                    flex
+                    gap-4
+                    rounded-2xl
+                    border
+                    border-white/10
+                    bg-white/[0.03]
+                    p-4
+                    transition-all
+                    duration-300
+                    hover:border-brand-gold/20
+                    hover:bg-white/[0.05]
+                  "
+                >
 
-  <div className="min-w-0">
-    <h3 className="font-semibold text-brand">
-      {item.title}
-    </h3>
+                  {/* Icon */}
+                  <div
+                    className="
+                      flex
+                      h-10
+                      w-10
+                      shrink-0
+                      items-center
+                      justify-center
+                      rounded-xl
+                      border
+                      border-brand-gold/20
+                      bg-brand-gold/10
+                      text-brand-gold
+                    "
+                  >
+                    <Icon className="h-5 w-5" />
+                  </div>
 
-    <p className="mt-1 text-xs leading-5 text-brand-muted">
-      {item.description}
-    </p>
-  </div>
-</div>
+                  {/* Content */}
+                  <div className="min-w-0">
+
+                    <h3 className="font-semibold text-white">
+                      {item.title}
+                    </h3>
+
+                    <p className="mt-1 text-xs leading-5 text-white/50">
+                      {item.description}
+                    </p>
+
+                  </div>
+
+                </motion.div>
               );
             })}
 
@@ -114,15 +169,35 @@ export default function CompetitionExperience() {
 
         </motion.div>
 
-        {/* Right */}
-
+        {/* RIGHT — Leaderboard */}
         <motion.div
           initial={{ opacity: 0, x: 40 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          transition={{
+            duration: 0.7,
+            delay: 0.1,
+          }}
+          className="relative"
         >
-          <ProductShowcase mode="leaderboard" />
+
+          {/* Leaderboard Glow */}
+          <div
+            className="
+              pointer-events-none
+              absolute
+              -inset-8
+              rounded-[40px]
+              bg-brand-gold/5
+              blur-3xl
+            "
+          />
+
+          {/* Showcase */}
+          <div className="relative">
+            <ProductShowcase mode="leaderboard" />
+          </div>
+
         </motion.div>
 
       </div>
