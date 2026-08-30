@@ -1844,7 +1844,7 @@ async function uploadProctoringSnapshot(
           "proctoring_snapshots"
         )
         .insert({
-          attempt_id: null,
+          attempt_id: attemptId,
           student_id: userId,
           image_url: imageUrl,
           face_count: faceCount,
