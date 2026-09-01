@@ -8,6 +8,8 @@ import {
   CheckCircle2,
   Sparkles,
   ShieldCheck,
+  Trophy,
+  Banknote,
 } from "lucide-react";
 
 import GradientButton from "./ui/GradientButton";
@@ -18,6 +20,7 @@ const benefits = [
   "AI-Powered Exams",
   "Instant Results",
   "National Rankings",
+  "Cash Rewards",
 ];
 
 export default function CTA() {
@@ -37,6 +40,7 @@ export default function CTA() {
 
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         {/* Main gold atmosphere */}
+
         <div
           className="
             absolute
@@ -53,6 +57,7 @@ export default function CTA() {
         />
 
         {/* Blue atmosphere */}
+
         <div
           className="
             absolute
@@ -67,6 +72,7 @@ export default function CTA() {
         />
 
         {/* Subtle top line */}
+
         <div
           className="
             absolute
@@ -81,6 +87,7 @@ export default function CTA() {
         />
 
         {/* Subtle radial grid */}
+
         <div
           className="
             absolute
@@ -164,7 +171,9 @@ export default function CTA() {
           />
 
           <div className="relative">
-            {/* Badge */}
+            {/* ============================================================
+                BADGE
+            ============================================================ */}
 
             <div
               className="
@@ -180,7 +189,7 @@ export default function CTA() {
                 backdrop-blur-xl
               "
             >
-              <Sparkles className="h-3.5 w-3.5 text-brand-gold" />
+              <Trophy className="h-3.5 w-3.5 text-brand-gold" />
 
               <span
                 className="
@@ -191,11 +200,13 @@ export default function CTA() {
                   text-brand-gold
                 "
               >
-                Join THE CONCLUSION DAILY
+                Learn. Compete. Perform. Earn.
               </span>
             </div>
 
-            {/* Heading */}
+            {/* ============================================================
+                HEADING
+            ============================================================ */}
 
             <h2
               className="
@@ -211,13 +222,16 @@ export default function CTA() {
                 lg:text-[4rem]
               "
             >
-              Ready to Transform{" "}
+              Your Knowledge Can Take You
+              <br className="hidden sm:block" />
               <span className="text-brand-gold">
-                Learning?
+                Further.
               </span>
             </h2>
 
-            {/* Description */}
+            {/* ============================================================
+                DESCRIPTION
+            ============================================================ */}
 
             <p
               className="
@@ -231,11 +245,142 @@ export default function CTA() {
                 md:leading-8
               "
             >
-              Experience computer-based examinations, competitive learning,
-              secure assessments, and detailed analytics on one platform.
+              Take competitive online exams, challenge yourself against other
+              students, climb the rankings, and earn cash rewards through
+              eligible competitions.
             </p>
 
-            {/* Buttons */}
+            {/* ============================================================
+                REWARD HIGHLIGHT
+            ============================================================ */}
+
+            <motion.div
+              initial={{
+                opacity: 0,
+                y: 12,
+              }}
+              whileInView={{
+                opacity: 1,
+                y: 0,
+              }}
+              viewport={{
+                once: true,
+              }}
+              transition={{
+                duration: 0.5,
+                delay: 0.15,
+              }}
+              className="
+                mx-auto
+                mt-8
+                flex
+                max-w-2xl
+                flex-col
+                items-center
+                justify-center
+                gap-4
+                rounded-2xl
+                border
+                border-brand-gold/20
+                bg-brand-gold/[0.06]
+                px-5
+                py-5
+                sm:flex-row
+                sm:text-left
+              "
+            >
+              <div
+                className="
+                  flex
+                  h-12
+                  w-12
+                  shrink-0
+                  items-center
+                  justify-center
+                  rounded-xl
+                  border
+                  border-brand-gold/25
+                  bg-brand-gold/10
+                  text-brand-gold
+                "
+              >
+                <Banknote className="h-5 w-5" />
+              </div>
+
+              <div>
+                <p className="text-sm font-bold text-white">
+                  Compete for Cash Rewards
+                </p>
+
+                <p className="mt-1 text-xs leading-5 text-white/45 sm:text-sm">
+                  Strong performance can turn your competitive achievements
+                  into eligible rewards.
+                </p>
+              </div>
+
+              <Trophy className="hidden h-5 w-5 shrink-0 text-brand-gold/60 sm:ml-auto sm:block" />
+            </motion.div>
+
+            {/* ============================================================
+                JOURNEY
+            ============================================================ */}
+
+            <div
+              className="
+                mx-auto
+                mt-7
+                grid
+                max-w-3xl
+                grid-cols-2
+                gap-3
+                sm:grid-cols-4
+              "
+            >
+              {[
+                "Take Exams",
+                "Compete",
+                "Get Ranked",
+                "Earn",
+              ].map((step, index) => (
+                <div
+                  key={step}
+                  className="
+                    rounded-xl
+                    border
+                    border-white/[0.08]
+                    bg-white/[0.025]
+                    px-3
+                    py-3
+                  "
+                >
+                  <div
+                    className="
+                      mx-auto
+                      flex
+                      h-7
+                      w-7
+                      items-center
+                      justify-center
+                      rounded-lg
+                      bg-brand-gold/10
+                      text-xs
+                      font-black
+                      text-brand-gold
+                    "
+                  >
+                    {index + 1}
+                  </div>
+
+                  <p className="mt-2 text-xs font-semibold text-white/60">
+                    {step}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* ============================================================
+                BUTTONS
+            ============================================================ */}
 
             <div
               className="
@@ -250,24 +395,29 @@ export default function CTA() {
             >
               <GradientButton href="/signup">
                 <GraduationCap className="mr-2 h-5 w-5" />
-                Start Learning
+
+                Start Competing
+
                 <ArrowRight className="ml-2 h-4 w-4" />
               </GradientButton>
 
               <OutlineButton href="/institutes">
                 <Building2 className="mr-2 h-5 w-5" />
+
                 For Institutes
               </OutlineButton>
             </div>
 
-            {/* Benefits */}
+            {/* ============================================================
+                BENEFITS
+            ============================================================ */}
 
             <div
               className="
                 mx-auto
                 mt-12
                 flex
-                max-w-3xl
+                max-w-4xl
                 flex-wrap
                 justify-center
                 gap-x-7
@@ -340,7 +490,8 @@ export default function CTA() {
               text-white/30
             "
           >
-            A modern platform for students, educators, and institutes.
+            A secure competitive learning platform for students, educators,
+            and institutes.
           </span>
         </motion.div>
       </div>

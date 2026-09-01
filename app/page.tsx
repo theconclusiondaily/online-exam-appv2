@@ -8,48 +8,66 @@ import { getLandingData } from "@/lib/landing/getLandingData";
 
 export const metadata: Metadata = {
   title:
-    "AI-Powered Online Examination Platform for Students & Institutes",
+    "Online Exams, Competitions & Cash Rewards | The Conclusion Daily",
+
   description:
-    "The Conclusion Daily is an AI-powered online examination platform for students, teachers, coaching institutes, schools, colleges, and universities. Conduct secure online exams, practice tests, competitive assessments, track performance, and manage examinations in one platform.",
+    "Take AI-powered online exams, compete with students across India, climb leaderboards, track your performance, and earn cash rewards through eligible competitions with The Conclusion Daily.",
+
   keywords: [
     "online examination platform",
+    "online exam platform for students",
     "AI online exam platform",
     "online exams for students",
     "online exam platform for institutes",
     "online mock tests",
     "competitive exam platform",
+    "online exam competitions",
+    "online test series",
+    "cash rewards for students",
+    "exam cash rewards",
+    "competitive exam rewards",
+    "student competitions",
+    "student performance analytics",
     "AI proctoring",
     "exam management platform",
-    "student performance analytics",
     "The Conclusion Daily",
     "TCD",
   ],
+
   alternates: {
     canonical: "https://www.theconclusiondaily.com/",
   },
+
   openGraph: {
     title:
-      "AI-Powered Online Examination Platform | The Conclusion Daily",
+      "Online Exams, Competitions & Cash Rewards | The Conclusion Daily",
+
     description:
-      "Conduct secure online examinations, practice tests, competitive assessments, and performance analytics with The Conclusion Daily.",
+      "Practice, compete, climb the leaderboard, and earn cash rewards through eligible online competitions with The Conclusion Daily.",
+
     url: "https://www.theconclusiondaily.com/",
     siteName: "The Conclusion Daily",
     type: "website",
+
     images: [
       {
         url: "https://www.theconclusiondaily.com/logo.png",
         width: 512,
         height: 512,
-        alt: "The Conclusion Daily",
+        alt: "The Conclusion Daily - Online Exams, Competitions & Cash Rewards",
       },
     ],
   },
+
   twitter: {
     card: "summary_large_image",
+
     title:
-      "AI-Powered Online Examination Platform | The Conclusion Daily",
+      "Online Exams, Competitions & Cash Rewards | The Conclusion Daily",
+
     description:
-      "Secure online examinations, mock tests, competitive assessments, analytics, and institute management.",
+      "Take competitive online exams, climb leaderboards, track your performance, and earn cash rewards through eligible competitions.",
+
     images: ["https://www.theconclusiondaily.com/logo.png"],
   },
 };

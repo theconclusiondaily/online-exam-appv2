@@ -36,9 +36,9 @@ export const navigation: NavigationItem[] = [
     href: "/#security",
   },
   {
-    title: "Rewards",
-    href: "/#rewards",
-  },
+  title: "Rewards",
+  href: "/rewards",
+},
   
 ];
 
@@ -56,6 +56,12 @@ export const footerNavigation = {
   title: "Institutes",
   href: "/institutes",
 },
+
+{
+  title: "Rewards",
+  href: "/rewards",
+},
+
     {
       title: "Contact",
       href: "/#contact",

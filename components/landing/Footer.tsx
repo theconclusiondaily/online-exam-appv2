@@ -100,33 +100,42 @@ export default function Footer() {
             </h3>
 
             <ul className="mt-6 space-y-4 text-sm text-white/45">
-              <li>
-                <Link
-                  href="/institutes"
-                  className="transition-colors duration-200 hover:text-white"
-                >
-                  Institute Platform
-                </Link>
-              </li>
+  <li>
+    <Link
+      href="/institutes"
+      className="transition-colors duration-200 hover:text-white"
+    >
+      Institute Platform
+    </Link>
+  </li>
 
-              <li>
-                <Link
-                  href="/contact"
-                  className="transition-colors duration-200 hover:text-white"
-                >
-                  Contact
-                </Link>
-              </li>
+  <li>
+    <Link
+      href="/rewards"
+      className="transition-colors duration-200 hover:text-white"
+    >
+      Rewards
+    </Link>
+  </li>
 
-              <li>
-                <Link
-                  href="/about"
-                  className="transition-colors duration-200 hover:text-white"
-                >
-                  About Us
-                </Link>
-              </li>
-            </ul>
+  <li>
+    <Link
+      href="/contact"
+      className="transition-colors duration-200 hover:text-white"
+    >
+      Contact
+    </Link>
+  </li>
+
+  <li>
+    <Link
+      href="/about"
+      className="transition-colors duration-200 hover:text-white"
+    >
+      About Us
+    </Link>
+  </li>
+</ul>
           </div>
 
           {/* Legal */}

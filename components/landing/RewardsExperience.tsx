@@ -7,6 +7,9 @@ import {
   CreditCard,
   History,
   ShieldCheck,
+  Banknote,
+  ArrowRight,
+  CheckCircle2,
 } from "lucide-react";
 
 import Section from "./ui/Section";
@@ -14,40 +17,41 @@ import ProductShowcase from "./showcase/ProductShowcase";
 
 const rewards = [
   {
-    icon: Wallet,
-    title: "Secure Wallet",
+    icon: Trophy,
+    title: "Compete & Earn",
     description:
-      "Track your available balance, rewards, and winnings in one place.",
+      "Take part in eligible competitions, perform at your best, and compete for cash rewards through your rank.",
   },
   {
-    icon: Trophy,
-    title: "Performance Rewards",
+    icon: Wallet,
+    title: "Secure Rewards Wallet",
     description:
-      "Outstanding performance can earn prizes in eligible competitions.",
+      "Keep track of your available rewards, winnings, and wallet balance in one convenient place.",
   },
   {
     icon: CreditCard,
-    title: "Easy Withdrawals",
+    title: "Simple Withdrawals",
     description:
-      "Manage withdrawals through a simple and transparent process.",
+      "Manage eligible withdrawals through a simple and transparent process.",
   },
   {
     icon: History,
-    title: "Complete History",
+    title: "Complete Transaction History",
     description:
-      "View deposits, prizes, refunds, and withdrawals with full transparency.",
+      "Keep track of deposits, prizes, refunds, withdrawals, and other wallet activity.",
   },
   {
     icon: ShieldCheck,
-    title: "Trusted Transactions",
+    title: "Secure & Transparent",
     description:
-      "Every wallet activity is securely recorded for accountability.",
+      "Wallet activity is securely recorded so your reward and transaction history remains clear and accountable.",
   },
 ];
 
 export default function RewardsExperience() {
   return (
     <Section
+      id="rewards"
       className="
         relative
         overflow-hidden
@@ -56,12 +60,11 @@ export default function RewardsExperience() {
         lg:py-28
       "
     >
-      {/* ================================================================ */}
-      {/* BACKGROUND                                                       */}
-      {/* ================================================================ */}
+      {/* ================================================================
+          BACKGROUND
+      ================================================================ */}
 
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        {/* Subtle gold glow */}
         <div
           className="
             absolute
@@ -70,12 +73,11 @@ export default function RewardsExperience() {
             h-[32rem]
             w-[32rem]
             rounded-full
-            bg-brand-gold/[0.025]
+            bg-brand-gold/[0.035]
             blur-3xl
           "
         />
 
-        {/* Very subtle blue glow */}
         <div
           className="
             absolute
@@ -89,7 +91,6 @@ export default function RewardsExperience() {
           "
         />
 
-        {/* Top separator */}
         <div
           className="
             absolute
@@ -100,7 +101,6 @@ export default function RewardsExperience() {
           "
         />
 
-        {/* Bottom separator */}
         <div
           className="
             absolute
@@ -112,9 +112,9 @@ export default function RewardsExperience() {
         />
       </div>
 
-      {/* ================================================================ */}
-      {/* MAIN CONTENT                                                     */}
-      {/* ================================================================ */}
+      {/* ================================================================
+          MAIN CONTENT
+      ================================================================ */}
 
       <div
         className="
@@ -127,9 +127,9 @@ export default function RewardsExperience() {
           lg:gap-16
         "
       >
-        {/* ============================================================ */}
-        {/* LEFT — WALLET PREVIEW                                        */}
-        {/* ============================================================ */}
+        {/* ============================================================
+            LEFT — WALLET PREVIEW
+        ============================================================ */}
 
         <motion.div
           initial={{ opacity: 0, x: -40 }}
@@ -139,16 +139,17 @@ export default function RewardsExperience() {
             duration: 0.7,
             ease: "easeOut",
           }}
-          className="relative"
+          className="relative order-2 lg:order-1"
         >
-          {/* Soft glow behind wallet */}
+          {/* Soft glow */}
+
           <div
             className="
               pointer-events-none
               absolute
               -inset-10
               rounded-[4rem]
-              bg-brand-gold/[0.025]
+              bg-brand-gold/[0.035]
               blur-3xl
             "
           />
@@ -156,11 +157,70 @@ export default function RewardsExperience() {
           <div className="relative">
             <ProductShowcase mode="wallet" />
           </div>
+
+          {/* Floating reward card */}
+
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{
+              duration: 0.5,
+              delay: 0.35,
+            }}
+            animate={{
+              y: [0, -6, 0],
+            }}
+            className="
+              absolute
+              -bottom-4
+              right-2
+              z-20
+              hidden
+              rounded-2xl
+              border
+              border-brand-gold/20
+              bg-[#081126]/95
+              px-4
+              py-3
+              shadow-2xl
+              backdrop-blur-xl
+              sm:block
+              lg:right-[-1.5rem]
+            "
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className="
+                  flex
+                  h-9
+                  w-9
+                  items-center
+                  justify-center
+                  rounded-xl
+                  bg-brand-gold/10
+                  text-brand-gold
+                "
+              >
+                <Banknote className="h-4 w-4" />
+              </div>
+
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-white/35">
+                  Performance
+                </p>
+
+                <p className="mt-0.5 text-xs font-bold text-white">
+                  Cash Rewards
+                </p>
+              </div>
+            </div>
+          </motion.div>
         </motion.div>
 
-        {/* ============================================================ */}
-        {/* RIGHT — REWARDS CONTENT                                      */}
-        {/* ============================================================ */}
+        {/* ============================================================
+            RIGHT — REWARDS CONTENT
+        ============================================================ */}
 
         <motion.div
           initial={{ opacity: 0, x: 40 }}
@@ -170,23 +230,27 @@ export default function RewardsExperience() {
             duration: 0.7,
             ease: "easeOut",
           }}
+          className="order-1 lg:order-2"
         >
-          {/* ========================================================== */}
-          {/* BADGE                                                      */}
-          {/* ========================================================== */}
+          {/* ==========================================================
+              BADGE
+          ========================================================== */}
 
           <div
             className="
               inline-flex
               items-center
+              gap-2
               rounded-full
               border
               border-brand-gold/30
-              bg-brand-gold/[0.03]
+              bg-brand-gold/[0.05]
               px-4
               py-2
             "
           >
+            <Banknote className="h-3.5 w-3.5 text-brand-gold" />
+
             <span
               className="
                 text-xs
@@ -196,13 +260,13 @@ export default function RewardsExperience() {
                 text-brand-gold
               "
             >
-              Rewards
+              Cash Rewards
             </span>
           </div>
 
-          {/* ========================================================== */}
-          {/* HEADING                                                    */}
-          {/* ========================================================== */}
+          {/* ==========================================================
+              HEADING
+          ========================================================== */}
 
           <h2
             className="
@@ -217,17 +281,17 @@ export default function RewardsExperience() {
               xl:text-[3.5rem]
             "
           >
-            Turn Performance{" "}
+            Your Performance
             <br className="hidden sm:block" />
-            Into{" "}
+            Can Earn You{" "}
             <span className="text-brand-gold">
-              Achievement
+              Real Rewards
             </span>
           </h2>
 
-          {/* ========================================================== */}
-          {/* DESCRIPTION                                                */}
-          {/* ========================================================== */}
+          {/* ==========================================================
+              DESCRIPTION
+          ========================================================== */}
 
           <p
             className="
@@ -238,15 +302,84 @@ export default function RewardsExperience() {
               text-white/60
             "
           >
-            Your wallet keeps track of rewards, transactions, and
-            progress, making every competition meaningful.
+            TCD makes competitive learning more rewarding. Take eligible
+            exams, compete with other students, climb the leaderboard, and
+            earn cash rewards when your performance qualifies.
           </p>
 
-          {/* ========================================================== */}
-          {/* REWARD FEATURES                                            */}
-          {/* ========================================================== */}
+          {/* ==========================================================
+              HOW IT WORKS
+          ========================================================== */}
 
-          <div className="mt-10 space-y-4">
+          <div
+            className="
+              mt-7
+              rounded-2xl
+              border
+              border-brand-gold/15
+              bg-brand-gold/[0.035]
+              p-5
+            "
+          >
+            <div className="flex items-center gap-2">
+              <Trophy className="h-4 w-4 text-brand-gold" />
+
+              <p className="text-sm font-bold text-white">
+                How the reward journey works
+              </p>
+            </div>
+
+            <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {[
+                "Take an Exam",
+                "Compete",
+                "Get Ranked",
+                "Earn",
+              ].map((step, index) => (
+                <div
+                  key={step}
+                  className="
+                    relative
+                    rounded-xl
+                    border
+                    border-white/[0.08]
+                    bg-white/[0.025]
+                    px-3
+                    py-3
+                    text-center
+                  "
+                >
+                  <div
+                    className="
+                      mx-auto
+                      flex
+                      h-7
+                      w-7
+                      items-center
+                      justify-center
+                      rounded-lg
+                      bg-brand-gold/10
+                      text-xs
+                      font-black
+                      text-brand-gold
+                    "
+                  >
+                    {index + 1}
+                  </div>
+
+                  <p className="mt-2 text-xs font-semibold text-white/65">
+                    {step}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ==========================================================
+              REWARD FEATURES
+          ========================================================== */}
+
+          <div className="mt-8 space-y-3">
             {rewards.map((item, index) => {
               const Icon = item.icon;
 
@@ -281,42 +414,38 @@ export default function RewardsExperience() {
                     border
                     border-white/[0.10]
                     bg-white/[0.025]
-                    px-6
-                    py-5
+                    px-5
+                    py-4
                     transition-all
                     duration-300
                     hover:border-brand-gold/30
                     hover:bg-white/[0.045]
                   "
                 >
-                  {/* ================================================= */}
-                  {/* ICON                                               */}
-                  {/* ================================================= */}
+                  {/* Icon */}
 
                   <div
                     className="
                       flex
-                      h-14
-                      w-14
+                      h-12
+                      w-12
                       shrink-0
                       items-center
                       justify-center
                       rounded-xl
                       border
-                      border-brand-gold/40
-                      bg-brand-gold/[0.025]
+                      border-brand-gold/30
+                      bg-brand-gold/[0.04]
                       text-brand-gold
                       transition-all
                       duration-300
-                      group-hover:bg-brand-gold/[0.08]
+                      group-hover:bg-brand-gold/[0.10]
                     "
                   >
-                    <Icon className="h-6 w-6" />
+                    <Icon className="h-5 w-5" />
                   </div>
 
-                  {/* ================================================= */}
-                  {/* TEXT                                               */}
-                  {/* ================================================= */}
+                  {/* Text */}
 
                   <div className="min-w-0">
                     <h3
@@ -346,6 +475,64 @@ export default function RewardsExperience() {
               );
             })}
           </div>
+
+          {/* ==========================================================
+              TRUST MESSAGE
+          ========================================================== */}
+
+          <div
+            className="
+              mt-6
+              flex
+              items-start
+              gap-3
+              rounded-xl
+              border
+              border-white/[0.07]
+              bg-white/[0.02]
+              px-4
+              py-3.5
+            "
+          >
+            <CheckCircle2
+              className="
+                mt-0.5
+                h-4
+                w-4
+                shrink-0
+                text-brand-gold
+              "
+            />
+
+            <p className="text-xs leading-5 text-white/45">
+              Rewards are associated with eligible competitions and are
+              subject to the applicable competition rules and reward
+              conditions.
+            </p>
+          </div>
+
+          {/* ==========================================================
+              CTA
+          ========================================================== */}
+
+          <motion.a
+            href="#exams"
+            whileHover={{ x: 3 }}
+            className="
+              mt-6
+              inline-flex
+              items-center
+              gap-2
+              text-sm
+              font-bold
+              text-brand-gold
+              transition-colors
+              hover:text-brand-gold/80
+            "
+          >
+            Explore competitions
+            <ArrowRight className="h-4 w-4" />
+          </motion.a>
         </motion.div>
       </div>
     </Section>
