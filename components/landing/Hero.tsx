@@ -278,7 +278,7 @@ export default function Hero({ data }: HeroProps) {
             <OutlineButton
               size="md"
               className="shrink-0 whitespace-nowrap"
-              href="#rewards"
+              href="rewards"
             >
               How Rewards Work
             </OutlineButton>
