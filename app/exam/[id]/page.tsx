@@ -372,6 +372,13 @@ const questionCacheRef =
     
     const [attemptId, setAttemptId] =
   useState<string | null>(null);
+  const attemptIdRef =
+  useRef<string | null>(null);
+
+useEffect(() => {
+  attemptIdRef.current =
+    attemptId;
+}, [attemptId]);
 const [
   currentQuestionData,
   setCurrentQuestionData
@@ -1844,7 +1851,7 @@ async function uploadProctoringSnapshot(
           "proctoring_snapshots"
         )
         .insert({
-          attempt_id: attemptId,
+          attempt_id: attemptIdRef.current,
           student_id: userId,
           image_url: imageUrl,
           face_count: faceCount,
