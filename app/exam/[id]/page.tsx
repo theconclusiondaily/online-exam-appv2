@@ -3217,7 +3217,7 @@ useEffect(() => {
    * faceDetectionBusyRef, so overlapping
    * detections are prevented there.
    */
-  void uploadSnapshot();
+  void uploadSnapshot(); 
   snapshotIntervalRef.current =
     setInterval(() => {
       void uploadSnapshot();
