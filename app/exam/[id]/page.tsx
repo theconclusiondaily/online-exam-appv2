@@ -166,7 +166,10 @@ const faceDetectionBusyRef =
 
 const faceDetectionRequestIdRef =
   useRef(0);
-
+const faceDetectionTimeoutRef =
+  useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
 const pendingSnapshotRef =
   useRef<
     Map<
@@ -230,6 +233,16 @@ useEffect(() => {
         "Face detection failed:",
         event.data.error
       );
+ if (
+    faceDetectionTimeoutRef.current
+  ) {
+    clearTimeout(
+      faceDetectionTimeoutRef.current
+    );
+
+    faceDetectionTimeoutRef.current =
+      null;
+  }
 
       faceDetectionBusyRef.current =
         false;
@@ -246,7 +259,16 @@ useEffect(() => {
     if (type !== "result") {
       return;
     }
+if (
+  faceDetectionTimeoutRef.current
+) {
+  clearTimeout(
+    faceDetectionTimeoutRef.current
+  );
 
+  faceDetectionTimeoutRef.current =
+    null;
+}
     /*
      * Process the detection result.
      */
@@ -286,18 +308,29 @@ useEffect(() => {
   };
 
   const handleError = (
-    error: ErrorEvent
-  ) => {
-    console.error(
-      "Face detection worker error:",
-      error.message
+  error: ErrorEvent
+) => {
+  console.error(
+    "Face detection worker error:",
+    error.message
+  );
+
+  if (
+    faceDetectionTimeoutRef.current
+  ) {
+    clearTimeout(
+      faceDetectionTimeoutRef.current
     );
 
-    faceDetectionBusyRef.current =
-      false;
+    faceDetectionTimeoutRef.current =
+      null;
+  }
 
-    pendingSnapshotRef.current.clear();
-  };
+  faceDetectionBusyRef.current =
+    false;
+
+  pendingSnapshotRef.current.clear();
+};
 
   /*
    * ALWAYS register the listeners.
@@ -324,6 +357,16 @@ useEffect(() => {
       "error",
       handleError
     );
+    if (
+  faceDetectionTimeoutRef.current
+) {
+  clearTimeout(
+    faceDetectionTimeoutRef.current
+  );
+
+  faceDetectionTimeoutRef.current =
+    null;
+}
   };
 }, []);
 
@@ -2057,7 +2100,26 @@ function handleFaceDetectionResult(
       },
       [imageBitmap]
     );
+faceDetectionTimeoutRef.current =
+  setTimeout(() => {
 
+    console.warn(
+      "[PROCTORING] Face detection timeout"
+    );
+
+    faceDetectionBusyRef.current =
+      false;
+
+    if (requestId !== null) {
+      pendingSnapshotRef.current.delete(
+        requestId
+      );
+    }
+
+    faceDetectionTimeoutRef.current =
+      null;
+
+  }, 10000);
   } catch (error) {
     console.error(
       "Unable to send frame to face detection worker:",
@@ -3155,6 +3217,7 @@ useEffect(() => {
    * faceDetectionBusyRef, so overlapping
    * detections are prevented there.
    */
+  void uploadSnapshot();
   snapshotIntervalRef.current =
     setInterval(() => {
       void uploadSnapshot();
