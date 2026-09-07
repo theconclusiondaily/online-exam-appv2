@@ -703,25 +703,21 @@ console.log(
 
           {/* SNAPSHOT */}
 
-         <div
+<div
   className="
     h-40
     overflow-hidden
     bg-slate-100
   "
 >
-
-  {snapshots[
-    event.student_id
-  ] ? (
+  {snapshots[event.student_id] ? (
 
     <img
-      src={
-        snapshots[
-          event.student_id
-        ]
-      }
-      alt=""
+      key={snapshots[event.student_id]}
+      src={`${snapshots[event.student_id]}?t=${encodeURIComponent(
+        snapshotTimes[event.student_id] || ""
+      )}`}
+      alt="Latest proctoring snapshot"
       className="
         w-full
         h-full
