@@ -93,38 +93,23 @@ const [snapshots, setSnapshots] =
 ] = useState<
   Record<string,string>
 >({});
-useEffect(() => {
+  useEffect(() => {
 
-  let cancelled = false;
+  loadEvents();
 
-  async function refreshProctoring() {
-
-  const currentEvents =
-    await loadEvents();
-
-  if (!currentEvents) {
-    return;
-  }
-
-  await loadSnapshots(
-    currentEvents
-  );
-}
-
-  void refreshProctoring();
+  loadSnapshots();
 
   const interval =
     setInterval(() => {
-      void refreshProctoring();
+
+      loadEvents();
+
+      loadSnapshots();
+
     }, 10000);
 
-  return () => {
-
-    cancelled = true;
-
+  return () =>
     clearInterval(interval);
-
-  };
 
 }, []);
 
@@ -232,111 +217,64 @@ exam_id: item.exam_id,
 
   setEvents(grouped);
 
-return grouped;
-
 }
-async function loadSnapshots(
-  currentEvents = events
-) {
+ async function loadSnapshots() {
 
-  /*
-   * Get the students currently displayed
-   * on the admin proctoring page.
-   */
-  const studentIds =
-  currentEvents.map(
-      (event) =>
-        event.student_id
-    );
-
-  if (
-    studentIds.length === 0
-  ) {
-    setSnapshots({});
-    setSnapshotTimes({});
-    return;
-  }
-
-  /*
-   * Get recent snapshots for the
-   * currently active students only.
-   */
-  const {
-    data,
-    error,
-  } =
+  const { data } =
     await supabase
+
       .from(
         "proctoring_snapshots"
       )
+
       .select(`
         student_id,
         image_url,
         created_at
       `)
-      .in(
-        "student_id",
-        studentIds
-      )
-     .order(
-  "created_at",
-  {
-    ascending: false,
-  }
-)
-.limit(1000);
 
-  if (error) {
+      .order(
+        "created_at",
+        {
+          ascending: false,
+        }
+      );
 
-    console.error(
-      "SNAPSHOT LOAD ERROR:",
-      error
-    );
+ const latest:
+Record<string,string> = {};
 
-    return;
-  }
+const latestTime:
+Record<string,string> = {};
 
-  console.log(
-    "LIVE STUDENT SNAPSHOTS:",
-    data?.length ?? 0
-  );
+  data?.forEach(
+    (item) => {
 
-  const latest:
-    Record<string, string> = {};
+      if (
+        !latest[
+          item.student_id
+        ]
+      ) {
 
-  const latestTime:
-    Record<string, string> = {};
+        latest[
+          item.student_id
+        ] =
+          item.image_url;
 
-  /*
-   * Because results are ordered newest first,
-   * the first snapshot encountered for each
-   * student is the latest one.
-   */
-  for (
-    const item of data ?? []
-  ) {
+          latestTime[
+  item.student_id
+] =
+  item.created_at;
 
-    if (
-      !latest[item.student_id]
-    ) {
-
-      latest[item.student_id] =
-        item.image_url;
-
-      latestTime[item.student_id] =
-        item.created_at;
+      }
 
     }
-
-  }
-
-  setSnapshots(
-    latest
   );
 
+  setSnapshots(latest);
   setSnapshotTimes(
-    latestTime
-  );
+  latestTime
+);
+
 }
 async function sendWarning(
   studentId: string,
@@ -703,21 +641,25 @@ console.log(
 
           {/* SNAPSHOT */}
 
-<div
+         <div
   className="
     h-40
     overflow-hidden
     bg-slate-100
   "
 >
-  {snapshots[event.student_id] ? (
+
+  {snapshots[
+    event.student_id
+  ] ? (
 
     <img
-      key={snapshots[event.student_id]}
-      src={`${snapshots[event.student_id]}?t=${encodeURIComponent(
-        snapshotTimes[event.student_id] || ""
-      )}`}
-      alt="Latest proctoring snapshot"
+      src={
+        snapshots[
+          event.student_id
+        ]
+      }
+      alt=""
       className="
         w-full
         h-full
