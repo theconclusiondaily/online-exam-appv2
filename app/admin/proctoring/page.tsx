@@ -93,74 +93,36 @@ const [snapshots, setSnapshots] =
 ] = useState<
   Record<string,string>
 >({});
- useEffect(() => {
+useEffect(() => {
 
-  /*
-   * Initial load
-   */
   void loadEvents();
-  void loadSnapshots();
 
-  /*
-   * Fallback polling.
-   *
-   * Even if Realtime disconnects,
-   * the admin page will continue
-   * checking for new snapshots.
-   */
   const interval =
     setInterval(() => {
       void loadEvents();
+    }, 10000);
+
+  return () =>
+    clearInterval(interval);
+
+}, []);
+useEffect(() => {
+
+  /*
+   * Load snapshots whenever the list of
+   * live students changes.
+   */
+  void loadSnapshots();
+
+  const interval =
+    setInterval(() => {
       void loadSnapshots();
     }, 10000);
 
-  /*
-   * Realtime subscription.
-   *
-   * Whenever a new proctoring snapshot
-   * is inserted, refresh the snapshots
-   * immediately.
-   */
-  const channel =
-    supabase
-      .channel(
-        "admin-proctoring-snapshots"
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "proctoring_snapshots",
-        },
-        () => {
-          console.log(
-            "NEW PROCTORING SNAPSHOT RECEIVED"
-          );
-
-          void loadSnapshots();
-        }
-      )
-      .subscribe((status) => {
-
-        console.log(
-          "PROCTORING REALTIME STATUS:",
-          status
-        );
-
-      });
-
-  return () => {
-
+  return () =>
     clearInterval(interval);
 
-    void supabase.removeChannel(
-      channel
-    );
-
-  };
-
-}, []);
+}, [events]);
 
   async function loadEvents() {
 
@@ -269,6 +231,28 @@ exam_id: item.exam_id,
 }
 async function loadSnapshots() {
 
+  /*
+   * Get the students currently displayed
+   * on the admin proctoring page.
+   */
+  const studentIds =
+    events.map(
+      (event) =>
+        event.student_id
+    );
+
+  if (
+    studentIds.length === 0
+  ) {
+    setSnapshots({});
+    setSnapshotTimes({});
+    return;
+  }
+
+  /*
+   * Get recent snapshots for the
+   * currently active students only.
+   */
   const {
     data,
     error,
@@ -282,6 +266,10 @@ async function loadSnapshots() {
         image_url,
         created_at
       `)
+      .in(
+        "student_id",
+        studentIds
+      )
       .order(
         "created_at",
         {
@@ -293,18 +281,14 @@ async function loadSnapshots() {
 
     console.error(
       "SNAPSHOT LOAD ERROR:",
-      JSON.stringify(
-        error,
-        null,
-        2
-      )
+      error
     );
 
     return;
   }
 
   console.log(
-    "SNAPSHOTS LOADED:",
+    "LIVE STUDENT SNAPSHOTS:",
     data?.length ?? 0
   );
 
@@ -314,29 +298,28 @@ async function loadSnapshots() {
   const latestTime:
     Record<string, string> = {};
 
-  data?.forEach(
-    (item) => {
+  /*
+   * Because results are ordered newest first,
+   * the first snapshot encountered for each
+   * student is the latest one.
+   */
+  for (
+    const item of data ?? []
+  ) {
 
-      if (
-        !latest[
-          item.student_id
-        ]
-      ) {
+    if (
+      !latest[item.student_id]
+    ) {
 
-        latest[
-          item.student_id
-        ] =
-          item.image_url;
+      latest[item.student_id] =
+        item.image_url;
 
-        latestTime[
-          item.student_id
-        ] =
-          item.created_at;
-
-      }
+      latestTime[item.student_id] =
+        item.created_at;
 
     }
-  );
+
+  }
 
   setSnapshots(
     latest
@@ -345,7 +328,6 @@ async function loadSnapshots() {
   setSnapshotTimes(
     latestTime
   );
-
 }
 async function sendWarning(
   studentId: string,
