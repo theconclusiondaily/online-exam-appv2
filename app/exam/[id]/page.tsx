@@ -177,6 +177,10 @@ const pendingSnapshotRef =
       HTMLCanvasElement
     >
   >(new Map());
+  const pendingSnapshotUploadRef =
+  useRef<
+    Map<number, Promise<string | null>>
+  >(new Map());
   useEffect(() => {
 
   if (
@@ -296,7 +300,6 @@ if (
     if (canvas) {
       void uploadProctoringSnapshot(
         canvas,
-        faceCount
       );
     }
 
@@ -1827,9 +1830,9 @@ function stopAudioMonitoring() {
 
 
 async function uploadProctoringSnapshot(
-  canvas: HTMLCanvasElement,
-  faceCount: number
-) {
+  canvas: HTMLCanvasElement
+): Promise<string | null> {
+
   try {
 
     const blob =
@@ -1843,7 +1846,11 @@ async function uploadProctoringSnapshot(
       );
 
     if (!blob) {
-      return;
+      console.error(
+        "Proctoring snapshot: unable to create image blob"
+      );
+
+      return null;
     }
 
     const fileName =
@@ -1851,7 +1858,7 @@ async function uploadProctoringSnapshot(
 
     const {
       data: uploadData,
-      error,
+      error: uploadError,
     } =
       await supabase.storage
         .from("proctoring")
@@ -1860,17 +1867,18 @@ async function uploadProctoringSnapshot(
           blob,
           {
             upsert: false,
+            contentType: "image/jpeg",
           }
         );
 
-    if (error) {
+    if (uploadError) {
 
       console.error(
-        "Snapshot Upload Error:",
-        error
+        "Proctoring snapshot upload failed:",
+        uploadError
       );
 
-      return;
+      return null;
     }
 
     const {
@@ -1885,39 +1893,59 @@ async function uploadProctoringSnapshot(
     const imageUrl =
       publicUrlData.publicUrl;
 
+    /*
+     * IMPORTANT:
+     *
+     * Insert the snapshot immediately.
+     *
+     * face_count is intentionally NULL here.
+     * The Face Detection Worker will update it
+     * when/if detection succeeds.
+     */
     const {
-      error:
-        snapshotInsertError,
+      data: snapshotData,
+      error: snapshotInsertError,
     } =
       await supabase
-        .from(
-          "proctoring_snapshots"
-        )
+        .from("proctoring_snapshots")
         .insert({
-          attempt_id: attemptIdRef.current,
-          student_id: userId,
-          image_url: imageUrl,
-          face_count: faceCount,
-        });
+          attempt_id:
+            attemptIdRef.current,
+          student_id:
+            userId,
+          image_url:
+            imageUrl,
+          face_count:
+            null,
+        })
+        .select("id")
+        .single();
 
-    if (
-      snapshotInsertError
-    ) {
+    if (snapshotInsertError) {
 
       console.error(
-        "Snapshot DB Error:",
+        "Proctoring snapshot DB insert failed:",
         snapshotInsertError
       );
 
+      return null;
     }
+
+    console.log(
+      "PROCTORING SNAPSHOT SAVED:",
+      snapshotData.id
+    );
+
+    return snapshotData.id;
 
   } catch (error) {
 
     console.error(
-      "Background snapshot error:",
+      "Background proctoring snapshot error:",
       error
     );
 
+    return null;
   }
 }
 
@@ -2061,8 +2089,8 @@ function handleFaceDetectionResult(
     240
   );
 
-  let requestId: number | null =
-    null;
+  const requestId =
+  ++faceDetectionRequestIdRef.current;
 
   try {
     /*
@@ -2076,30 +2104,55 @@ function handleFaceDetectionResult(
      * Give this detection request
      * a unique ID.
      */
-    requestId =
-      ++faceDetectionRequestIdRef.current;
-
-    /*
+        /*
      * Associate this exact canvas with
      * this exact Worker request.
      */
-    pendingSnapshotRef.current.set(
-      requestId,
-      canvas
-    );
+   pendingSnapshotRef.current.set(
+  requestId,
+  canvas
+);
 
-    const imageBitmap =
-      await createImageBitmap(
-        canvas
-      );
+/*
+ * Upload the snapshot immediately.
+ *
+ * This is independent of face detection.
+ * Even if the Worker fails, the image
+ * can still be saved to Supabase.
+ */
+const uploadPromise =
+  uploadProctoringSnapshot(
+    canvas
+  );
 
-    worker.postMessage(
-      {
-        imageBitmap,
-        requestId,
-      },
-      [imageBitmap]
-    );
+if (requestId !== null) {
+  pendingSnapshotUploadRef.current.set(
+    requestId,
+    uploadPromise
+  );
+}
+
+void uploadPromise.finally(() => {
+  pendingSnapshotUploadRef.current.delete(
+    requestId
+  );
+});
+
+/*
+ * Face detection runs independently.
+ */
+const imageBitmap =
+  await createImageBitmap(
+    canvas
+  );
+
+worker.postMessage(
+  {
+    imageBitmap,
+    requestId,
+  },
+  [imageBitmap]
+);
 faceDetectionTimeoutRef.current =
   setTimeout(() => {
 
