@@ -93,23 +93,72 @@ const [snapshots, setSnapshots] =
 ] = useState<
   Record<string,string>
 >({});
-  useEffect(() => {
+ useEffect(() => {
 
-  loadEvents();
+  /*
+   * Initial load
+   */
+  void loadEvents();
+  void loadSnapshots();
 
-  loadSnapshots();
-
+  /*
+   * Fallback polling.
+   *
+   * Even if Realtime disconnects,
+   * the admin page will continue
+   * checking for new snapshots.
+   */
   const interval =
     setInterval(() => {
-
-      loadEvents();
-
-      loadSnapshots();
-
+      void loadEvents();
+      void loadSnapshots();
     }, 10000);
 
-  return () =>
+  /*
+   * Realtime subscription.
+   *
+   * Whenever a new proctoring snapshot
+   * is inserted, refresh the snapshots
+   * immediately.
+   */
+  const channel =
+    supabase
+      .channel(
+        "admin-proctoring-snapshots"
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "proctoring_snapshots",
+        },
+        () => {
+          console.log(
+            "NEW PROCTORING SNAPSHOT RECEIVED"
+          );
+
+          void loadSnapshots();
+        }
+      )
+      .subscribe((status) => {
+
+        console.log(
+          "PROCTORING REALTIME STATUS:",
+          status
+        );
+
+      });
+
+  return () => {
+
     clearInterval(interval);
+
+    void supabase.removeChannel(
+      channel
+    );
+
+  };
 
 }, []);
 
@@ -218,21 +267,21 @@ exam_id: item.exam_id,
   setEvents(grouped);
 
 }
- async function loadSnapshots() {
+async function loadSnapshots() {
 
-  const { data } =
+  const {
+    data,
+    error,
+  } =
     await supabase
-
       .from(
         "proctoring_snapshots"
       )
-
       .select(`
         student_id,
         image_url,
         created_at
       `)
-
       .order(
         "created_at",
         {
@@ -240,11 +289,30 @@ exam_id: item.exam_id,
         }
       );
 
- const latest:
-Record<string,string> = {};
+  if (error) {
 
-const latestTime:
-Record<string,string> = {};
+    console.error(
+      "SNAPSHOT LOAD ERROR:",
+      JSON.stringify(
+        error,
+        null,
+        2
+      )
+    );
+
+    return;
+  }
+
+  console.log(
+    "SNAPSHOTS LOADED:",
+    data?.length ?? 0
+  );
+
+  const latest:
+    Record<string, string> = {};
+
+  const latestTime:
+    Record<string, string> = {};
 
   data?.forEach(
     (item) => {
@@ -260,20 +328,23 @@ Record<string,string> = {};
         ] =
           item.image_url;
 
-          latestTime[
-  item.student_id
-] =
-  item.created_at;
+        latestTime[
+          item.student_id
+        ] =
+          item.created_at;
 
       }
 
     }
   );
 
-  setSnapshots(latest);
+  setSnapshots(
+    latest
+  );
+
   setSnapshotTimes(
-  latestTime
-);
+    latestTime
+  );
 
 }
 async function sendWarning(
