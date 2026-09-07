@@ -95,34 +95,38 @@ const [snapshots, setSnapshots] =
 >({});
 useEffect(() => {
 
-  void loadEvents();
+  let cancelled = false;
+
+  async function refreshProctoring() {
+
+  const currentEvents =
+    await loadEvents();
+
+  if (!currentEvents) {
+    return;
+  }
+
+  await loadSnapshots(
+    currentEvents
+  );
+}
+
+  void refreshProctoring();
 
   const interval =
     setInterval(() => {
-      void loadEvents();
+      void refreshProctoring();
     }, 10000);
 
-  return () =>
+  return () => {
+
+    cancelled = true;
+
     clearInterval(interval);
+
+  };
 
 }, []);
-useEffect(() => {
-
-  /*
-   * Load snapshots whenever the list of
-   * live students changes.
-   */
-  void loadSnapshots();
-
-  const interval =
-    setInterval(() => {
-      void loadSnapshots();
-    }, 10000);
-
-  return () =>
-    clearInterval(interval);
-
-}, [events]);
 
   async function loadEvents() {
 
@@ -228,15 +232,19 @@ exam_id: item.exam_id,
 
   setEvents(grouped);
 
+return grouped;
+
 }
-async function loadSnapshots() {
+async function loadSnapshots(
+  currentEvents = events
+) {
 
   /*
    * Get the students currently displayed
    * on the admin proctoring page.
    */
   const studentIds =
-    events.map(
+  currentEvents.map(
       (event) =>
         event.student_id
     );
@@ -270,12 +278,13 @@ async function loadSnapshots() {
         "student_id",
         studentIds
       )
-      .order(
-        "created_at",
-        {
-          ascending: false,
-        }
-      );
+     .order(
+  "created_at",
+  {
+    ascending: false,
+  }
+)
+.limit(1000);
 
   if (error) {
 
