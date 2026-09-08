@@ -220,19 +220,23 @@ exam_id: item.exam_id,
 }
  async function loadSnapshots() {
 
-  const { data } =
-    await supabase
+  console.log(
+    "SNAPSHOT QUERY START"
+  );
 
+  const {
+    data,
+    error,
+  } =
+    await supabase
       .from(
         "proctoring_snapshots"
       )
-
       .select(`
         student_id,
         image_url,
         created_at
       `)
-
       .order(
         "created_at",
         {
@@ -240,41 +244,60 @@ exam_id: item.exam_id,
         }
       );
 
- const latest:
-Record<string,string> = {};
+  console.log(
+    "SNAPSHOT QUERY RESULT:",
+    {
+      count: data?.length ?? 0,
+      error,
+      newest: data?.[0],
+    }
+  );
 
-const latestTime:
-Record<string,string> = {};
+  if (error) {
+
+    console.error(
+      "SNAPSHOT QUERY ERROR:",
+      error
+    );
+
+    return;
+  }
+
+  const latest:
+    Record<string, string> = {};
+
+  const latestTime:
+    Record<string, string> = {};
 
   data?.forEach(
     (item) => {
 
       if (
-        !latest[
-          item.student_id
-        ]
+        !latest[item.student_id]
       ) {
 
-        latest[
-          item.student_id
-        ] =
+        latest[item.student_id] =
           item.image_url;
 
-          latestTime[
-  item.student_id
-] =
-  item.created_at;
-
+        latestTime[item.student_id] =
+          item.created_at;
       }
 
     }
   );
 
-  setSnapshots(latest);
-  setSnapshotTimes(
-  latestTime
-);
+  console.log(
+    "SNAPSHOT MAP:",
+    latest
+  );
 
+  setSnapshots(
+    latest
+  );
+
+  setSnapshotTimes(
+    latestTime
+  );
 }
 async function sendWarning(
   studentId: string,
@@ -1022,9 +1045,10 @@ console.log(
           </div>
 
         </div>
+  
 
       ))}
-
+    
     </div>
 
   </div>
