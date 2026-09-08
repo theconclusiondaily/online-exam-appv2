@@ -138,7 +138,14 @@ const [snapshots, setSnapshots] =
         ascending: false,
       }
     );
-
+console.log(
+  "EVENT QUERY RESULT:",
+  {
+    count: data?.length ?? 0,
+    error,
+    first: data?.[0],
+  }
+);
   if (error) {
 
   console.error(
