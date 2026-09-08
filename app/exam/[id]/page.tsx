@@ -1949,7 +1949,7 @@ async function uploadProctoringSnapshot(
   }
 }
 
-function handleFaceDetectionResult(
+async function handleFaceDetectionResult(
   faceCount: number
 ) {
 
@@ -1957,14 +1957,27 @@ function handleFaceDetectionResult(
    * Save the face scan in the background.
    * It must never block question navigation.
    */
-  void supabase
-    .from("proctoring_events")
-    .insert({
-      attempt_id: examId,
-      student_id: userId,
-      event_type: "face_scan",
-      face_count: faceCount,
-    });
+  const {
+  error: faceEventError,
+} = await supabase
+  .from("proctoring_events")
+  .insert({
+    attempt_id: examId,
+    student_id: userId,
+    event_type: "face_scan",
+    face_count: faceCount,
+  });
+
+if (faceEventError) {
+  console.error(
+    "PROCTORING EVENT INSERT ERROR:",
+    faceEventError
+  );
+} else {
+  console.log(
+    "PROCTORING EVENT SAVED"
+  );
+}
 
   /*
    * No face detection
