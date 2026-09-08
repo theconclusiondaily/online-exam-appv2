@@ -660,7 +660,15 @@ console.log(
             overflow-hidden
             shadow-[0_10px_40px_rgba(36,59,107,0.08)]
           "
-        >
+        >{(() => {
+  console.log(
+    "CARD SNAPSHOT:",
+    event.student_id,
+    snapshots[event.student_id]
+  );
+  return null;
+})()}
+
 
           {/* SNAPSHOT */}
 
