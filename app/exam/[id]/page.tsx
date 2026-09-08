@@ -1414,7 +1414,7 @@ useEffect(() => {
   });
 
   
- function handleViolation(
+async function handleViolation(
   reason: string
 ) {
   const now = Date.now();
@@ -1448,64 +1448,68 @@ useEffect(() => {
     normalizedReason;
 
   /*
+   * Calculate the next violation count immediately.
+   *
+   * React state updates are asynchronous, so we must NOT
+   * use the old `violations` value for the database update.
+   */
+  const updated =
+    violations + 1;
+
+  /*
    * Update local violation count FIRST.
    *
    * The exam must never depend on the network
    * to record a violation.
    */
-  setViolations((prev) => {
-    const updated =
-      prev + 1;
+  setViolations(updated);
 
-    /*
-     * Inform the student immediately.
-     */
-    toast.error(
-      `${reason}. Violations: ${updated}/10`
-    );
+  /*
+   * Inform the student immediately.
+   */
+  toast.error(
+    `${reason}. Violations: ${updated}/10`
+  );
 
-    /*
-     * Auto-submit at the configured threshold.
-     *
-     * Use a separate timeout so submitExam()
-     * is NOT called from inside the state updater.
-     */
-    if (
-      updated >= 10
-    ) {
-      setTimeout(() => {
-        void submitExam();
-      }, 500);
-    }
-
-    return updated;
-  });
+  /*
+   * Auto-submit at the configured threshold.
+   *
+   * Use a separate timeout so submitExam()
+   * is NOT called from inside the state updater.
+   */
+  if (
+    updated >= 10
+  ) {
+    setTimeout(() => {
+      void submitExam();
+    }, 500);
+  }
 
   /*
    * --------------------------------------------------
    * SERVER SYNCHRONIZATION
    * --------------------------------------------------
    *
-   * These requests are deliberately non-blocking.
-   *
-   * If the network is unavailable, the exam must
-   * continue normally.
+   * These requests remain non-blocking.
+   * A network/database problem must NEVER stop the exam.
    */
   if (
     userId &&
     examId &&
     navigator.onLine
   ) {
-    void supabase
+
+    /*
+     * Update the active exam session with the
+     * EXACT new violation count.
+     */
+    const {
+      error: sessionError,
+    } = await supabase
       .from("exam_sessions")
       .update({
-        /*
-         * This is only a server-side mirror.
-         * The local React state is authoritative during
-         * temporary network loss.
-         */
         total_violations:
-          violations + 1,
+          updated,
       })
       .eq(
         "exam_id",
@@ -1520,13 +1524,25 @@ useEffect(() => {
         "active"
       );
 
-    void supabase
+    if (sessionError) {
+      console.error(
+        "VIOLATION SESSION UPDATE ERROR:",
+        sessionError
+      );
+    }
+
+    /*
+     * Record the individual proctoring event.
+     */
+    const {
+      error: eventError,
+    } = await supabase
       .from(
         "proctoring_events"
       )
       .insert({
         attempt_id:
-          examId,
+          attemptIdRef.current,
 
         student_id:
           userId,
@@ -1540,6 +1556,13 @@ useEffect(() => {
         created_at:
           new Date().toISOString(),
       });
+
+    if (eventError) {
+      console.error(
+        "PROCTORING VIOLATION INSERT ERROR:",
+        eventError
+      );
+    }
   }
 }
 async function enterExamFullscreen() {
@@ -1962,7 +1985,7 @@ async function handleFaceDetectionResult(
 } = await supabase
   .from("proctoring_events")
   .insert({
-    attempt_id: examId,
+    attempt_id: attemptIdRef.current,
     student_id: userId,
     event_type: "face_scan",
     face_count: faceCount,
@@ -2284,15 +2307,23 @@ useEffect(() => {
   }
 
   const handleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      setIsFullscreenBlurred(true);
+ if (
+  timerSubmittedRef.current ||
+  submitted
+) {
+  setIsFullscreenBlurred(false);
+  return;
+}
 
-      handleViolation(
-        "Fullscreen exited"
-      );
+if (!document.fullscreenElement) {
+  setIsFullscreenBlurred(true);
 
-      return;
-    }
+  handleViolation(
+    "Fullscreen exited"
+  );
+
+  return;
+}
 
     setIsFullscreenBlurred(false);
   };
