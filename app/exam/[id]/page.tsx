@@ -379,6 +379,7 @@ if (
   useRef<string | null>(
     null
   );
+  
     const multipleFaceStartRef =
   useRef<number | null>(null);
     const timerSubmittedRef = useRef(false);
@@ -619,6 +620,8 @@ const [resumeAvailable,
   const [violations,
     setViolations] =
     useState(0);
+    const violationsRef = useRef(0);
+    
 const [finalizingExam, setFinalizingExam] =
   useState(false);
   const [cameraAllowed,
@@ -827,6 +830,40 @@ if (isDemo) {
 }
 
       setUserId(currentUser.id);
+
+      /*
+ * Restore violation count for an existing active exam session.
+ *
+ * This makes violations survive a browser refresh,
+ * just like the existing exam session/timer state.
+ */
+const {
+  data: savedViolationSession,
+  error: savedViolationError,
+} = await supabase
+  .from("exam_sessions")
+  .select("total_violations")
+  .eq("user_id", currentUser.id)
+  .eq("exam_id", examId)
+  .eq("status", "active")
+  .maybeSingle();
+
+if (savedViolationError) {
+  console.error(
+    "VIOLATION RESTORE ERROR:",
+    savedViolationError
+  );
+} else if (savedViolationSession) {
+  const savedViolations =
+    savedViolationSession.total_violations ?? 0;
+
+  setViolations(
+    savedViolations
+  );
+
+  violationsRef.current =
+    savedViolations;
+}
       const {
   data: profileData,
 } = await supabase
@@ -1454,7 +1491,10 @@ async function handleViolation(
    * use the old `violations` value for the database update.
    */
   const updated =
-    violations + 1;
+  violationsRef.current + 1;
+
+violationsRef.current =
+  updated;
 
   /*
    * Update local violation count FIRST.
@@ -1504,25 +1544,39 @@ async function handleViolation(
      * EXACT new violation count.
      */
     const {
-      error: sessionError,
-    } = await supabase
-      .from("exam_sessions")
-      .update({
-        total_violations:
-          updated,
-      })
-      .eq(
-        "exam_id",
-        examId
-      )
-      .eq(
-        "user_id",
-        userId
-      )
-      .eq(
-        "status",
-        "active"
-      );
+  data: updatedSession,
+  error: sessionError,
+} = await supabase
+  .from("exam_sessions")
+  .update({
+    total_violations: updated,
+  })
+  .eq("exam_id", examId)
+  .eq("user_id", userId)
+  .eq("status", "active")
+  .select("id, total_violations")
+  .maybeSingle();
+
+if (sessionError) {
+  console.error(
+    "VIOLATION SESSION UPDATE ERROR:",
+    sessionError
+  );
+} else if (!updatedSession) {
+  console.error(
+    "VIOLATION SESSION UPDATE MATCHED NO SESSION:",
+    {
+      examId,
+      userId,
+      updated,
+    }
+  );
+} else {
+  console.log(
+    "VIOLATION SESSION UPDATED:",
+    updatedSession
+  );
+}
 
     if (sessionError) {
       console.error(
