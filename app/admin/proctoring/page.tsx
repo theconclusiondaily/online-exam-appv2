@@ -217,6 +217,13 @@ exam_id: item.exam_id,
 
   setEvents(grouped);
 
+console.log(
+  "EVENT STUDENT IDS:",
+  grouped.map(
+    (event: any) => event.student_id
+  )
+);
+
 }
  async function loadSnapshots() {
 
