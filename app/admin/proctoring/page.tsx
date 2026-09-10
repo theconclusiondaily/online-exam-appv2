@@ -695,7 +695,7 @@ async function forceSubmit(
 
          <div
   className="
-    h-40
+    h-240
     overflow-hidden
     bg-slate-100
   "
