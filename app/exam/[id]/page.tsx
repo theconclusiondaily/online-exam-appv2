@@ -421,7 +421,8 @@ const questionCacheRef =
   useState<string | null>(null);
   const attemptIdRef =
   useRef<string | null>(null);
-
+const sessionIdRef =
+  useRef<string | null>(null);
 useEffect(() => {
   attemptIdRef.current =
     attemptId;
@@ -1551,9 +1552,7 @@ violationsRef.current =
   .update({
     total_violations: updated,
   })
-  .eq("exam_id", examId)
-  .eq("user_id", userId)
-  .eq("status", "active")
+  .eq("id", sessionIdRef.current)
   .select("id, total_violations")
   .maybeSingle();
 
@@ -1566,6 +1565,8 @@ if (sessionError) {
   console.error(
     "VIOLATION SESSION UPDATE MATCHED NO SESSION:",
     {
+      sessionId:
+        sessionIdRef.current,
       examId,
       userId,
       updated,
@@ -1577,14 +1578,6 @@ if (sessionError) {
     updatedSession
   );
 }
-
-    if (sessionError) {
-      console.error(
-        "VIOLATION SESSION UPDATE ERROR:",
-        sessionError
-      );
-    }
-
     /*
      * Record the individual proctoring event.
      */
@@ -2939,7 +2932,12 @@ const response = await fetch(
 
 const result =
   await response.json();
-  setAttemptId(
+
+if (result?.session?.id) {
+  sessionIdRef.current = result.session.id;
+}
+
+setAttemptId(
   result.session?.attempt_id ||
   null
 );
