@@ -13,7 +13,8 @@ export default function ExamIntroPage() {
   const router = useRouter();
 
   const [exam, setExam] = useState<any>(null);
-
+const [isUpcoming, setIsUpcoming] =
+  useState(false);
   useEffect(() => {
     loadExam();
   }, []);
@@ -36,7 +37,14 @@ export default function ExamIntroPage() {
       .eq("id", id)
       .single();
 
-  setExam(data);
+ setExam(data);
+
+if (data?.start_time) {
+  setIsUpcoming(
+    new Date(data.start_time).getTime() >
+      Date.now()
+  );
+}
 }
 
   if (!exam) {
@@ -134,7 +142,7 @@ export default function ExamIntroPage() {
         </motion.p>
 
  <p className="text-center mt-4 text-[#D4AF37] uppercase tracking-[0.25em] font-semibold">
-   Hope • Faith • Excellence
+   Hope & Faith
    </p>
         {/* TITLE */}
 
@@ -264,9 +272,15 @@ export default function ExamIntroPage() {
               Status
             </p>
 
-            <h3 className="text-3xl font-black text-green-400 mt-2">
-              LIVE
-            </h3>
+            <h3
+  className={`text-3xl font-black mt-2 ${
+    isUpcoming
+      ? "text-yellow-400"
+      : "text-green-400"
+  }`}
+>
+  {isUpcoming ? "UPCOMING" : "LIVE"}
+</h3>
           </div>
 
         </motion.div>
@@ -355,32 +369,37 @@ export default function ExamIntroPage() {
         >
 
           <button
-            onClick={() =>
-             router.push(
-  `/exam/${id}/entry`
-)
-            }
-            className="
-              px-12
-              py-5
+  onClick={() => {
+    if (isUpcoming) return;
 
-              rounded-[28px]
+    router.push(
+      `/exam/${id}/entry`
+    );
+  }}
+            className={`
+  px-12
+  py-5
 
-              bg-tcd-gold
+  rounded-[28px]
 
-              text-tcd-blue
+  bg-tcd-gold
 
-              text-xl
-              font-black
+  text-tcd-blue
 
-              shadow-2xl
+  text-xl
+  font-black
 
-              hover:scale-105
-              hover:shadow-[0_0_40px_rgba(255,215,0,0.4)]
+  shadow-2xl
 
-              transition-all
-              duration-300
-            "
+  ${
+    isUpcoming
+      ? "opacity-60 cursor-not-allowed"
+      : "hover:scale-105 hover:shadow-[0_0_40px_rgba(255,215,0,0.4)]"
+  }
+
+  transition-all
+  duration-300
+`}
           >
             <div className="mb-3 w-12 h-12">
   {TCDIcons.journey}

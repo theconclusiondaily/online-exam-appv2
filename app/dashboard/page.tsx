@@ -2376,11 +2376,14 @@ const handleClaimReward =
   upcomingExams={upcomingExams}
 />
 
-{/* UPCOMING EXAM */}
+{/* UPCOMING EXAMS */}
 
-<UpcomingExamCard
-  exam={upcomingExams[0] ?? null}
-/>
+{upcomingExams.map((exam) => (
+  <UpcomingExamCard
+    key={exam.id}
+    exam={exam}
+  />
+))}
 
 {/* PERFORMANCE */}
 
