@@ -5721,36 +5721,45 @@ animate-[tcdPop_.25s_ease-out]
         {adminWarning}
       </p>
 
-      <button
+     <button
+  type="button"
+  onClick={async () => {
+    setAdminWarning(null);
 
- onClick={async () => {
-  /*
-   * Close the admin warning only.
-   *
-   * Do NOT modify fullscreen state here.
-   * If fullscreen was already exited, the separate
-   * fullscreen recovery overlay must remain active.
-   */
-  setAdminWarning(null);
+    const { error } = await supabase
+      .from("exam_live_status")
+      .update({
+        warning_message: null,
+        warning_sent_at: null,
+      })
+      .eq("user_id", userId)
+      .eq("submitted", false);
 
-  const {
-    error,
-  } = await supabase
-    .from("exam_live_status")
-    .update({
-      warning_message: null,
-      warning_sent_at: null,
-    })
-    .eq("user_id", userId);
-
-  if (error) {
-    console.error(
-      "ADMIN WARNING CLEAR ERROR:",
-      error
-    );
-  }
-}}
-
+    if (error) {
+      console.error(
+        "Failed to clear admin warning:",
+        error
+      );
+    }
+  }}
+  className="
+    mt-6
+    w-full
+    rounded-2xl
+    bg-gradient-to-r
+    from-[#243B6B]
+    to-[#36558F]
+    px-6
+    py-4
+    text-white
+    font-bold
+    text-base
+    shadow-lg
+    transition-all
+    hover:scale-[1.02]
+    hover:shadow-xl
+    active:scale-[0.98]
+  "
 >
   Understood
 </button>
