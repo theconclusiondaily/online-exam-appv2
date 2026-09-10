@@ -1342,7 +1342,14 @@ const filteredUpcomingExams =
       );
     }
   );
-
+console.log(
+  "UPCOMING EXAMS DEBUG:",
+  filteredUpcomingExams.map((exam) => ({
+    id: exam.id,
+    title: exam.title,
+    total_questions: exam.total_questions,
+  }))
+);
 setUpcomingExams(filteredUpcomingExams);
 
 setLoading(false);
