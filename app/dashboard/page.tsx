@@ -823,10 +823,13 @@ setPrestigeLevel(
     "user_id",
     user.id
   )
+  .eq(
+    "status",
+    "submitted"
+  )
   .order("created_at", {
     ascending: false,
   });
-
      
         if (attemptsData) {
 const examIds = [
@@ -1316,9 +1319,15 @@ setLiveExams(filteredLiveExams);
 
 const {
   data: allUpcomingExams,
+  error: upcomingExamsError,
 } = await supabase
   .from("exams")
-  .select("*")
+  .select(`
+    *,
+    exam_questions (
+      question_id
+    )
+  `)
   .eq("published", true)
   .eq("cancelled", false)
   .eq("status", "scheduled")
@@ -1326,34 +1335,36 @@ const {
     ascending: true,
   });
 
-const filteredUpcomingExams =
-  (allUpcomingExams || []).filter(
-    (exam) => {
-
-      const scope =
-        exam.exam_scope
-          ?.toLowerCase();
-
-      return (
-        scope === "public" ||
-        instituteIds.includes(
-          exam.institute_id
-        )
-      );
-    }
+if (upcomingExamsError) {
+  console.error(
+    "UPCOMING EXAMS QUERY ERROR:",
+    upcomingExamsError
   );
-console.log(
-  "UPCOMING EXAMS DEBUG:",
-  JSON.stringify(
-    filteredUpcomingExams.map((exam) => ({
-      id: exam.id,
-      title: exam.title,
-      total_questions: exam.total_questions,
-    })),
-    null,
-    2
-  )
-);
+}
+
+const filteredUpcomingExams =
+  (allUpcomingExams || [])
+    .filter(
+      (exam) => {
+
+        const scope =
+          exam.exam_scope
+            ?.toLowerCase();
+
+        return (
+          scope === "public" ||
+          instituteIds.includes(
+            exam.institute_id
+          )
+        );
+      }
+    )
+    .map((exam) => ({
+      ...exam,
+      total_questions:
+        exam.exam_questions?.length ?? 0,
+    }));
+
 setUpcomingExams(filteredUpcomingExams);
 
 setLoading(false);
