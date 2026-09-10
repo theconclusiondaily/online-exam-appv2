@@ -695,7 +695,7 @@ async function forceSubmit(
 
          <div
   className="
-    h-240
+    h-40
     overflow-hidden
     bg-slate-100
   "
@@ -715,7 +715,7 @@ async function forceSubmit(
       className="
         w-full
         h-full
-        object-cover
+        object-contain
       "
     />
 
