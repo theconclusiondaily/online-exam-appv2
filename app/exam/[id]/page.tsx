@@ -170,6 +170,8 @@ const faceDetectionTimeoutRef =
   useRef<ReturnType<typeof setTimeout> | null>(
     null
   );
+  const lastForceSubmitAtRef =
+  useRef<string | null>(null);
 const pendingSnapshotRef =
   useRef<
     Map<
@@ -1350,9 +1352,14 @@ useEffect(() => {
   setAdminWarning(null);
 }
 
-  if (
-  data.force_submit === true
+ if (
+  data.force_submit === true &&
+  data.force_submit_at &&
+  data.force_submit_at !==
+    lastForceSubmitAtRef.current
 ) {
+  lastForceSubmitAtRef.current =
+    data.force_submit_at;
 
   alert(
     "Teacher force submitted your exam"
@@ -1361,7 +1368,6 @@ useEffect(() => {
   await submitExam();
 
   return;
-
 }
 
           if (

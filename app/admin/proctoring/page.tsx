@@ -341,26 +341,33 @@ console.log(
 async function forceSubmit(
   studentId: string,
   examId: string
-){
+) {
+  const { data, error } = await supabase
+    .from("exam_live_status")
+    .update({
+  force_submit: true,
+  force_submit_at: new Date().toISOString(),
+})
+    .eq("user_id", studentId)
+    .eq("submitted", false)
+    .select();
 
- const { data, error } = await supabase
-  .from("exam_live_status")
-  .update({
-    force_submit: true,
-  })
-  .eq("user_id", studentId)
-  .eq("submitted", false)
-  .select();
+  console.log(
+    "FORCE DATA",
+    data
+  );
 
-console.log(
-  "FORCE DATA",
-  data
-);
+  console.log(
+    "FORCE ERROR",
+    error
+  );
 
-console.log(
-  "FORCE ERROR",
-  error
-);
+  if (error) {
+    console.error(
+      "FORCE SUBMIT ERROR:",
+      error
+    );
+  }
 }
   return (
 
