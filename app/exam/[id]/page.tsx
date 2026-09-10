@@ -1346,6 +1346,8 @@ useEffect(() => {
     data.warning_message
   );
 
+}else {
+  setAdminWarning(null);
 }
 
   if (
@@ -1618,12 +1620,34 @@ async function enterExamFullscreen() {
       examContainerRef.current;
 
     if (!element) {
+      console.error(
+        "Fullscreen target element not found"
+      );
+
       return;
     }
 
     await element.requestFullscreen();
 
-    setIsFullscreenBlurred(false);
+    /*
+     * Fullscreen request succeeded.
+     *
+     * Remove the blocking overlay only after
+     * the browser confirms fullscreen.
+     */
+    if (document.fullscreenElement) {
+      setIsFullscreenBlurred(false);
+
+      /*
+       * The student has successfully returned
+       * to the examination environment.
+       */
+      return;
+    }
+
+    console.warn(
+      "Fullscreen request completed but fullscreenElement is still null"
+    );
   } catch (error) {
     console.error(
       "Unable to enter fullscreen:",
@@ -2354,24 +2378,38 @@ useEffect(() => {
   }
 
   const handleFullscreen = () => {
- if (
-  timerSubmittedRef.current ||
-  submitted
-) {
-  setIsFullscreenBlurred(false);
-  return;
-}
+    /*
+     * Do nothing once the exam has been submitted.
+     */
+    if (
+      timerSubmittedRef.current ||
+      submitted
+    ) {
+      setIsFullscreenBlurred(false);
+      return;
+    }
 
-if (!document.fullscreenElement) {
-  setIsFullscreenBlurred(true);
+    /*
+     * Student has exited fullscreen.
+     *
+     * The exam remains active, but the question area
+     * is blocked until fullscreen is restored.
+     */
+    if (!document.fullscreenElement) {
+      setIsFullscreenBlurred(true);
 
-  handleViolation(
-    "Fullscreen exited"
-  );
+      handleViolation(
+        "Fullscreen exited"
+      );
 
-  return;
-}
+      return;
+    }
 
+    /*
+     * Student successfully returned to fullscreen.
+     *
+     * Remove the blocking layer.
+     */
     setIsFullscreenBlurred(false);
   };
 
@@ -2380,8 +2418,18 @@ if (!document.fullscreenElement) {
     handleFullscreen
   );
 
-  if (!document.fullscreenElement) {
+  /*
+   * Restore the correct UI state when this effect
+   * is initially attached.
+   */
+  if (
+    !document.fullscreenElement &&
+    !timerSubmittedRef.current &&
+    !submitted
+  ) {
     setIsFullscreenBlurred(true);
+  } else {
+    setIsFullscreenBlurred(false);
   }
 
   return () => {
@@ -5669,34 +5717,33 @@ animate-[tcdPop_.25s_ease-out]
 
       <button
 
-  onClick={async () => {
+ onClick={async () => {
+  /*
+   * Close the admin warning only.
+   *
+   * Do NOT modify fullscreen state here.
+   * If fullscreen was already exited, the separate
+   * fullscreen recovery overlay must remain active.
+   */
+  setAdminWarning(null);
 
-    setAdminWarning(
-      null
+  const {
+    error,
+  } = await supabase
+    .from("exam_live_status")
+    .update({
+      warning_message: null,
+      warning_sent_at: null,
+    })
+    .eq("user_id", userId);
+
+  if (error) {
+    console.error(
+      "ADMIN WARNING CLEAR ERROR:",
+      error
     );
-
-    await supabase
-
-      .from(
-        "exam_live_status"
-      )
-
-      .update({
-
-        warning_message:
-          null,
-
-        warning_sent_at:
-          null,
-
-      })
-
-      .eq(
-        "user_id",
-        userId
-      );
-
-  }}
+  }
+}}
 
 >
   Understood
