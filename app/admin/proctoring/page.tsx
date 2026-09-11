@@ -114,123 +114,162 @@ const [snapshots, setSnapshots] =
 }, []);
 
   async function loadEvents() {
+  console.log("PROCTORING STATUS QUERY START");
 
   const {
-    data,
-    error,
+    data: statusData,
+    error: statusError,
   } = await supabase
-
-    .from(
-      "proctoring_events"
-    )
-
+    .from("exam_live_status")
     .select(`
-      *,
-      users (
-        name,
-        email
-      )
+      user_id,
+      exam_id,
+      student_name,
+      violations,
+      current_question,
+      fullscreen,
+      camera_enabled,
+      mic_enabled,
+      submitted,
+      updated_at
     `)
+    .eq("submitted", false)
+    .eq("removed", false)
+    .order("updated_at", {
+      ascending: false,
+    });
 
-    .order(
-      "created_at",
-      {
-        ascending: false,
-      }
-    );
-console.log(
-  "EVENT QUERY RESULT:",
-  {
-    count: data?.length ?? 0,
-    error,
-    first: data?.[0],
-  }
-);
-  if (error) {
-
-  console.error(
-    "PROCTORING ERROR:",
-    JSON.stringify(error, null, 2)
+  console.log(
+    "PROCTORING STATUS RESULT:",
+    {
+      count: statusData?.length ?? 0,
+      error: statusError,
+      data: statusData,
+    }
   );
 
-  return;
-
-}
-
- 
-  const grouped =
-    Object.values(
-
-      (data || []).reduce(
-        (
-          acc: any,
-          item: any
-        ) => {
-
-          const key =
-            item.student_id;
-
-          if (!acc[key]) {
-
-            acc[key] = {
-
-              student_id:
-                item.student_id,
-exam_id: item.exam_id,
-              name:
-                item.users?.name,
-
-              email:
-                item.users?.email,
-
-              violations: 0,
-
-              latestFaceCount: 1,
-
-              latestEvent:
-                item.created_at,
-
-            };
-
-          }
-
-          if (
-            item.event_type ===
-            "violation"
-          ) {
-
-            acc[key]
-              .violations++;
-
-          }
-
-          if (
-            item.face_count !==
-            null
-          ) {
-
-            acc[key]
-              .latestFaceCount =
-              item.face_count;
-
-          }
-
-          return acc;
-
-        },
-        {}
+  if (statusError) {
+    console.error(
+      "PROCTORING STATUS ERROR:",
+      JSON.stringify(
+        statusError,
+        null,
+        2
       )
     );
+
+    return;
+  }
+
+  const userIds = [
+    ...new Set(
+      (statusData || []).map(
+        (item) => item.user_id
+      )
+    ),
+  ];
+
+  let usersMap: Record<
+    string,
+    {
+      name?: string;
+      email?: string;
+    }
+  > = {};
+
+  if (userIds.length > 0) {
+    const {
+      data: usersData,
+      error: usersError,
+    } = await supabase
+      .from("users")
+      .select(`
+        id,
+        name,
+        email
+      `)
+      .in("id", userIds);
+
+    if (usersError) {
+      console.error(
+        "USERS QUERY ERROR:",
+        usersError
+      );
+    }
+
+    usersMap = Object.fromEntries(
+      (usersData || []).map(
+        (user) => [
+          user.id,
+          {
+            name: user.name,
+            email: user.email,
+          },
+        ]
+      )
+    );
+  }
+
+  const grouped = Object.values(
+    (statusData || []).reduce(
+      (
+        acc: Record<string, any>,
+        item: any
+      ) => {
+        const key = item.user_id;
+
+        if (!acc[key]) {
+          acc[key] = {
+            student_id:
+              item.user_id,
+
+            exam_id:
+              item.exam_id,
+
+            name:
+              item.student_name ||
+              usersMap[item.user_id]?.name ||
+              "Unknown Student",
+
+            email:
+              usersMap[item.user_id]?.email ||
+              "",
+
+            violations:
+              Number(
+                item.violations ?? 0
+              ),
+
+            latestFaceCount: 1,
+
+            latestEvent:
+              item.updated_at,
+          };
+        }
+
+        return acc;
+      },
+      {}
+    )
+  );
 
   setEvents(grouped);
 
-console.log(
-  "EVENT STUDENT IDS:",
-  grouped.map(
-    (event: any) => event.student_id
-  )
-);
-
+  console.log(
+    "ACTIVE STUDENTS:",
+    grouped.map(
+      (event: any) => ({
+        student_id:
+          event.student_id,
+        name:
+          event.name,
+        exam_id:
+          event.exam_id,
+        violations:
+          event.violations,
+      })
+    )
+  );
 }
  async function loadSnapshots() {
 
@@ -666,6 +705,7 @@ async function forceSubmit(
         lg:grid-cols-2
         xl:grid-cols-3
         gap-6
+        pb-8
       "
     >
 
