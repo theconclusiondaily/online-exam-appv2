@@ -21,20 +21,38 @@ export async function finalizeExam({
     
     // Fetch answers
 
-    const {
-      data: answers,
-      error: answersError,
-    } = await supabase
-      .from("exam_answers")
-      .select("*")
-      .eq(
-        "exam_id",
-        examId
-      )
-      .eq(
-        "user_id",
-        userId
-      );
+  const {
+  data: answers,
+  error: answersError,
+} = await Promise.race([
+  supabase
+    .from("exam_answers")
+    .select("*")
+    .eq(
+      "exam_id",
+      examId
+    )
+    .eq(
+      "user_id",
+      userId
+    ),
+
+  new Promise<{
+    data: null;
+    error: Error;
+  }>((resolve) =>
+    setTimeout(
+      () =>
+        resolve({
+          data: null,
+          error: new Error(
+            "Answers request timed out"
+          ),
+        }),
+      8000
+    )
+  ),
+]);
     
 if (answersError) {
   throw new Error(
@@ -59,13 +77,31 @@ if (answersError) {
 const {
   data: mappings,
   error: mappingsError,
-} = await supabase
-  .from("exam_questions")
-  .select("question_id")
-  .eq(
-    "exam_id",
-    examId
-  );
+} = await Promise.race([
+  supabase
+    .from("exam_questions")
+    .select("question_id")
+    .eq(
+      "exam_id",
+      examId
+    ),
+
+  new Promise<{
+    data: null;
+    error: Error;
+  }>((resolve) =>
+    setTimeout(
+      () =>
+        resolve({
+          data: null,
+          error: new Error(
+            "Exam questions request timed out"
+          ),
+        }),
+      8000
+    )
+  ),
+]);
 
 if (
   mappingsError ||
@@ -83,16 +119,34 @@ const allQuestionIds =
 const {
   data: allQuestions,
   error: allQuestionsError,
-} = await supabase
-  .from("questions")
-  .select(`
-    id,
-    correct_answer
-  `)
-  .in(
-    "id",
-    allQuestionIds
-  );
+} = await Promise.race([
+  supabase
+    .from("questions")
+    .select(`
+      id,
+      correct_answer
+    `)
+    .in(
+      "id",
+      allQuestionIds
+    ),
+
+  new Promise<{
+    data: null;
+    error: Error;
+  }>((resolve) =>
+    setTimeout(
+      () =>
+        resolve({
+          data: null,
+          error: new Error(
+            "Questions request timed out"
+          ),
+        }),
+      8000
+    )
+  ),
+]);
 
 if (allQuestionsError) {
   throw new Error(
@@ -103,13 +157,31 @@ if (allQuestionsError) {
 const {
   data: exam,
   error: examError,
-} = await supabase
-  .from("exams")
-  .select(
-    "correct_marks, negative_marks"
-  )
-  .eq("id", examId)
-  .single();
+} = await Promise.race([
+  supabase
+    .from("exams")
+    .select(
+      "correct_marks, negative_marks"
+    )
+    .eq("id", examId)
+    .single(),
+
+  new Promise<{
+    data: null;
+    error: Error;
+  }>((resolve) =>
+    setTimeout(
+      () =>
+        resolve({
+          data: null,
+          error: new Error(
+            "Exam configuration request timed out"
+          ),
+        }),
+      8000
+    )
+  ),
+]);
 
 if (examError) {
   throw new Error(examError.message);
@@ -222,12 +294,30 @@ const timeTaken =
 const {
   data: existingAttempt,
   error: existingAttemptError,
-} = await supabase
-  .from("exam_attempts")
-  .select("id")
-  .eq("user_id", userId)
-  .eq("exam_id", examId)
-  .maybeSingle();
+} = await Promise.race([
+  supabase
+    .from("exam_attempts")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("exam_id", examId)
+    .maybeSingle(),
+
+  new Promise<{
+    data: null;
+    error: Error;
+  }>((resolve) =>
+    setTimeout(
+      () =>
+        resolve({
+          data: null,
+          error: new Error(
+            "Existing attempt check timed out"
+          ),
+        }),
+      8000
+    )
+  ),
+]);
 
 if (existingAttemptError) {
 
@@ -253,11 +343,29 @@ if (existingAttempt) {
 const {
   data: latestSession,
   error: latestSessionError,
-} = await supabase
-  .from("exam_sessions")
-  .select("total_violations")
-  .eq("id", session.id)
-  .single();
+} = await Promise.race([
+  supabase
+    .from("exam_sessions")
+    .select("total_violations")
+    .eq("id", session.id)
+    .single(),
+
+  new Promise<{
+    data: null;
+    error: Error;
+  }>((resolve) =>
+    setTimeout(
+      () =>
+        resolve({
+          data: null,
+          error: new Error(
+            "Latest session request timed out"
+          ),
+        }),
+      8000
+    )
+  ),
+]);
 
 if (latestSessionError) {
   throw new Error(latestSessionError.message);

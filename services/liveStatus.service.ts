@@ -1,62 +1,64 @@
 import { supabase }
 from "@/lib/supabase/client";
 
-export async function
-updateLiveStatus({
-
+export async function updateLiveStatus({
   exam_id,
-
   user_id,
-
   student_name,
-
   current_question,
-
   violations,
-
   fullscreen,
-
   camera_enabled,
-
   mic_enabled,
-
   submitted,
-
 }: any) {
+  if (!navigator.onLine) {
+    return {
+      data: null,
+      error: new Error("Offline"),
+    };
+  }
 
-  return await supabase
+  try {
+    const result = await supabase
+      .from("exam_live_status")
+      .upsert(
+        {
+          exam_id,
+          user_id,
+          student_name,
+          current_question,
+          violations,
+          fullscreen,
+          camera_enabled,
+          mic_enabled,
+          submitted,
+          updated_at: new Date(),
+        },
+        {
+          onConflict: "exam_id,user_id",
+        }
+      );
 
-    .from(
-      "exam_live_status"
-    )
+    if (result.error) {
+      console.warn(
+        "Live status update failed. Exam will continue:",
+        result.error
+      );
+    }
 
-    .upsert({
+    return result;
+  } catch (error) {
+    console.warn(
+      "Live status update failed. Exam will continue:",
+      error
+    );
 
-      exam_id,
-
-      user_id,
-
-      student_name,
-
-      current_question,
-
-      violations,
-
-      fullscreen,
-
-      camera_enabled,
-
-      mic_enabled,
-
-      submitted,
-
-      updated_at:
-        new Date(),
-
-    }, {
-      onConflict:
-        "exam_id,user_id"
-    });
+    return {
+      data: null,
+      error,
+    };
+  }
 }
 
 export async function

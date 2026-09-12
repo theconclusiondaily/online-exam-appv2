@@ -80,27 +80,39 @@ export async function
 fetchExam(
   examId?: string
 ) {
-
   if (!examId) {
-
     return {
       data: null,
       error: null,
     };
   }
 
-  return await supabase
+  return await Promise.race([
+    supabase
+      .from("exams")
+      .select("*")
+      .eq(
+        "id",
+        examId
+      )
+      .maybeSingle(),
 
-    .from("exams")
-
-    .select("*")
-
-    .eq(
-      "id",
-      examId
-    )
-
-    .maybeSingle();
+    new Promise<{
+      data: null;
+      error: Error;
+    }>((resolve) =>
+      setTimeout(
+        () =>
+          resolve({
+            data: null,
+            error: new Error(
+              "Exam request timed out"
+            ),
+          }),
+        5000
+      )
+    ),
+  ]);
 }
 
 // FETCH ATTEMPT

@@ -84,7 +84,26 @@ function SummaryRow({
     </div>
   );
 }
+async function fetchWithTimeout(
+  input: RequestInfo | URL,
+  init: RequestInit = {},
+  timeoutMs = 8000
+): Promise<Response> {
+  const controller = new AbortController();
 
+  const timeout = window.setTimeout(() => {
+    controller.abort();
+  }, timeoutMs);
+
+  try {
+    return await fetch(input, {
+      ...init,
+      signal: controller.signal,
+    });
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
 export default function ExamPage() {
 
   const params = useParams();
@@ -843,13 +862,31 @@ if (isDemo) {
 const {
   data: savedViolationSession,
   error: savedViolationError,
-} = await supabase
-  .from("exam_sessions")
-  .select("total_violations")
-  .eq("user_id", currentUser.id)
-  .eq("exam_id", examId)
-  .eq("status", "active")
-  .maybeSingle();
+} = await Promise.race([
+  supabase
+    .from("exam_sessions")
+    .select("total_violations")
+    .eq("user_id", currentUser.id)
+    .eq("exam_id", examId)
+    .eq("status", "active")
+    .maybeSingle(),
+
+  new Promise<{
+    data: null;
+    error: Error;
+  }>((resolve) =>
+    setTimeout(
+      () =>
+        resolve({
+          data: null,
+          error: new Error(
+            "Violation restore request timed out"
+          ),
+        }),
+      5000
+    )
+  ),
+]);
 
 if (savedViolationError) {
   console.error(
@@ -869,27 +906,59 @@ if (savedViolationError) {
 }
       const {
   data: profileData,
-} = await supabase
+} = await Promise.race([
+  supabase
+    .from("users")
+    .select(`
+      institute_id,
+      role
+    `)
+    .eq(
+      "id",
+      currentUser.id
+    )
+    .single(),
 
-  .from("users")
-
-  .select(`
-    institute_id,
-    role
-  `)
-
-  .eq(
-    "id",
-    currentUser.id
-  )
-
-  .single();
+  new Promise<{
+    data: null;
+    error: Error;
+  }>((resolve) =>
+    setTimeout(
+      () =>
+        resolve({
+          data: null,
+          error: new Error(
+            "Profile request timed out"
+          ),
+        }),
+      5000
+    )
+  ),
+]);
   const {
   data: memberships,
-} = await supabase
-  .from("user_institutes")
-  .select("institute_id")
-  .eq("user_id", currentUser.id);
+} = await Promise.race([
+  supabase
+    .from("user_institutes")
+    .select("institute_id")
+    .eq("user_id", currentUser.id),
+
+  new Promise<{
+    data: null;
+    error: Error;
+  }>((resolve) =>
+    setTimeout(
+      () =>
+        resolve({
+          data: null,
+          error: new Error(
+            "Institute membership request timed out"
+          ),
+        }),
+      5000
+    )
+  ),
+]);
 
 const instituteIds =
   memberships?.map(
@@ -909,24 +978,38 @@ const instituteIds =
 }
 const {
   data: savedAnswersData,
-} = await supabase
+} = await Promise.race([
+  supabase
+    .from("exam_answers")
+    .select(`
+      question_id,
+      selected_option
+    `)
+    .eq(
+      "exam_id",
+      examId
+    )
+    .eq(
+      "user_id",
+      currentUser.id
+    ),
 
-  .from("exam_answers")
-
-  .select(`
-    question_id,
-    selected_option
-  `)
-
-  .eq(
-    "exam_id",
-    examId
-  )
-
-  .eq(
-    "user_id",
-    currentUser.id
-  );
+  new Promise<{
+    data: null;
+    error: Error;
+  }>((resolve) =>
+    setTimeout(
+      () =>
+        resolve({
+          data: null,
+          error: new Error(
+            "Saved answers request timed out"
+          ),
+        }),
+      5000
+    )
+  ),
+]);
 
 if (savedAnswersData) {
 
@@ -961,27 +1044,38 @@ if (savedAnswersData) {
 
   "Student"
 );
-      const {
+     const {
   data: existingAttempt,
-} = await supabase
+} = await Promise.race([
+  supabase
+    .from("exam_attempts")
+    .select("*")
+    .eq(
+      "exam_id",
+      examId
+    )
+    .eq(
+      "user_id",
+      currentUser.id
+    )
+    .maybeSingle(),
 
-  .from(
-    "exam_attempts"
-  )
-
-  .select("*")
-
-  .eq(
-    "exam_id",
-    examId
-  )
-
-  .eq(
-    "user_id",
-    currentUser.id
-  )
-
-  .maybeSingle();
+  new Promise<{
+    data: null;
+    error: Error;
+  }>((resolve) =>
+    setTimeout(
+      () =>
+        resolve({
+          data: null,
+          error: new Error(
+            "Existing attempt request timed out"
+          ),
+        }),
+      5000
+    )
+  ),
+]);
 
 if (existingAttempt) {
 
@@ -1018,13 +1112,31 @@ if (existingAttempt) {
 } = await fetchExam(
   examId
 );
-const { count } = await supabase
-  .from("exam_questions")
-  .select("*", {
-    count: "exact",
-    head: true,
-  })
-  .eq("exam_id", examId);
+const { count } = await Promise.race([
+  supabase
+    .from("exam_questions")
+    .select("*", {
+      count: "exact",
+      head: true,
+    })
+    .eq("exam_id", examId),
+
+  new Promise<{
+    count: null;
+    error: Error;
+  }>((resolve) =>
+    setTimeout(
+      () =>
+        resolve({
+          count: null,
+          error: new Error(
+            "Question count request timed out"
+          ),
+        }),
+      5000
+    )
+  ),
+]);
 if (
   examData?.exam_scope !== "PUBLIC" &&
   !instituteIds.includes(
@@ -1227,38 +1339,23 @@ useEffect(() => {
     return;
   }
 
-  const interval =
-    setInterval(async () => {
+ const interval = setInterval(() => {
+  if (!navigator.onLine) {
+    return;
+  }
 
-      await updateLiveStatus({
-
-        exam_id: examId,
-
-        user_id: userId,
-
-        student_name:
-  studentName,
-
-        current_question:
-          currentQuestion + 1,
-
-        violations,
-
-        fullscreen:
-          !!document
-            .fullscreenElement,
-
-        camera_enabled:
-          cameraAllowed,
-
-        mic_enabled:
-          micAllowed,
-
-        submitted,
-      });
-
-    }, 15000);
-
+  void updateLiveStatus({
+    exam_id: examId,
+    user_id: userId,
+    student_name: studentName,
+    current_question: currentQuestion + 1,
+    violations,
+    fullscreen: !!document.fullscreenElement,
+    camera_enabled: cameraAllowed,
+    mic_enabled: micAllowed,
+    submitted,
+  });
+}, 15000);
     return () =>
       clearInterval(
         interval
@@ -1313,7 +1410,9 @@ useEffect(() => {
   if (!userId) {
     return;
   }
-
+if (!navigator.onLine) {
+  return;
+}
   const channel =
     supabase
 
@@ -1395,7 +1494,25 @@ useEffect(() => {
         }
       )
 
-      .subscribe();
+      .subscribe((status) => {
+  if (status === "CHANNEL_ERROR") {
+    console.warn(
+      "Realtime proctoring connection failed. Exam will continue."
+    );
+  }
+
+  if (status === "TIMED_OUT") {
+    console.warn(
+      "Realtime proctoring connection timed out. Exam will continue."
+    );
+  }
+
+  if (status === "CLOSED") {
+    console.warn(
+      "Realtime proctoring connection closed. Exam will continue."
+    );
+  }
+});
 
   return () => {
 
@@ -1542,83 +1659,61 @@ violationsRef.current =
    * These requests remain non-blocking.
    * A network/database problem must NEVER stop the exam.
    */
-  if (
-    userId &&
-    examId &&
-    navigator.onLine
-  ) {
+ if (
+  userId &&
+  examId &&
+  navigator.onLine
+) {
+  void supabase
+    .from("exam_sessions")
+    .update({
+      total_violations: updated,
+    })
+    .eq("id", sessionIdRef.current)
+    .select("id, total_violations")
+    .maybeSingle()
+    .then(({ data: updatedSession, error: sessionError }) => {
+      if (sessionError) {
+        console.error(
+          "VIOLATION SESSION UPDATE ERROR:",
+          sessionError
+        );
+      } else if (!updatedSession) {
+        console.error(
+          "VIOLATION SESSION UPDATE MATCHED NO SESSION:",
+          {
+            sessionId: sessionIdRef.current,
+            examId,
+            userId,
+            updated,
+          }
+        );
+      } else {
+        console.log(
+          "VIOLATION SESSION UPDATED:",
+          updatedSession
+        );
+      }
+    });
 
-    /*
-     * Update the active exam session with the
-     * EXACT new violation count.
-     */
-    const {
-  data: updatedSession,
-  error: sessionError,
-} = await supabase
-  .from("exam_sessions")
-  .update({
-    total_violations: updated,
-  })
-  .eq("id", sessionIdRef.current)
-  .select("id, total_violations")
-  .maybeSingle();
-
-if (sessionError) {
-  console.error(
-    "VIOLATION SESSION UPDATE ERROR:",
-    sessionError
-  );
-} else if (!updatedSession) {
-  console.error(
-    "VIOLATION SESSION UPDATE MATCHED NO SESSION:",
-    {
-      sessionId:
-        sessionIdRef.current,
-      examId,
-      userId,
-      updated,
-    }
-  );
-} else {
-  console.log(
-    "VIOLATION SESSION UPDATED:",
-    updatedSession
-  );
+  void supabase
+    .from("proctoring_events")
+    .insert({
+      attempt_id: attemptIdRef.current,
+      student_id: userId,
+      event_type: "violation",
+      violation_reason: reason,
+      created_at: new Date().toISOString(),
+    })
+    .then(({ error: eventError }) => {
+      if (eventError) {
+        console.error(
+          "PROCTORING VIOLATION INSERT ERROR:",
+          eventError
+        );
+      }
+    });
 }
-    /*
-     * Record the individual proctoring event.
-     */
-    const {
-      error: eventError,
-    } = await supabase
-      .from(
-        "proctoring_events"
-      )
-      .insert({
-        attempt_id:
-          attemptIdRef.current,
-
-        student_id:
-          userId,
-
-        event_type:
-          "violation",
-
-        violation_reason:
-          reason,
-
-        created_at:
-          new Date().toISOString(),
-      });
-
-    if (eventError) {
-      console.error(
-        "PROCTORING VIOLATION INSERT ERROR:",
-        eventError
-      );
-    }
-  }
 }
 async function enterExamFullscreen() {
   try {
@@ -1934,7 +2029,9 @@ async function uploadProctoringSnapshot(
 ): Promise<string | null> {
 
   try {
-
+    if (!navigator.onLine) {
+      return null;
+    }
     const blob =
       await new Promise<Blob | null>(
         (resolve) =>
@@ -1955,7 +2052,9 @@ async function uploadProctoringSnapshot(
 
     const fileName =
       `${userId}/${examId}/${Date.now()}.jpg`;
-
+if (!navigator.onLine) {
+  return null;
+}
     const {
       data: uploadData,
       error: uploadError,
@@ -2057,26 +2156,28 @@ async function handleFaceDetectionResult(
    * Save the face scan in the background.
    * It must never block question navigation.
    */
-  const {
-  error: faceEventError,
-} = await supabase
-  .from("proctoring_events")
-  .insert({
-    attempt_id: attemptIdRef.current,
-    student_id: userId,
-    event_type: "face_scan",
-    face_count: faceCount,
-  });
-
-if (faceEventError) {
-  console.error(
-    "PROCTORING EVENT INSERT ERROR:",
-    faceEventError
-  );
-} else {
-  console.log(
-    "PROCTORING EVENT SAVED"
-  );
+if (navigator.onLine) {
+  void supabase
+    .from("proctoring_events")
+    .insert({
+      attempt_id: attemptIdRef.current,
+      student_id: userId,
+      event_type: "face_scan",
+      face_count: faceCount,
+    })
+    .then(({ error: faceEventError }) => {
+      if (faceEventError) {
+        console.error(
+          "FACE SCAN EVENT INSERT ERROR:",
+          faceEventError
+        );
+      } else {
+        console.log(
+          "FACE SCAN EVENT SAVED:",
+          faceCount
+        );
+      }
+    });
 }
 
   /*
@@ -2696,8 +2797,7 @@ async function prefetchQuestion(
       try {
 
         const response =
-          await fetch(
-            "/api/exam/question",
+          await fetchWithTimeout("/api/exam/question",
             {
               method: "POST",
 
@@ -2968,7 +3068,7 @@ void Promise.allSettled(
   error
 );
     }
-const response = await fetch(
+const response = await fetchWithTimeout(
   "/api/exam/start",
   {
     method: "POST",
@@ -3047,7 +3147,7 @@ localStorage.setItem(
 );
 
 const questionResponse =
-  await fetch(
+  await fetchWithTimeout(
     "/api/exam/question",
     {
       method: "POST",
@@ -3282,7 +3382,7 @@ useEffect(() => {
     try {
       for (const item of queue) {
         try {
-          const response = await fetch(
+         const response = await fetchWithTimeout(
             "/api/exam/save-answer",
             {
               method: "POST",
@@ -3656,7 +3756,7 @@ if (!token) {
 
   try {
     for (const item of queue) {
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         "/api/exam/save-answer",
         {
           method: "POST",
@@ -3748,42 +3848,16 @@ async function submitExam() {
    * 2. WAIT FOR NETWORK BEFORE FINAL SUBMISSION
    * --------------------------------------------------
    */
-  if (!navigator.onLine) {
-    toast.info(
-      "Your answers are safe. Waiting for internet connection..."
-    );
+ if (!navigator.onLine) {
+  toast.info(
+    "Your answers are safe. Please reconnect to the internet and try submitting again."
+  );
 
-    await new Promise<void>((resolve) => {
-      const handleOnline = () => {
-        window.removeEventListener(
-          "online",
-          handleOnline
-        );
+  setSubmitting(false);
+  timerSubmittedRef.current = false;
 
-        resolve();
-      };
-
-      window.addEventListener(
-        "online",
-        handleOnline
-      );
-    });
-
-    toast.success(
-      "Internet connection restored. Submitting your exam..."
-    );
-
-    /*
-     * Give the browser a moment to stabilize
-     * the connection before making the request.
-     */
-    await new Promise<void>((resolve) => {
-      window.setTimeout(
-        resolve,
-        500
-      );
-    });
-  }
+  return;
+}
 
   /*
    * --------------------------------------------------
@@ -3824,7 +3898,7 @@ async function submitExam() {
   let result: any = null;
 
   try {
-    response = await fetch(
+    response = await fetchWithTimeout(
       "/api/exam/submit",
       {
         method: "POST",
@@ -3877,21 +3951,17 @@ async function submitExam() {
     /*
      * Wait for connection to return.
      */
-    await new Promise<void>((resolve) => {
-      const handleOnline = () => {
-        window.removeEventListener(
-          "online",
-          handleOnline
-        );
+   if (!navigator.onLine) {
+  toast.info(
+    "Your exam is safe. Please reconnect to the internet and try submitting again."
+  );
 
-        resolve();
-      };
+  setSubmitting(false);
+  setFinalizingExam(false);
+  timerSubmittedRef.current = false;
 
-      window.addEventListener(
-        "online",
-        handleOnline
-      );
-    });
+  return;
+}
 
     toast.success(
       "Connection restored. Retrying submission..."
@@ -3902,7 +3972,7 @@ async function submitExam() {
      * has returned.
      */
     try {
-      response = await fetch(
+      response = await fetchWithTimeout(
         "/api/exam/submit",
         {
           method: "POST",
