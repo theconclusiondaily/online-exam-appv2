@@ -104,6 +104,16 @@ async function fetchWithTimeout(
     window.clearTimeout(timeout);
   }
 }
+function isIOSDevice() {
+  if (typeof navigator === "undefined") return false;
+
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" &&
+      navigator.maxTouchPoints > 1)
+  );
+}
+
 export default function ExamPage() {
 
   const params = useParams();
@@ -1327,12 +1337,38 @@ useEffect(() => {
    * This runs in the background and does
    * NOT block the current question.
    */
-  void prefetchQuestionsAhead(
-    currentQuestion + 1
-  );
+ void prefetchQuestionsAhead(0);
 
 }, [
   currentQuestion,
+  examStarted,
+  sessionToken,
+  totalQuestions,
+]);
+useEffect(() => {
+  if (
+    !examStarted ||
+    !sessionToken
+  ) {
+    return;
+  }
+
+  const handleOnline = () => {
+    void prefetchQuestionsAhead(0);
+  };
+
+  window.addEventListener(
+    "online",
+    handleOnline
+  );
+
+  return () => {
+    window.removeEventListener(
+      "online",
+      handleOnline
+    );
+  };
+}, [
   examStarted,
   sessionToken,
   totalQuestions,
@@ -1723,6 +1759,10 @@ violationsRef.current =
 }
 }
 async function enterExamFullscreen() {
+  if (isIOSDevice()) {
+  setIsFullscreenBlurred(false);
+  return;
+}
   try {
     const element =
       examContainerRef.current;
@@ -2062,20 +2102,38 @@ async function uploadProctoringSnapshot(
 if (!navigator.onLine) {
   return null;
 }
-    const {
-      data: uploadData,
-      error: uploadError,
-    } =
-      await supabase.storage
-        .from("proctoring")
-        .upload(
-          fileName,
-          blob,
-          {
-            upsert: false,
-            contentType: "image/jpeg",
-          }
-        );
+   const uploadResult =
+  await Promise.race([
+    supabase.storage
+      .from("proctoring")
+      .upload(
+        fileName,
+        blob,
+        {
+          upsert: false,
+          contentType: "image/jpeg",
+        }
+      ),
+
+    new Promise<{
+      data: null;
+      error: Error;
+    }>((resolve) =>
+      setTimeout(() => {
+        resolve({
+          data: null,
+          error: new Error(
+            "Proctoring snapshot upload timed out"
+          ),
+        });
+      }, 8000)
+    ),
+  ]);
+
+const {
+  data: uploadData,
+  error: uploadError,
+} = uploadResult;
 
     if (uploadError) {
 
@@ -2108,41 +2166,36 @@ if (!navigator.onLine) {
      * The Face Detection Worker will update it
      * when/if detection succeeds.
      */
-    const {
-      data: snapshotData,
+    void supabase
+  .from("proctoring_snapshots")
+  .insert({
+    attempt_id:
+      attemptIdRef.current,
+    student_id:
+      userId,
+    image_url:
+      imageUrl,
+    face_count:
+      null,
+  })
+  .then(
+    ({
       error: snapshotInsertError,
-    } =
-      await supabase
-        .from("proctoring_snapshots")
-        .insert({
-          attempt_id:
-            attemptIdRef.current,
-          student_id:
-            userId,
-          image_url:
-            imageUrl,
-          face_count:
-            null,
-        })
-        .select("id")
-        .single();
-
-    if (snapshotInsertError) {
-
-      console.error(
-        "Proctoring snapshot DB insert failed:",
-        snapshotInsertError
-      );
-
-      return null;
+    }) => {
+      if (snapshotInsertError) {
+        console.error(
+          "Proctoring snapshot DB insert failed:",
+          snapshotInsertError
+        );
+      } else {
+        console.log(
+          "PROCTORING SNAPSHOT SAVED"
+        );
+      }
     }
+  );
 
-    console.log(
-      "PROCTORING SNAPSHOT SAVED:",
-      snapshotData.id
-    );
-
-    return snapshotData.id;
+return imageUrl;
 
   } catch (error) {
 
@@ -2474,9 +2527,7 @@ async function resumeExam() {
    * Continue building the rolling buffer
    * from the restored position.
    */
-  void prefetchQuestionsAhead(
-    restoredQuestion + 1
-  );
+ void prefetchQuestionsAhead(0);
 
   setExamStarted(
     true
@@ -2486,6 +2537,7 @@ async function resumeExam() {
     "Exam session restored"
   );
 }
+
 useEffect(() => {
   if (!examStarted || submitted) {
     return;
@@ -2502,6 +2554,10 @@ useEffect(() => {
       setIsFullscreenBlurred(false);
       return;
     }
+if (isIOSDevice()) {
+  setIsFullscreenBlurred(false);
+  return;
+}
 
     /*
      * Student has exited fullscreen.
@@ -2537,10 +2593,11 @@ useEffect(() => {
    * is initially attached.
    */
   if (
-    !document.fullscreenElement &&
-    !timerSubmittedRef.current &&
-    !submitted
-  ) {
+  !isIOSDevice() &&
+  !document.fullscreenElement &&
+  !timerSubmittedRef.current &&
+  !submitted
+) {
     setIsFullscreenBlurred(true);
   } else {
     setIsFullscreenBlurred(false);
@@ -2975,72 +3032,78 @@ async function prefetchQuestionsAhead(
     return;
   }
 
-  const BUFFER_SIZE = 10;
+  /*
+   * Cache the complete question set progressively.
+   *
+   * We intentionally fetch in small batches instead
+   * of firing all questions at once.
+   *
+   * This makes the exam resilient if the network
+   * disappears after the student has already started.
+   */
+  const BATCH_SIZE = 5;
 
   const knownTotal =
     totalQuestions > 0
       ? totalQuestions
-      : Number.MAX_SAFE_INTEGER;
+      : 0;
 
-  const endIndex =
-    Math.min(
-      startIndex + BUFFER_SIZE,
-      knownTotal
-    );
-
-  const indexesToPrefetch: number[] = [];
-
-  const requests: Promise<any>[] = [];
-
-for (
-  let index = startIndex;
-  index < endIndex;
-  index++
-) {
-
-  if (
-    questionCacheRef.current[index]
-  ) {
-    continue;
-  }
-
-  if (!navigator.onLine) {
-    break;
-  }
-
-  requests.push(
-    prefetchQuestion(index)
-  );
-}
-
-void Promise.allSettled(
-  requests
-);
-  if (
-    indexesToPrefetch.length === 0
-  ) {
+  if (knownTotal <= 0) {
     return;
   }
 
   /*
-   * Prefetch concurrently.
-   *
-   * This changes:
-   *
-   * Q11 → Q12 → Q13 → Q14
-   *
-   * into:
-   *
-   * Q11 ┐
-   * Q12 ├── fetched together
-   * Q13 │
-   * Q14 ┘
+   * Find questions that are not already cached.
    */
- for (
-  const index of indexesToPrefetch
-) {
-  void prefetchQuestion(index);
-}
+  const missingIndexes: number[] = [];
+
+  for (
+    let index = startIndex;
+    index < knownTotal;
+    index++
+  ) {
+    if (
+      !questionCacheRef.current[index] &&
+      !prefetchingRef.current.has(index)
+    ) {
+      missingIndexes.push(index);
+    }
+  }
+
+  /*
+   * Nothing left to cache.
+   */
+  if (missingIndexes.length === 0) {
+    return;
+  }
+
+  /*
+   * Fetch only a small batch at a time.
+   *
+   * Promise.allSettled ensures one failed question
+   * does not stop the remaining cache process.
+   */
+  for (
+    let i = 0;
+    i < missingIndexes.length;
+    i += BATCH_SIZE
+  ) {
+    if (!navigator.onLine) {
+      return;
+    }
+
+    const batch =
+      missingIndexes.slice(
+        i,
+        i + BATCH_SIZE
+      );
+
+    await Promise.allSettled(
+      batch.map((index) =>
+        prefetchQuestion(index)
+      )
+    );
+  }
 }
   async function startExam() {
 
@@ -3055,26 +3118,18 @@ void Promise.allSettled(
 
       return;
     }
-
-    try {
-
-      if (
-        document.documentElement
-      ) {
-
-        await document.documentElement
-  .requestFullscreen();
-      }
-
-     
-
-    } catch (error) {
-
-      console.error(
-  "FULLSCREEN ERROR:",
-  error
-);
+if (!isIOSDevice()) {
+  try {
+    if (document.documentElement) {
+      await document.documentElement.requestFullscreen();
     }
+  } catch (error) {
+    console.warn(
+      "Fullscreen unavailable. Continuing exam:",
+      error
+    );
+  }
+}
 const response = await fetchWithTimeout(
   "/api/exam/start",
   {
@@ -4633,7 +4688,7 @@ to-[#EEF3FB]">
 
             <div className="flex items-center gap-3">
               <img src="/icons/security.svg" className="w-5 h-5" alt="" />
-              <span>Fullscreen mode is mandatory.</span>
+              <span>Fullscreen mode is required on supported devices.</span>
             </div>
 
             <div className="flex items-center gap-3">
@@ -4984,13 +5039,79 @@ font-black
   )}
   answers={answers}
   currentQuestion={currentQuestion}
-  setCurrentQuestion={
+setCurrentQuestion={
   async (index: number) => {
 
-    await fetchQuestionByIndex(
+    /*
+     * FAST PATH:
+     * Question is already cached locally.
+     */
+    const cachedQuestion =
+      questionCacheRef.current[index];
+
+    if (cachedQuestion) {
+      setCurrentQuestionData(
+        cachedQuestion
+      );
+
+      setCurrentQuestion(
+        index
+      );
+
+      return;
+    }
+
+    /*
+     * If the question is already being
+     * downloaded, reuse that request.
+     */
+    const existingRequest =
+      prefetchingRef.current.get(
+        index
+      );
+
+    if (existingRequest) {
+      const question =
+        await existingRequest;
+
+      if (question) {
+        setCurrentQuestionData(
+          question
+        );
+
+        setCurrentQuestion(
+          index
+        );
+      }
+
+      return;
+    }
+
+    /*
+     * Question isn't cached.
+     *
+     * Only attempt a network request
+     * when we are actually online.
+     */
+    if (navigator.onLine) {
+      await fetchQuestionByIndex(
+        index
+      );
+
+      return;
+    }
+
+    /*
+     * Never hang the exam while offline.
+     */
+    console.warn(
+      "Cannot open uncached question while offline:",
       index
     );
 
+    toast.info(
+      "This question is not cached yet. Please wait for the exam cache to finish."
+    );
   }
 }
   visitedQuestions={
@@ -5345,18 +5466,54 @@ hover:bg-[#C89A1F]
           nextIndex
         );
 
-      } else {
-
+  } else {
   /*
    * The question is not in memory yet.
    *
-   * fetchQuestionByIndex() will first check
-   * sessionStorage and then reuse the existing
-   * prefetch Promise if one is already running.
+   * If it is already being prefetched, wait for
+   * that SAME request.
    */
-  await fetchQuestionByIndex(
-    nextIndex
-  );
+  const existingRequest =
+    prefetchingRef.current.get(
+      nextIndex
+    );
+
+  if (existingRequest) {
+    const question =
+      await existingRequest;
+
+    if (question) {
+      setCurrentQuestionData(
+        question
+      );
+
+      setCurrentQuestion(
+        nextIndex
+      );
+    }
+  } else if (navigator.onLine) {
+    /*
+     * We are online but the question has not
+     * started loading yet.
+     */
+    await fetchQuestionByIndex(
+      nextIndex
+    );
+  } else {
+    /*
+     * Offline and question is not cached.
+     *
+     * Do NOT block the exam indefinitely.
+     */
+    console.warn(
+      "Cannot navigate to uncached question while offline:",
+      nextIndex
+    );
+
+    toast.info(
+      "This question is still loading. Please wait for the cache to finish."
+    );
+  }
 }
 
       /*

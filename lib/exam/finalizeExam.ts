@@ -469,10 +469,11 @@ const { error: leaderboardError } = await Promise.race([
   ),
 ]);
 if (leaderboardError) {
-  console.error("LEADERBOARD ERROR:", leaderboardError);
-
- throw new Error (leaderboardError.message,);
-    };
+  console.error(
+    "LEADERBOARD UPDATE FAILED (non-critical):",
+    leaderboardError
+  );
+}
     if (attemptError) {
   throw new Error(
     attemptError.message,
@@ -522,11 +523,16 @@ try {
     feedbackError
   );
 }
-await updateWeeklyChallenges(
+void updateWeeklyChallenges(
   userId,
   totalScore,
   percentage
-);
+).catch((error) => {
+  console.warn(
+    "Weekly challenge update failed:",
+    error
+  );
+});
 const certificateNumber =
   `TCD-${Date.now()}`;
 const {
@@ -574,25 +580,19 @@ const xpEarned =
 // Award XP only for a newly created attempt
 
 if (attemptData?.length) {
-
-  const { error: xpError } =
-    await supabase.rpc(
-      "add_user_xp",
-      {
-        p_user_id: userId,
-        p_xp: xpEarned,
-      }
-    );
-
-  if (xpError) {
-
+  void supabase
+    .rpc("add_user_xp", {
+      p_user_id: userId,
+      p_xp: xpEarned,
+    })
+   .then((result: { error: any }) => {
+  if (result.error) {
     console.error(
-      "XP ERROR:",
-      xpError
+      "XP UPDATE FAILED (non-critical):",
+      result.error
     );
-
   }
-
+});
 }
 const {
   error: completeSessionError,
@@ -661,34 +661,36 @@ if (
 
 }
 
-const {
-  data: achievementData,
-  error: achievementError
-} 
-= 
-await supabase.rpc(
-  "update_study_streak",
-  {
+void supabase
+  .rpc("update_study_streak", {
     p_user_id: userId,
-  }
-);
+  })
+  .then((result: { error: any }) => {
+    if (result.error) {
+      console.error(
+        "STUDY STREAK UPDATE FAILED (non-critical):",
+        result.error
+      );
+    }
+  });
 
-const {
-  data: achievementAwardData,
-  error: achievementAwardError,
-} = await supabase.rpc(
-  "award_exam_achievements",
-  {
+void supabase
+  .rpc("award_exam_achievements", {
     p_user_id: userId,
-  }
-);
-
-if (achievementAwardError) {
-  console.error(
-    "AWARD EXAM ACHIEVEMENTS ERROR:",
-    achievementAwardError
+  })
+  .then(
+    (result: {
+      data: any;
+      error: any;
+    }) => {
+      if (result.error) {
+        console.error(
+          "ACHIEVEMENT AWARD FAILED (non-critical):",
+          result.error
+        );
+      }
+    }
   );
-}
 
 const {
   data: newAchievements,
@@ -737,34 +739,38 @@ if (newAchievements?.length) {
     of newAchievements
   ) {
 
-    const achievement =
-      achievementRecord
-        .achievements as any;
+   const achievement =
+  achievementRecord
+    .achievements as any;
 
-    await supabase
+void supabase
+  .from("activity_feed")
+  .insert({
+    user_id:
+      userId,
 
-      .from("activity_feed")
+    activity_type:
+      "achievement",
 
-      .insert({
+    title: "Achievement Unlocked",
 
-        user_id:
-          userId,
+    description:
+      achievement?.title,
 
-        activity_type:
-          "achievement",
-
-        title: "Achievement Unlocked",
-
-        description:
-          achievement?.title,
-
-       metadata: {
-  achievement_id: achievement?.id,
-  reward_tcd: achievement?.reward_tcd,
-  rarity: achievement?.rarity,
-},
-
-      });
+    metadata: {
+      achievement_id: achievement?.id,
+      reward_tcd: achievement?.reward_tcd,
+      rarity: achievement?.rarity,
+    },
+  })
+  .then((result: { error: any }) => {
+    if (result.error) {
+      console.error(
+        "ACHIEVEMENT ACTIVITY FEED FAILED (non-critical):",
+        result.error
+      );
+    }
+  });
   }
 }
 if (rewardError) {
@@ -777,30 +783,55 @@ if (rewardError) {
     // Complete session
 
   
-    const {
-  data: unlockedAchievements,
-} = await supabase
+let unlockedAchievements: any[] = [];
 
-  .from("user_achievements")
+try {
+  const { data, error } = await Promise.race([
+    supabase
+      .from("user_achievements")
+      .select(`
+        id,
+        achievement_id,
+        achievements (
+          title,
+          reward_tcd
+        )
+      `)
+      .eq("user_id", userId)
+      .eq("seen", false),
 
-  .select(`
-    id,
-    achievement_id,
-    achievements (
-      title,
-      reward_tcd
-    )
-  `)
+    new Promise<{
+      data: null;
+      error: Error;
+    }>((resolve) =>
+      setTimeout(
+        () =>
+          resolve({
+            data: null,
+            error: new Error(
+              "Achievement lookup timed out"
+            ),
+          }),
+        8000
+      )
+    ),
+  ]);
 
-  .eq(
-    "user_id",
-    userId
-  )
-
-  .eq(
-    "seen",
-    false
+  if (error) {
+    console.error(
+      "UNLOCKED ACHIEVEMENTS LOOKUP FAILED:",
+      error
+    );
+  } else {
+    unlockedAchievements =
+      (data as any[]) || [];
+  }
+} catch (error) {
+  console.error(
+    "UNLOCKED ACHIEVEMENTS LOOKUP FAILED:",
+    error
   );
+}
 
  return {
   success: true,
