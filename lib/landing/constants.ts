@@ -8,7 +8,7 @@ export const COMPANY = {
   shortName: "TCD",
   legalName: "THE CONCLUSION DAILY",
 
-  tagline: "Hope • Faith • Excellence",
+  tagline: "Hope & Faith ",
 
   // Hero
   heroTitle: "India's Competitive Learning Ecosystem",

@@ -8,8 +8,6 @@ import AuthHero from "@/components/auth/AuthHero";
 import { useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Turnstile } from "@marsidev/react-turnstile";
-import { processReferral }
-from "@/lib/referrals/processReferral";
 import { useSearchParams } from "next/navigation";
 export default function LoginPage() {
 
@@ -565,7 +563,7 @@ The Conclusion Daily
 
           <p className="text-tcd-primary mt-2">
 
-          Hope • Faith • Excellence
+          Hope & Faith 
           </p>
 <p className="text-tcd-primary mt-2">
   Continue your journey of

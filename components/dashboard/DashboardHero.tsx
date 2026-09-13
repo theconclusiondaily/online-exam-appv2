@@ -145,7 +145,7 @@ const xpProgress =
           "
         >
 
-          Hope • Faith • Excellence
+          Hope & Faith 
 
         </p>
 

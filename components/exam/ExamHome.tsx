@@ -296,7 +296,7 @@ text-sm md:text-base
 
 </div>
 <p className="mt-4 text-[#D4AF37] uppercase tracking-[0.25em] font-semibold">
-  Hope • Faith • Excellence
+  Hope & Faith 
 </p>
             <h1
   className="

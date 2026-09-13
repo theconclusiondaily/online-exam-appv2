@@ -144,82 +144,102 @@ const searchParams =
     };
     }, [searchParams]);
 
-  async function handleReset() {
-    if (!password) {
-      alert("Please enter your new password.");
-      return;
-    }
-
-    if (password.length < 6) {
-      alert(
-        "Password must be at least 6 characters."
-      );
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      /*
-       * Make sure the recovery session still exists
-       * immediately before changing the password.
-       */
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
-
-      if (sessionError || !session) {
-        console.error(
-          "RESET PASSWORD SESSION MISSING:",
-          sessionError
-        );
-
-        alert(
-          "Your password reset link has expired or is invalid. Please request a new password reset link."
-        );
-
-        return;
-      }
-
-      const {
-        error,
-      } = await supabase.auth.updateUser({
-        password,
-      });
-
-      if (error) {
-        console.error(
-          "PASSWORD UPDATE ERROR:",
-          error
-        );
-
-        alert(error.message);
-
-        return;
-      }
-
-      alert(
-        "Password updated successfully."
-      );
-
-      await supabase.auth.signOut();
-
-      router.replace("/login");
-    } catch (err) {
-      console.error(
-        "RESET PASSWORD ERROR:",
-        err
-      );
-
-      alert(
-        "Failed to update password. Please request a new reset link and try again."
-      );
-    } finally {
-      setLoading(false);
-    }
+async function handleReset() {
+  if (!password) {
+    alert("Please enter your new password.");
+    return;
   }
 
+  if (password.length < 6) {
+    alert(
+      "Password must be at least 6 characters."
+    );
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    /*
+     * Password reset must use the recovery session
+     * created from the email link.
+     *
+     * Do not ask for the old password here.
+     */
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    if (sessionError) {
+      console.error(
+        "RESET PASSWORD SESSION ERROR:",
+        sessionError
+      );
+
+      alert(
+        "Your password reset session is invalid. Please request a new reset link."
+      );
+
+      return;
+    }
+
+    if (!session) {
+      alert(
+        "Your password reset session has expired. Please request a new reset link."
+      );
+
+      return;
+    }
+
+    console.log(
+      "RESET PASSWORD USER:",
+      session.user.id
+    );
+
+    const {
+      data,
+      error,
+    } = await supabase.auth.updateUser({
+      password,
+    });
+
+    if (error) {
+      console.error(
+        "PASSWORD UPDATE ERROR:",
+        error
+      );
+
+      alert(error.message);
+
+      return;
+    }
+
+    console.log(
+      "PASSWORD UPDATE SUCCESS:",
+      data.user?.id
+    );
+
+    alert(
+      "Password updated successfully."
+    );
+
+    await supabase.auth.signOut();
+
+    router.replace("/login");
+  } catch (err) {
+    console.error(
+      "RESET PASSWORD ERROR:",
+      err
+    );
+
+    alert(
+      "Failed to update password. Please request a new reset link and try again."
+    );
+  } finally {
+    setLoading(false);
+  }
+}
   return (
     <main
       className="

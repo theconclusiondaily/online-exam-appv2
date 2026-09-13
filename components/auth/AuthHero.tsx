@@ -62,7 +62,7 @@ export default function AuthHero() {
             mb-2
           "
         >
-          Hope • Faith • Excellence
+          Hope & Faith 
         </p>
 
         <h1

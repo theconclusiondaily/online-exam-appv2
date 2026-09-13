@@ -149,7 +149,7 @@ animate-[tcdGlow_3s_ease-in-out_infinite]
     text-sm
   "
 >
-  Hope • Faith • Excellence
+  Hope & Faith 
 </p>
 <p
   className="

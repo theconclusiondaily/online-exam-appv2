@@ -197,7 +197,7 @@ md:text-6xl
 md:text-lg
           "
         >
-          Hope • Faith • Excellence
+          Hope & Faith 
         </p>
 
       </div>
