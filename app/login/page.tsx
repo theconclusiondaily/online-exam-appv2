@@ -85,10 +85,10 @@ if (!normalizedEmail) {
     await supabase.auth.resetPasswordForEmail(
   normalizedEmail,
       {
-        redirectTo:
+       redirectTo:
   window.location.hostname === "localhost"
-    ? "http://localhost:3000/reset-password"
-    : "https://theconclusiondaily.com/reset-password",
+    ? "http://localhost:3000/auth/reset-callback"
+    : "https://theconclusiondaily.com/auth/reset-callback",
       }
     );
 
