@@ -20,16 +20,19 @@ export async function GET(request: NextRequest) {
       code
     );
 
-  if (error) {
-    console.error(
-      "PASSWORD RESET CODE EXCHANGE FAILED:",
-      error
-    );
+ if (error) {
+  console.error(
+    "PASSWORD RESET CODE EXCHANGE FAILED:",
+    error
+  );
 
-    return NextResponse.redirect(
-      `${origin}/login?reset=invalid`
-    );
-  }
+  return new NextResponse(
+    `Password reset callback failed: ${error.message}`,
+    {
+      status: 400,
+    }
+  );
+}
 
   return NextResponse.redirect(
     `${origin}/reset-password`
