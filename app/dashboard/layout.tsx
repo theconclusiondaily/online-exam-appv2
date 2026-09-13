@@ -59,20 +59,22 @@ export default function DashboardLayout({
             "
             onClick={() => setSidebarOpen(false)}
           />
-
-          <div
-            className="
-              fixed
-              top-0
-              left-0
-              w-72
-              h-full
-              overflow-y-auto
-              bg-white
-              z-50
-              shadow-2xl
-            "
-          >
+<div
+  className="
+    fixed
+    top-0
+    left-0
+    w-72
+    h-dvh
+    max-h-dvh
+    overflow-y-auto
+    overscroll-contain
+    touch-pan-y
+    bg-white
+    z-50
+    shadow-2xl
+  "
+>
             <button
               className="
                 absolute
@@ -84,9 +86,9 @@ export default function DashboardLayout({
               <X size={22} />
             </button>
 
-            <div className="pt-10">
-              <StudentSidebar mobile />
-            </div>
+            <div className="pt-10 pb-6">
+  <StudentSidebar mobile />
+</div>
           </div>
         </>
       )}
