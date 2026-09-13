@@ -34,65 +34,99 @@ export default function DashboardLayout({
   });
 
     return (
-    <div
-      className="
-        flex
-        min-h-screen
-        bg-gradient-to-br
-        from-[#EEF3FF]
-        via-white
-        to-[#FFF8EA]
-      "
-    >
+   <div
+  className="
+    flex
+    min-h-screen
+    overflow-hidden
+    bg-gradient-to-br
+    from-[#EEF3FF]
+    via-white
+    to-[#FFF8EA]
+  "
+>
       {/* Desktop Sidebar */}
       <StudentSidebar />
 
       {/* Mobile Sidebar */}
-      {sidebarOpen && (
-        <>
-          <div
-            className="
-              fixed
-              inset-0
-              bg-black/40
-              z-50
-            "
-            onClick={() => setSidebarOpen(false)}
-          />
-<div
- className="
-  fixed
-  inset-y-0
-  left-0
-  w-72
-  max-w-[85vw]
-  flex
-  flex-col
-  bg-white
-  z-50
-  shadow-2xl
-  overflow-hidden
-"
->
-            <button
-              className="
-                absolute
-                top-4
-                right-4
-              "
-              onClick={() => setSidebarOpen(false)}
-            >
-              <X size={22} />
-            </button>
+{sidebarOpen && (
+  <>
+    {/* Mobile backdrop */}
+    <div
+      className="
+        fixed
+        inset-0
+        bg-black/40
+        z-40
+        lg:hidden
+      "
+      onClick={() => setSidebarOpen(false)}
+    />
 
-            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
-  <div className="pt-10 pb-6">
-    <StudentSidebar mobile />
-  </div>
-</div>
-          </div>
-        </>
-      )}
+    {/* Mobile drawer */}
+    <aside
+      className="
+        fixed
+        top-0
+        left-0
+        bottom-0
+        w-72
+        max-w-[85vw]
+        bg-white
+        z-50
+        shadow-2xl
+        flex
+        flex-col
+        overflow-hidden
+        lg:hidden
+      "
+      style={{
+        height: "100dvh",
+      }}
+    >
+      {/* Drawer header */}
+      <div
+        className="
+          flex-shrink-0
+          h-16
+          flex
+          items-center
+          justify-end
+          px-4
+          border-b
+          border-gray-200
+        "
+      >
+        <button
+          type="button"
+          onClick={() => setSidebarOpen(false)}
+          className="p-2"
+        >
+          <X size={22} />
+        </button>
+      </div>
+
+      {/* Sidebar scroll area */}
+      <div
+        className="
+          flex-1
+          min-h-0
+          overflow-y-scroll
+          overflow-x-hidden
+          overscroll-contain
+        "
+        style={{
+          WebkitOverflowScrolling: "touch",
+          touchAction: "pan-y",
+        }}
+      >
+        <div className="pb-8">
+          <StudentSidebar mobile />
+        </div>
+      </div>
+    </aside>
+  </>
+)}
 
       {/* Mobile Header */}
       <div
