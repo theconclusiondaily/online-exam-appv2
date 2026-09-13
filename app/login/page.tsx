@@ -88,9 +88,9 @@ if (!normalizedEmail) {
   normalizedEmail,
       {
         redirectTo:
-          window.location.hostname === "localhost"
-            ? "http://localhost:3000/reset-password"
-            : "https://www.theconclusiondaily.com/reset-password",
+  window.location.hostname === "localhost"
+    ? "http://localhost:3000/reset-password"
+    : "https://theconclusiondaily.com/reset-password",
       }
     );
 
