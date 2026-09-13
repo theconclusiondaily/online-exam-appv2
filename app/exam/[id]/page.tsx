@@ -4248,8 +4248,9 @@ void (async () => {
       .from("leaderboard_view")
       .select("user_id")
       .order("xp", {
-        ascending: false,
-      });
+  ascending: false,
+  nullsFirst: false,
+})
 
     const previousRankIndex =
       beforeRanks?.findIndex(
@@ -4270,8 +4271,9 @@ void (async () => {
       .from("leaderboard_view")
       .select("user_id")
       .order("xp", {
-        ascending: false,
-      });
+  ascending: false,
+  nullsFirst: false,
+})
 
     const newRankIndex =
       afterRanks?.findIndex(

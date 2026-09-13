@@ -33,7 +33,10 @@ class CompetitionRepository extends BaseRepository {
       db
         .from(VIEWS.LEADERBOARD)
         .select(LEADERBOARD_COLUMNS.CARD)
-        .order("xp", { ascending: false })
+       .order("xp", {
+  ascending: false,
+  nullsFirst: false,
+})
         .limit(10),
 
       db
