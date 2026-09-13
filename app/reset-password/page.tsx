@@ -1,17 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
-const searchParams =
-  useSearchParams();
+
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -65,41 +61,7 @@ const searchParams =
      */
     const checkSession = async () => {
       try {
-                /*
-         * PKCE PASSWORD RECOVERY
-         *
-         * Supabase may return to this page with
-         * ?code=...
-         *
-         * Exchange that code for the recovery session
-         * before checking the session.
-         */
-        const code =
-          searchParams.get("code");
-
-        if (code) {
-          const {
-            error: exchangeError,
-          } =
-            await supabase.auth
-              .exchangeCodeForSession(
-                code
-              );
-
-          if (exchangeError) {
-            console.error(
-              "PASSWORD RESET CODE EXCHANGE FAILED:",
-              exchangeError
-            );
-
-            if (mounted) {
-              setRecoveryReady(false);
-            }
-
-            return;
-          }
-        }
-        const {
+               const {
           data: { session },
           error,
         } = await supabase.auth.getSession();
@@ -142,7 +104,7 @@ const searchParams =
       mounted = false;
       subscription.unsubscribe();
     };
-    }, [searchParams]);
+    }, []);
 
 async function handleReset() {
   if (!password) {
