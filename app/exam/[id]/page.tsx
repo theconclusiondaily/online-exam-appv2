@@ -1034,6 +1034,11 @@ if (savedAnswersData) {
   setAnswers(
     formattedAnswers
   );
+  setAnsweredQuestions(
+  Object.keys(formattedAnswers).map(
+    (questionId) => Number(questionId)
+  )
+);
 }
       setStudentName(
 
@@ -1217,10 +1222,12 @@ const savedSession =
   );
 
 if (savedSession) {
-
   setSessionToken(
     savedSession
   );
+
+  sessionTokenRef.current =
+    savedSession;
 }
 if (
   savedStarted === "true"
@@ -3747,9 +3754,22 @@ if (!token) {
   // Save anything still waiting in the queue
   const queue = [...pendingSaves];
 
-  if (queue.length === 0) {
-    return;
-  }
+if (queue.length === 0) {
+  return;
+}
+
+/*
+ * Do not start network answer saves when the
+ * browser is already offline.
+ *
+ * The answers remain in pendingSaves/localStorage
+ * and can be flushed when the connection returns.
+ */
+if (!navigator.onLine) {
+  throw new Error(
+    "Device is offline. Pending answers remain safely queued."
+  );
+}
 
   savingAnswersRef.current = true;
   setSavingAnswers(true);
@@ -3787,18 +3807,19 @@ if (!token) {
     }
 
     // Remove only answers that were successfully flushed
-    setPendingSaves((current) =>
-      current.filter(
-        (currentItem) =>
-          !queue.some(
-            (savedItem) =>
-              savedItem.questionId ===
-                currentItem.questionId &&
-              savedItem.selectedOption ===
-                currentItem.selectedOption
-          )
-      )
+   setPendingSaves((current) =>
+  current.filter((currentItem) => {
+    const wasSaved = queue.some(
+      (savedItem) =>
+        savedItem.questionId ===
+          currentItem.questionId &&
+        savedItem.selectedOption ===
+          currentItem.selectedOption
     );
+
+    return !wasSaved;
+  })
+);
   } finally {
     savingAnswersRef.current = false;
     setSavingAnswers(false);
@@ -3848,15 +3869,29 @@ async function submitExam() {
    * 2. WAIT FOR NETWORK BEFORE FINAL SUBMISSION
    * --------------------------------------------------
    */
- if (!navigator.onLine) {
+/*
+ * Wait for connection to return.
+ */
+if (!navigator.onLine) {
   toast.info(
-    "Your answers are safe. Please reconnect to the internet and try submitting again."
+    "Your exam is safe. Waiting for internet connection..."
   );
 
-  setSubmitting(false);
-  timerSubmittedRef.current = false;
+  await new Promise<void>((resolve) => {
+    const handleOnline = () => {
+      window.removeEventListener(
+        "online",
+        handleOnline
+      );
 
-  return;
+      resolve();
+    };
+
+    window.addEventListener(
+      "online",
+      handleOnline
+    );
+  });
 }
 
   /*
@@ -4032,24 +4067,87 @@ async function submitExam() {
    * 5. SERVER ERROR
    * --------------------------------------------------
    */
+ if (
+  !response ||
+  !response.ok
+) {
+  /*
+   * The server may have completed the submission
+   * even if the browser lost the original response.
+   */
+ if (
+  result?.error ===
+  "Exam already submitted"
+) {
+  console.log(
+    "Exam was already submitted on the server."
+  );
+
+  /*
+   * Recover the existing submitted attempt
+   * instead of sending the student back into
+   * the exam.
+   */
+  const {
+    data: submittedAttempt,
+    error: submittedAttemptError,
+  } = await supabase
+    .from("exam_attempts")
+    .select("id, score, status")
+    .eq("exam_id", examId)
+    .eq(
+  "user_id",
+  userId
+)
+    .eq("status", "submitted")
+    .order("created_at", {
+      ascending: false,
+    })
+    .limit(1)
+    .maybeSingle();
+
   if (
-    !response ||
-    !response.ok
+    submittedAttempt &&
+    !submittedAttemptError
   ) {
-    toast.error(
-      result?.error ||
-        "Submission failed. Please try again."
+    router.replace(
+      `/exam-result/${submittedAttempt.id}`
     );
-
-    setSubmitting(false);
-    setFinalizingExam(false);
-
-    timerSubmittedRef.current =
-      false;
 
     return;
   }
 
+  console.error(
+    "Could not recover submitted attempt:",
+    submittedAttemptError
+  );
+
+  toast.error(
+    "Your exam was submitted, but the result could not be loaded. Please refresh."
+  );
+
+  setSubmitting(false);
+  setFinalizingExam(false);
+
+  timerSubmittedRef.current =
+    false;
+
+  return;
+}
+
+  toast.error(
+    result?.error ||
+      "Submission failed. Please try again."
+  );
+
+  setSubmitting(false);
+  setFinalizingExam(false);
+
+  timerSubmittedRef.current =
+    false;
+
+  return;
+}
   /*
    * --------------------------------------------------
    * 6. SERVER CONFIRMED SUBMISSION
@@ -4071,152 +4169,178 @@ async function submitExam() {
    * 7. LEVEL / RANK INFORMATION
    * --------------------------------------------------
    */
-  const {
-    data: beforeLevel,
-  } = await supabase
-    .from("user_levels")
-    .select("level")
-    .eq("user_id", userId)
-    .single();
+  /*
+ * --------------------------------------------------
+ * 7. POST-SUBMISSION LEVEL / RANK INFORMATION
+ * --------------------------------------------------
+ *
+ * These are UI enhancements only.
+ * They must never block the submitted exam result.
+ */
+void (async () => {
+  try {
+    const {
+      data: beforeLevel,
+    } = await supabase
+      .from("user_levels")
+      .select("level")
+      .eq("user_id", userId)
+      .single();
 
-  const {
-    data: beforeRanks,
-  } = await supabase
-    .from("leaderboard_view")
-    .select("user_id")
-    .order("xp", {
-      ascending: false,
-    });
-
-  const previousRankIndex =
-    beforeRanks?.findIndex(
-      (r: any) =>
-        r.user_id === userId
-    );
-
-  const previousRank =
-    previousRankIndex !==
-      undefined &&
-    previousRankIndex >= 0
-      ? previousRankIndex + 1
-      : null;
-
-  const {
-    data: afterRanks,
-  } = await supabase
-    .from("leaderboard_view")
-    .select("user_id")
-    .order("xp", {
-      ascending: false,
-    });
-
-  const newRankIndex =
-    afterRanks?.findIndex(
-      (r: any) =>
-        r.user_id === userId
-    );
-
-  const newRank =
-    newRankIndex !==
-      undefined &&
-    newRankIndex >= 0
-      ? newRankIndex + 1
-      : null;
-
-  if (
-    previousRank &&
-    newRank &&
-    newRank < previousRank
-  ) {
-    await supabase
-      .from("activity_feed")
-      .insert({
-        user_id: userId,
-
-        activity_type:
-          "rank",
-
-        title:
-          "Leaderboard Updated",
-
-        description:
-          `Moved from #${previousRank} to #${newRank}`,
-
-        metadata: {
-          old_rank:
-            previousRank,
-
-          new_rank:
-            newRank,
-        },
+    const {
+      data: beforeRanks,
+    } = await supabase
+      .from("leaderboard_view")
+      .select("user_id")
+      .order("xp", {
+        ascending: false,
       });
+
+    const previousRankIndex =
+      beforeRanks?.findIndex(
+        (r: any) =>
+          r.user_id === userId
+      );
+
+    const previousRank =
+      previousRankIndex !==
+        undefined &&
+      previousRankIndex >= 0
+        ? previousRankIndex + 1
+        : null;
+
+    const {
+      data: afterRanks,
+    } = await supabase
+      .from("leaderboard_view")
+      .select("user_id")
+      .order("xp", {
+        ascending: false,
+      });
+
+    const newRankIndex =
+      afterRanks?.findIndex(
+        (r: any) =>
+          r.user_id === userId
+      );
+
+    const newRank =
+      newRankIndex !==
+        undefined &&
+      newRankIndex >= 0
+        ? newRankIndex + 1
+        : null;
+
+    if (
+      previousRank &&
+      newRank &&
+      newRank < previousRank
+    ) {
+      void supabase
+        .from("activity_feed")
+        .insert({
+          user_id: userId,
+          activity_type: "rank",
+          title:
+            "Leaderboard Updated",
+          description:
+            `Moved from #${previousRank} to #${newRank}`,
+          metadata: {
+            old_rank:
+              previousRank,
+            new_rank:
+              newRank,
+          },
+        });
+    }
+
+    const {
+      data: afterLevel,
+    } = await supabase
+      .from("user_levels")
+      .select("level")
+      .eq("user_id", userId)
+      .single();
+
+    if (
+      afterLevel?.level >
+      beforeLevel?.level
+    ) {
+      setLevelUp(true);
+    }
+
+    setShowXP(true);
+  } catch (error) {
+    console.warn(
+      "Post-submission level/rank processing failed:",
+      error
+    );
   }
-
-  const {
-    data: afterLevel,
-  } = await supabase
-    .from("user_levels")
-    .select("level")
-    .eq("user_id", userId)
-    .single();
-
-  if (
-    afterLevel?.level >
-    beforeLevel?.level
-  ) {
-    setLevelUp(true);
-  }
-
-  setShowXP(true);
-
+})();
   /*
    * --------------------------------------------------
    * 8. ACTIVITY FEED
    * --------------------------------------------------
    */
-  await supabase
-    .from("activity_feed")
-    .insert({
-      user_id: userId,
+  void supabase
+  .from("activity_feed")
+  .insert({
+    user_id: userId,
 
-      activity_type:
-        "exam",
+    activity_type:
+      "exam",
 
-      title:
-        "Exam Completed",
+    title:
+      "Exam Completed",
 
-      description:
-        `Scored ${result.percentage}% in ${examInfo?.title}`,
+    description:
+      `Scored ${result.percentage}% in ${examInfo?.title}`,
 
-      metadata: {
-        score: result.score,
+    metadata: {
+      score: result.score,
 
-        percentage:
-          result.percentage,
+      percentage:
+        result.percentage,
 
-        exam_id: examId,
+      exam_id: examId,
 
-        xp_earned:
-          10 +
-          Math.floor(
-            result.percentage / 2
-          ),
-      },
-    });
+      xp_earned:
+        10 +
+        Math.floor(
+          result.percentage / 2
+        ),
+    },
+  })
+  .then(({ error }) => {
+    if (error) {
+      console.warn(
+        "Exam activity feed update failed:",
+        error
+      );
+    }
+  });
 
   /*
    * --------------------------------------------------
    * 9. UPDATE LIVE STATUS
    * --------------------------------------------------
    */
-  await supabase
-    .from("exam_live_status")
-    .update({
-      submitted: true,
-      fullscreen: false,
-    })
-    .eq("exam_id", examId)
-    .eq("user_id", userId);
+void supabase
+  .from("exam_live_status")
+  .update({
+    submitted: true,
+    fullscreen: false,
+  })
+  .eq("exam_id", examId)
+  .eq("user_id", userId)
+  .then(({ error }) => {
+    if (error) {
+      console.warn(
+        "Live status submission update failed:",
+        error
+      );
+    }
+  });
 
   /*
    * --------------------------------------------------
@@ -4287,33 +4411,29 @@ async function submitExam() {
    * 11. REDIRECT TO RESULT
    * --------------------------------------------------
    */
-  setTimeout(() => {
-    setShowXP(false);
+ setShowXP(false);
 
-    sessionStorage.setItem(
-      `achievement-count-${result.attemptId}`,
-      String(
-        result.achievementCount ||
-          0
-      )
-    );
+sessionStorage.setItem(
+  `achievement-count-${result.attemptId}`,
+  String(
+    result.achievementCount || 0
+  )
+);
 
-    sessionStorage.setItem(
-      `achievement-reward-${result.attemptId}`,
-      String(
-        result.achievementReward ||
-          0
-      )
-    );
+sessionStorage.setItem(
+  `achievement-reward-${result.attemptId}`,
+  String(
+    result.achievementReward || 0
+  )
+);
 
-    console.log(
-      "Redirecting to result page..."
-    );
+console.log(
+  "Redirecting to result page..."
+);
 
-    router.replace(
-      `/exam-result/${result.attemptId}`
-    );
-  }, 5000);
+router.replace(
+  `/exam-result/${result.attemptId}`
+);
 }
 const answeredCount = Object.keys(answers).length;
 

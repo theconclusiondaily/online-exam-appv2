@@ -171,56 +171,39 @@ if (exam.exam_scope !== "PUBLIC") {
           internetStatus,
       })
       .eq("id", session.id);
-await supabase
-
+void supabase
   .from("exam_live_status")
-
   .upsert(
     {
-
-      exam_id:
-        examId,
-
-      user_id:
-        user.id,
-
-      student_name:
-        user.email,
-
-      current_question:
-        0,
-
+      exam_id: examId,
+      user_id: user.id,
+      student_name: user.email,
+      current_question: 0,
       violations:
-        (
-          fullscreenViolations || 0
-        ) +
-        (
-          tabSwitchViolations || 0
-        ),
-
+        (fullscreenViolations || 0) +
+        (tabSwitchViolations || 0),
       fullscreen:
         fullscreenViolations > 0,
-
       camera_enabled:
         cameraEnabled,
-
-      mic_enabled:
-        true,
-
-      submitted:
-        false,
-
+      mic_enabled: true,
+      submitted: false,
       updated_at:
-        new Date()
-          .toISOString(),
-
+        new Date().toISOString(),
     },
-
     {
       onConflict:
         "exam_id,user_id",
     }
-  );
+  )
+  .then(({ error }) => {
+    if (error) {
+      console.warn(
+        "Live status update failed:",
+        error
+      );
+    }
+  });
     if (error) {
       return NextResponse.json(
         { error: error.message },

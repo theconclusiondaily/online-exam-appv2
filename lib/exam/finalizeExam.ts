@@ -431,9 +431,14 @@ const {
   })
   .select();
 
-   
+   if (attemptError) {
+  throw new Error(
+    attemptError.message,
+  );
+}
 
-const { error: leaderboardError } = await supabase
+const { error: leaderboardError } = await Promise.race([
+  supabase
   .from("leaderboard")
   .upsert(
     {
@@ -448,8 +453,21 @@ const { error: leaderboardError } = await supabase
     {
       onConflict: "exam_id,user_id",
     }
-  );
-
+  ),
+  new Promise<{
+    error: Error;
+  }>((resolve) =>
+    setTimeout(
+      () =>
+        resolve({
+          error: new Error(
+            "Leaderboard update timed out"
+          ),
+        }),
+      8000
+    )
+  ),
+]);
 if (leaderboardError) {
   console.error("LEADERBOARD ERROR:", leaderboardError);
 
@@ -468,12 +486,28 @@ try {
 
   if (newAttemptId) {
     const { error: feedbackRequestError } =
-      await supabase.rpc(
-        "create_exam_feedback_request",
-        {
-          p_attempt_id: newAttemptId,
-        }
-      );
+      await Promise.race([
+        supabase.rpc(
+          "create_exam_feedback_request",
+          {
+            p_attempt_id: newAttemptId,
+          }
+        ),
+
+        new Promise<{
+          error: Error;
+        }>((resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                error: new Error(
+                  "Feedback request creation timed out"
+                ),
+              }),
+            8000
+          )
+        ),
+      ]);
 
     if (feedbackRequestError) {
       console.error(
@@ -570,7 +604,7 @@ const {
     final_score: totalScore,
   })
   .eq("id", session.id)
-  .eq("status", "active");
+  .eq("status", "submitting");
 
 if (completeSessionError) {
   console.error(

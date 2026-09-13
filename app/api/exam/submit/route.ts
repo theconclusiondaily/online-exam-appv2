@@ -228,7 +228,51 @@ if (
       );
     }
 // Lock the session immediately to prevent race conditions
-   
+   const {
+  data: lockedSession,
+  error: lockError,
+} = await supabase
+  .from("exam_sessions")
+  .update({
+    status: "submitting",
+  })
+  .eq("id", session.id)
+  .eq("status", "active")
+  .select("*")
+  .maybeSingle();
+
+if (lockError) {
+  console.error(
+    "SESSION LOCK ERROR:",
+    lockError
+  );
+
+  return NextResponse.json(
+    {
+      error:
+        "Unable to secure your exam submission. Please try again.",
+    },
+    {
+      status: 500,
+    }
+  );
+}
+
+if (!lockedSession) {
+  /*
+   * Another submission request already acquired
+   * this session.
+   */
+  return NextResponse.json(
+    {
+      error:
+        "Exam already submitted",
+    },
+    {
+      status: 400,
+    }
+  );
+}
 const result = await finalizeExam({
   supabase,
   userId: user.id,

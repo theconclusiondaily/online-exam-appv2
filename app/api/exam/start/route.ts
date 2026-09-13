@@ -94,21 +94,48 @@ if (submittedSession) {
     }
   );
 }
-    // CHECK EXISTING ACTIVE SESSION
-    const { data: existingSession } = await supabase
-      .from("exam_sessions")
-      .select("*")
-      .eq("exam_id", examId)
-      .eq("user_id", user.id)
-      .eq("status", "active")
-      .maybeSingle();
+    // CHECK EXISTING SESSION
+const { data: existingSession } =
+  await supabase
+    .from("exam_sessions")
+    .select("*")
+    .eq("exam_id", examId)
+    .eq("user_id", user.id)
+    .in("status", [
+      "active",
+      "submitting",
+    ])
+    .order("created_at", {
+      ascending: false,
+    })
+    .limit(1)
+    .maybeSingle();
 
-    if (existingSession) {
-      return NextResponse.json({
-        success: true,
-        session: existingSession,
-      });
-    }
+if (existingSession) {
+  /*
+   * A submission is already being finalized.
+   * Do not create another session.
+   */
+  if (
+    existingSession.status ===
+    "submitting"
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Exam submission is already in progress.",
+      },
+      {
+        status: 409,
+      }
+    );
+  }
+
+  return NextResponse.json({
+    success: true,
+    session: existingSession,
+  });
+}
 
     // LOAD EXAM
     const {
