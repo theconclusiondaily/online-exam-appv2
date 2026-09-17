@@ -3345,15 +3345,110 @@ if (!isIOSDevice()) {
 }
 /*
  * ==========================================
+ * START EXAM SESSION
+ * ==========================================
+ */
+
+let response: Response;
+let result: any;
+
+try {
+  response = await fetchWithTimeout(
+    "/api/exam/start",
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+      },
+
+      body: JSON.stringify({
+        examId,
+      }),
+    }
+  );
+
+  result = await response.json();
+
+} catch (error) {
+
+  console.error(
+    "EXAM START NETWORK ERROR:",
+    error
+  );
+
+  toast.error(
+    "Network connection lost. Please check your internet connection and try again."
+  );
+
+  return;
+}
+
+if (!response.ok) {
+
+  if (
+    response.status === 402 &&
+    result?.paymentRequired
+  ) {
+    router.replace(
+      `/exam/${examId}/entry`
+    );
+
+    return;
+  }
+
+  if (
+    result?.error ===
+    "You have already submitted this exam"
+  ) {
+    router.replace(
+      `/exam-result/${examId}`
+    );
+
+    return;
+  }
+
+  toast.error(
+    result?.error ||
+    "Failed to start exam"
+  );
+
+  return;
+}
+
+const token =
+  result?.session?.session_token;
+
+if (!token) {
+
+  console.error(
+    "EXAM START RESPONSE HAS NO SESSION TOKEN:",
+    result
+  );
+
+  toast.error(
+    "Unable to initialize your exam session."
+  );
+
+  return;
+}
+
+setSessionToken(token);
+
+sessionTokenRef.current =
+  token;
+
+localStorage.setItem(
+  `exam-session-${examId}-${userId}`,
+  token
+);
+
+/*
+ * ==========================================
  * LOAD FIRST QUESTION
  * ==========================================
- *
- * Use the SAME shared question loader used
- * everywhere else in the exam.
- *
- * This prevents multiple question-loading
- * implementations from behaving differently.
  */
+
 try {
 
   const firstQuestion =
@@ -3368,23 +3463,11 @@ try {
     return;
   }
 
-  /*
-   * prefetchQuestion() already:
-   *
-   * - downloads the question
-   * - shuffles the options
-   * - stores it in memory cache
-   * - stores it in React cache
-   * - stores it in sessionStorage
-   */
-
   setCurrentQuestionData(
     firstQuestion
   );
 
-  setCurrentQuestion(
-    0
-  );
+  setCurrentQuestion(0);
 
 } catch (error) {
 
@@ -3402,13 +3485,13 @@ try {
 if (window.innerWidth < 768) {
   setCameraCorner("top-right");
 }
+
 setExamStarted(true);
 
 localStorage.setItem(
   `exam-started-${examId}-${userId}`,
   "true"
 );
-
 }
     
  async function selectAnswer(
