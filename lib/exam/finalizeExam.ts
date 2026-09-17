@@ -432,8 +432,63 @@ const {
   .select();
 
    if (attemptError) {
+  /*
+   * Two submission requests can arrive at almost
+   * exactly the same time.
+   *
+   * The database UNIQUE(user_id, exam_id)
+   * constraint guarantees that only one attempt
+   * can be created.
+   *
+   * If this request loses that race, recover the
+   * already-created attempt instead of treating
+   * the submission as failed.
+   */
+  if (
+    attemptError.code ===
+    "23505"
+  ) {
+    const {
+      data: existingAttemptAfterRace,
+      error:
+        existingAttemptAfterRaceError,
+    } = await supabase
+      .from("exam_attempts")
+      .select("id")
+      .eq(
+        "user_id",
+        userId
+      )
+      .eq(
+        "exam_id",
+        examId
+      )
+      .maybeSingle();
+
+    if (
+      existingAttemptAfterRaceError
+    ) {
+      throw new Error(
+        existingAttemptAfterRaceError.message
+      );
+    }
+
+    if (
+      existingAttemptAfterRace
+    ) {
+      return {
+        success: true,
+
+        attemptId:
+          existingAttemptAfterRace.id,
+
+        alreadySubmitted: true,
+      };
+    }
+  }
+
   throw new Error(
-    attemptError.message,
+    attemptError.message
   );
 }
 

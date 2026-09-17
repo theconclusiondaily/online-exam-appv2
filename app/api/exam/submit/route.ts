@@ -211,22 +211,44 @@ if (
     })
     .eq("id", session.id);
 }
-    // Prevent double submit
 
-    if (
-      session.status !==
-      "active"
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Exam already submitted",
-        },
-        {
-          status: 400,
-        }
-      );
+   /*
+ * A session can be:
+ *
+ * active     → normal submission
+ * submitting → another request is currently
+ *              finalizing the exam
+ * submitted  → final result already exists
+ * expired    → handled by the expiry logic above
+ *
+ * If another request arrives while the first
+ * request is finalizing, do NOT start another
+ * finalization.
+ */
+if (session.status === "submitting") {
+  return NextResponse.json(
+    {
+      error:
+        "Submission is already being processed. Please wait.",
+      submissionInProgress: true,
+    },
+    {
+      status: 409,
     }
+  );
+}
+
+if (session.status !== "active") {
+  return NextResponse.json(
+    {
+      error:
+        "Exam already submitted",
+    },
+    {
+      status: 400,
+    }
+  );
+}
 // Lock the session immediately to prevent race conditions
    const {
   data: lockedSession,

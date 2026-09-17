@@ -154,6 +154,18 @@ const [
     useRef<MediaStream | null>(
       null
     );
+
+    const [networkStatus, setNetworkStatus] =
+  useState<"online" | "offline" | "degraded">(
+    "online"
+  );
+
+const networkCheckRef =
+  useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
+  
+  
    const audioContextRef =
   useRef<AudioContext | null>(null);
 
@@ -201,6 +213,7 @@ const faceDetectionTimeoutRef =
   );
   const lastForceSubmitAtRef =
   useRef<string | null>(null);
+
 const pendingSnapshotRef =
   useRef<
     Map<
@@ -550,7 +563,68 @@ useEffect(() => {
   }
 
 }, []);
+useEffect(() => {
+  const handleOffline = () => {
+    setNetworkStatus("offline");
+  };
 
+  const handleOnline = () => {
+    /*
+     * Browser connection has returned.
+     *
+     * Don't immediately assume the API is healthy.
+     * Give the browser a moment to restore connectivity.
+     */
+    setNetworkStatus("degraded");
+
+    if (networkCheckRef.current) {
+      clearTimeout(
+        networkCheckRef.current
+      );
+    }
+
+    networkCheckRef.current =
+      setTimeout(() => {
+        if (navigator.onLine) {
+          setNetworkStatus("online");
+        } else {
+          setNetworkStatus("offline");
+        }
+      }, 1000);
+  };
+
+  if (!navigator.onLine) {
+    setNetworkStatus("offline");
+  }
+
+  window.addEventListener(
+    "offline",
+    handleOffline
+  );
+
+  window.addEventListener(
+    "online",
+    handleOnline
+  );
+
+  return () => {
+    window.removeEventListener(
+      "offline",
+      handleOffline
+    );
+
+    window.removeEventListener(
+      "online",
+      handleOnline
+    );
+
+    if (networkCheckRef.current) {
+      clearTimeout(
+        networkCheckRef.current
+      );
+    }
+  };
+}, []);
 useEffect(() => {
 
   localStorage.setItem(
@@ -863,112 +937,125 @@ if (isDemo) {
 
       setUserId(currentUser.id);
 
-      /*
+/*
  * Restore violation count for an existing active exam session.
  *
- * This makes violations survive a browser refresh,
- * just like the existing exam session/timer state.
+ * IMPORTANT:
+ * This runs in the background.
+ *
+ * The exam UI must NEVER wait for Supabase
+ * just to restore the violation count.
  */
-const {
-  data: savedViolationSession,
-  error: savedViolationError,
-} = await Promise.race([
-  supabase
-    .from("exam_sessions")
-    .select("total_violations")
-    .eq("user_id", currentUser.id)
-    .eq("exam_id", examId)
-    .eq("status", "active")
-    .maybeSingle(),
+void supabase
+  .from("exam_sessions")
+  .select("total_violations")
+  .eq(
+    "user_id",
+    currentUser.id
+  )
+  .eq(
+    "exam_id",
+    examId
+  )
+  .eq(
+    "status",
+    "active"
+  )
+  .maybeSingle()
+  .then(
+    ({
+      data: savedViolationSession,
+      error: savedViolationError,
+    }) => {
 
-  new Promise<{
-    data: null;
-    error: Error;
-  }>((resolve) =>
-    setTimeout(
-      () =>
-        resolve({
-          data: null,
-          error: new Error(
-            "Violation restore request timed out"
-          ),
-        }),
-      5000
-    )
-  ),
-]);
+      if (savedViolationError) {
+        console.warn(
+          "Unable to restore violation count:",
+          savedViolationError
+        );
 
-if (savedViolationError) {
-  console.error(
-    "VIOLATION RESTORE ERROR:",
-    savedViolationError
+        return;
+      }
+
+      if (!savedViolationSession) {
+        return;
+      }
+
+      const savedViolations =
+        savedViolationSession.total_violations ??
+        0;
+
+      /*
+       * Never allow a delayed server response
+       * to reduce the locally known violation count.
+       */
+      if (
+        savedViolations >
+        violationsRef.current
+      ) {
+        violationsRef.current =
+          savedViolations;
+
+        setViolations(
+          savedViolations
+        );
+      }
+    }
   );
-} else if (savedViolationSession) {
-  const savedViolations =
-    savedViolationSession.total_violations ?? 0;
-
-  setViolations(
-    savedViolations
-  );
-
-  violationsRef.current =
-    savedViolations;
-}
-      const {
+     const {
   data: profileData,
-} = await Promise.race([
-  supabase
-    .from("users")
-    .select(`
-      institute_id,
-      role
-    `)
-    .eq(
-      "id",
-      currentUser.id
-    )
-    .single(),
+  error: profileError,
+} = await supabase
+  .from("users")
+  .select(`
+    institute_id,
+    role
+  `)
+  .eq(
+    "id",
+    currentUser.id
+  )
+  .single();
 
-  new Promise<{
-    data: null;
-    error: Error;
-  }>((resolve) =>
-    setTimeout(
-      () =>
-        resolve({
-          data: null,
-          error: new Error(
-            "Profile request timed out"
-          ),
-        }),
-      5000
-    )
-  ),
-]);
-  const {
+if (profileError) {
+  console.error(
+    "PROFILE LOAD ERROR:",
+    profileError
+  );
+
+  toast.error(
+    "Unable to verify your exam access. Please check your connection and try again."
+  );
+
+  setLoading(false);
+
+  return;
+}
+const {
   data: memberships,
-} = await Promise.race([
-  supabase
-    .from("user_institutes")
-    .select("institute_id")
-    .eq("user_id", currentUser.id),
+  error: membershipError,
+} = await supabase
+  .from("user_institutes")
+  .select("institute_id")
+  .eq(
+    "user_id",
+    currentUser.id
+  );
 
-  new Promise<{
-    data: null;
-    error: Error;
-  }>((resolve) =>
-    setTimeout(
-      () =>
-        resolve({
-          data: null,
-          error: new Error(
-            "Institute membership request timed out"
-          ),
-        }),
-      5000
-    )
-  ),
-]);
+if (membershipError) {
+  console.error(
+    "INSTITUTE MEMBERSHIP LOAD ERROR:",
+    membershipError
+  );
+
+  toast.error(
+    "Unable to verify your institute access. Please check your connection and try again."
+  );
+
+  setLoading(false);
+
+  return;
+}
 
 const instituteIds =
   memberships?.map(
@@ -986,10 +1073,16 @@ const instituteIds =
 
   return;
 }
-const {
-  data: savedAnswersData,
-} = await Promise.race([
-  supabase
+let savedAnswersData = null;
+
+try {
+  /*
+   * Restoring saved answers is helpful, but it must
+   * NEVER prevent the exam UI from starting.
+   *
+   * Supabase is allowed to fail here.
+   */
+  const result = await supabase
     .from("exam_answers")
     .select(`
       question_id,
@@ -1002,25 +1095,24 @@ const {
     .eq(
       "user_id",
       currentUser.id
-    ),
+    );
 
-  new Promise<{
-    data: null;
-    error: Error;
-  }>((resolve) =>
-    setTimeout(
-      () =>
-        resolve({
-          data: null,
-          error: new Error(
-            "Saved answers request timed out"
-          ),
-        }),
-      5000
-    )
-  ),
-]);
+  if (result.error) {
+    console.warn(
+      "Unable to restore saved answers:",
+      result.error
+    );
+  } else {
+    savedAnswersData =
+      result.data;
+  }
 
+} catch (error) {
+  console.warn(
+    "Saved answers restoration failed:",
+    error
+  );
+}
 if (savedAnswersData) {
 
   const formattedAnswers =
@@ -1059,39 +1151,91 @@ if (savedAnswersData) {
 
   "Student"
 );
-     const {
-  data: existingAttempt,
-} = await Promise.race([
-  supabase
-    .from("exam_attempts")
-    .select("*")
-    .eq(
-      "exam_id",
-      examId
-    )
-    .eq(
-      "user_id",
-      currentUser.id
-    )
-    .maybeSingle(),
+/*
+ * Check whether the student already has an attempt.
+ *
+ * IMPORTANT:
+ * This request is allowed to fail/timeout without
+ * freezing the exam UI.
+ */
+let existingAttempt = null;
 
-  new Promise<{
-    data: null;
-    error: Error;
-  }>((resolve) =>
-    setTimeout(
-      () =>
-        resolve({
-          data: null,
-          error: new Error(
-            "Existing attempt request timed out"
-          ),
-        }),
-      5000
-    )
-  ),
-]);
+try {
+  const result = await Promise.race([
+    supabase
+      .from("exam_attempts")
+      .select("*")
+      .eq(
+        "exam_id",
+        examId
+      )
+      .eq(
+        "user_id",
+        currentUser.id
+      )
+      .maybeSingle(),
 
+    new Promise<{
+      data: null;
+      error: Error;
+    }>((resolve) =>
+      setTimeout(
+        () =>
+          resolve({
+            data: null,
+            error: new Error(
+              "Existing attempt request timed out"
+            ),
+          }),
+        5000
+      )
+    ),
+  ]);
+
+  /*
+   * A real database error or timeout means
+   * we cannot safely determine whether this
+   * student already submitted the exam.
+   *
+   * Therefore, DO NOT allow a new attempt.
+   */
+  if (result.error) {
+    console.error(
+      "EXISTING ATTEMPT LOAD ERROR:",
+      result.error
+    );
+
+    toast.error(
+      "Connection is taking too long. Please check your network and try again."
+    );
+
+    setLoading(false);
+
+    return;
+  }
+
+  existingAttempt =
+    result.data;
+
+} catch (error) {
+
+  console.error(
+    "EXISTING ATTEMPT CHECK FAILED:",
+    error
+  );
+
+  toast.error(
+    "Unable to verify your exam attempt. Please check your connection and try again."
+  );
+
+  setLoading(false);
+
+  return;
+}
+
+/*
+ * Existing submitted attempt.
+ */
 if (existingAttempt) {
 
   if (
@@ -1112,6 +1256,11 @@ if (existingAttempt) {
     return;
   }
 
+  /*
+   * Existing active attempt.
+   *
+   * Allow the student to resume.
+   */
   if (
     existingAttempt.status ===
     "active"
@@ -1122,36 +1271,67 @@ if (existingAttempt) {
     );
   }
 }
-      const {
+const {
   data: examData,
 } = await fetchExam(
   examId
 );
-const { count } = await Promise.race([
-  supabase
-    .from("exam_questions")
-    .select("*", {
-      count: "exact",
-      head: true,
-    })
-    .eq("exam_id", examId),
 
-  new Promise<{
-    count: null;
-    error: Error;
-  }>((resolve) =>
-    setTimeout(
-      () =>
-        resolve({
-          count: null,
-          error: new Error(
-            "Question count request timed out"
-          ),
-        }),
-      5000
-    )
-  ),
-]);
+/*
+ * Question count is useful for the UI,
+ * but it must NOT block exam startup.
+ *
+ * The actual questions are loaded through
+ * prefetchQuestion() / fetchQuestionByIndex().
+ */
+void supabase
+  .from("exam_questions")
+  .select("*", {
+    count: "exact",
+    head: true,
+  })
+  .eq(
+    "exam_id",
+    examId
+  )
+  .then(
+    ({
+      count,
+      error: questionCountError,
+    }) => {
+
+      if (questionCountError) {
+        console.warn(
+          "Unable to load question count:",
+          questionCountError
+        );
+
+        return;
+      }
+
+      if (
+        typeof count === "number" &&
+        count > 0
+      ) {
+
+        setTotalQuestions(
+          count
+        );
+
+        setExamInfo(
+          (previous: any) =>
+            previous
+              ? {
+                  ...previous,
+                  totalQuestions:
+                    count,
+                }
+              : previous
+        );
+      }
+    }
+  );
+
 if (
   examData?.exam_scope !== "PUBLIC" &&
   !instituteIds.includes(
@@ -1169,14 +1349,13 @@ if (
 
   return;
 }
-      setExamInfo({
+
+setExamInfo({
   ...examData,
-  totalQuestions: count || 0,
+  totalQuestions: 0,
 });
 
-     
-
-           setLoading(false);
+setLoading(false);
     }
 
     if (examId) {
@@ -1320,6 +1499,7 @@ if (
   userId,
   submitted,
 ]);
+
 useEffect(() => {
 
   if (!examStarted) {
@@ -1337,7 +1517,9 @@ useEffect(() => {
    * This runs in the background and does
    * NOT block the current question.
    */
- void prefetchQuestionsAhead(0);
+void prefetchQuestionsAhead(
+  currentQuestion
+);
 
 }, [
   currentQuestion,
@@ -1354,8 +1536,10 @@ useEffect(() => {
   }
 
   const handleOnline = () => {
-    void prefetchQuestionsAhead(0);
-  };
+  void prefetchQuestionsAhead(
+    currentQuestion
+  );
+};
 
   window.addEventListener(
     "online",
@@ -1623,29 +1807,27 @@ useEffect(() => {
 async function handleViolation(
   reason: string
 ) {
-  const now = Date.now();
+ const now = Date.now();
 
-  /*
-   * Prevent the SAME violation from firing repeatedly
-   * within a short period.
-   *
-   * Different violations are still allowed through.
-   */
-  const normalizedReason =
-    reason.trim().toLowerCase();
+/*
+ * Prevent multiple browser/proctoring events
+ * from being counted as separate violations
+ * during a short transition.
+ */
+const GLOBAL_VIOLATION_COOLDOWN = 5000;
 
-  const lastReason =
-    lastViolationReasonRef.current;
+const normalizedReason =
+  reason.trim().toLowerCase();
 
-  const lastTime =
-    lastViolationRef.current;
+const lastTime =
+  lastViolationRef.current;
 
-  if (
-    normalizedReason === lastReason &&
-    now - lastTime < 5000
-  ) {
-    return;
-  }
+if (
+  now - lastTime <
+  GLOBAL_VIOLATION_COOLDOWN
+) {
+  return;
+}
 
   lastViolationRef.current =
     now;
@@ -2527,7 +2709,9 @@ async function resumeExam() {
    * Continue building the rolling buffer
    * from the restored position.
    */
- void prefetchQuestionsAhead(0);
+ void prefetchQuestionsAhead(
+  restoredQuestion
+);
 
   setExamStarted(
     true
@@ -2755,69 +2939,69 @@ async function fetchQuestionByIndex(
   }
 
   /*
-   * 4. SHARED NETWORK LOADER
-   *
-   * IMPORTANT:
-   *
-   * Do NOT fetch directly here.
-   *
-   * prefetchQuestion() now owns all
-   * network requests.
-   *
-   * If another prefetch is already
-   * downloading this question, we reuse
-   * that SAME Promise.
-   */
-  try {
+ * 4. SHARED NETWORK LOADER
+ *
+ * The requested question is loaded independently.
+ *
+ * IMPORTANT:
+ *
+ * We NEVER block the exam with a fixed timeout.
+ * prefetchQuestion() already has its own network
+ * timeout and failure handling.
+ *
+ * If the network is slow, the current question
+ * remains on screen instead of the entire exam
+ * appearing frozen.
+ */
+try {
+  const question =
+    await prefetchQuestion(index);
 
-    const question =
-  await Promise.race([
-    prefetchQuestion(index),
-
-    new Promise<null>((resolve) =>
-      setTimeout(
-        () => resolve(null),
-        5000
-      )
-    ),
-  ]);
-
-    if (!question) {
-
-      console.warn(
-        "Unable to load question:",
-        index
-      );
-
-      return;
-    }
-
-    /*
-     * prefetchQuestion() has already:
-     *
-     * - updated memory cache
-     * - shuffled options
-     * - updated React cache
-     * - updated sessionStorage
-     *
-     * We only need to display it.
-     */
-    setCurrentQuestionData(
-      question
-    );
-
-    setCurrentQuestion(
+  if (!question) {
+    console.warn(
+      "Unable to load question:",
       index
     );
 
-  } catch (error) {
-
-    console.warn(
-      "Unable to load exam question:",
-      error
-    );
-
+    /*
+     * Keep the current question visible.
+     * Do NOT clear currentQuestionData.
+     * Do NOT move the student to another question.
+     */
+    return;
   }
+
+  /*
+   * prefetchQuestion() has already:
+   *
+   * - updated memory cache
+   * - shuffled options
+   * - updated React cache
+   * - updated sessionStorage
+   *
+   * We only need to display it.
+   */
+  setCurrentQuestionData(
+    question
+  );
+
+  setCurrentQuestion(
+    index
+  );
+
+} catch (error) {
+
+  /*
+   * Network failure must never terminate
+   * or freeze the exam.
+   *
+   * Keep the currently visible question.
+   */
+  console.warn(
+    "Unable to load exam question:",
+    error
+  );
+}
 }
 async function prefetchQuestion(
   index: number
@@ -3028,20 +3212,32 @@ async function prefetchQuestion(
 async function prefetchQuestionsAhead(
   startIndex: number
 ) {
+  /*
+   * Never create background network traffic
+   * while the device is offline.
+   */
   if (!navigator.onLine) {
     return;
   }
 
   /*
-   * Cache the complete question set progressively.
+   * Keep a small rolling buffer.
    *
-   * We intentionally fetch in small batches instead
-   * of firing all questions at once.
+   * Current Q1  → Q2, Q3, Q4
+   * Current Q50 → Q51, Q52, Q53
    *
-   * This makes the exam resilient if the network
-   * disappears after the student has already started.
+   * Do NOT preload the entire exam.
    */
-  const BATCH_SIZE = 5;
+  const PREFETCH_AHEAD = 3;
+
+  /*
+   * Only TWO requests are allowed to run
+   * simultaneously.
+   *
+   * This protects the student's active
+   * question/answer traffic.
+   */
+  const BATCH_SIZE = 2;
 
   const knownTotal =
     totalQuestions > 0
@@ -3053,41 +3249,57 @@ async function prefetchQuestionsAhead(
   }
 
   /*
-   * Find questions that are not already cached.
+   * Find questions that are:
+   *
+   * 1. Ahead of the student
+   * 2. Not already cached
+   * 3. Not already being downloaded
    */
   const missingIndexes: number[] = [];
 
   for (
-    let index = startIndex;
-    index < knownTotal;
-    index++
+    let offset = 1;
+    offset <= PREFETCH_AHEAD;
+    offset++
   ) {
-    if (
-      !questionCacheRef.current[index] &&
-      !prefetchingRef.current.has(index)
-    ) {
-      missingIndexes.push(index);
+    const index =
+      startIndex + offset;
+
+    if (index >= knownTotal) {
+      break;
     }
+
+    if (
+      questionCacheRef.current[index] ||
+      prefetchingRef.current.has(index)
+    ) {
+      continue;
+    }
+
+    missingIndexes.push(index);
   }
 
-  /*
-   * Nothing left to cache.
-   */
   if (missingIndexes.length === 0) {
     return;
   }
 
   /*
-   * Fetch only a small batch at a time.
+   * Load in small batches.
    *
-   * Promise.allSettled ensures one failed question
-   * does not stop the remaining cache process.
+   * IMPORTANT:
+   *
+   * Promise.allSettled() means one failed
+   * question does NOT cancel the others.
    */
   for (
     let i = 0;
     i < missingIndexes.length;
     i += BATCH_SIZE
   ) {
+    /*
+     * Network may have disappeared while
+     * the previous batch was running.
+     */
     if (!navigator.onLine) {
       return;
     }
@@ -3099,8 +3311,9 @@ async function prefetchQuestionsAhead(
       );
 
     await Promise.allSettled(
-      batch.map((index) =>
-        prefetchQuestion(index)
+      batch.map(
+        (index) =>
+          prefetchQuestion(index)
       )
     );
   }
@@ -3130,163 +3343,61 @@ if (!isIOSDevice()) {
     );
   }
 }
-const response = await fetchWithTimeout(
-  "/api/exam/start",
-  {
-    method: "POST",
+/*
+ * ==========================================
+ * LOAD FIRST QUESTION
+ * ==========================================
+ *
+ * Use the SAME shared question loader used
+ * everywhere else in the exam.
+ *
+ * This prevents multiple question-loading
+ * implementations from behaving differently.
+ */
+try {
 
-    headers: {
-      "Content-Type":
-        "application/json",
-    },
+  const firstQuestion =
+    await prefetchQuestion(0);
 
-    body: JSON.stringify({
-      examId,
-    }),
-  }
-);
+  if (!firstQuestion) {
 
-const result =
-  await response.json();
-
-if (result?.session?.id) {
-  sessionIdRef.current = result.session.id;
-}
-
-setAttemptId(
-  result.session?.attempt_id ||
-  null
-);
-
-
-
-if (!response.ok) {
-
-
- // Paid exam accessed without
-  // a valid entry-fee payment.
-  if (
-    response.status === 402 &&
-    result.paymentRequired
-  ) {
-    router.replace(
-      `/exam/${examId}/entry`
+    toast.error(
+      "Unable to load the first question. Please check your connection and try again."
     );
 
     return;
   }
-  if (
-    result.error ===
-    "You have already submitted this exam"
-  ) {
 
-    
-    router.replace(
-      `/exam-result/${examId}`
-    );
+  /*
+   * prefetchQuestion() already:
+   *
+   * - downloads the question
+   * - shuffles the options
+   * - stores it in memory cache
+   * - stores it in React cache
+   * - stores it in sessionStorage
+   */
 
-    return;
-  }
+  setCurrentQuestionData(
+    firstQuestion
+  );
+
+  setCurrentQuestion(
+    0
+  );
+
+} catch (error) {
+
+  console.error(
+    "FIRST QUESTION LOAD ERROR:",
+    error
+  );
 
   toast.error(
-    result.error ||
-    "Failed to start exam"
+    "Unable to load the first question. Please check your connection and try again."
   );
 
   return;
-}
-
-const token =
-  result.session.session_token;
-
-setSessionToken(token);
-sessionTokenRef.current = token;
-
-
-localStorage.setItem(
-  `exam-session-${examId}-${userId}`,
-  token
-);
-
-const questionResponse =
-  await fetchWithTimeout(
-    "/api/exam/question",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type":
-          "application/json",
-      },
-      body: JSON.stringify({
-        examId,
-        questionIndex: 0,
-        sessionToken: token,
-      }),
-    }
-  );
-
-const questionResult =
-  await questionResponse.json();
- 
-
-if (!questionResponse.ok) {
-
-  alert(
-    JSON.stringify(
-      questionResult,
-      null,
-      2
-    )
-  );
-
-  return;
-}
-
-
-setTotalQuestions(
-  questionResult.totalQuestions || 1
-);
-
-
-if (
-  questionResponse.ok &&
-  questionResult.data
-) {
-
-const question =
-  questionResult.data;
-
-const shuffledQuestion = {
-  ...question,
-
-  shuffledOptions: [
-    question.option_a,
-    question.option_b,
-    question.option_c,
-    question.option_d,
-  ].sort(
-    () => Math.random() - 0.5
-  ),
-};
-
-
-questionCacheRef.current[0] =
-  shuffledQuestion;
-
-setQuestionCache({
-  0: shuffledQuestion,
-});
-
-setCurrentQuestionData(
-  shuffledQuestion
-);
-
-setCurrentQuestion(0);
-}
-if (
-  questionResult.totalQuestions > 1
-) {
-  prefetchQuestion(1);
 }
 if (window.innerWidth < 768) {
   setCameraCorner("top-right");
@@ -3300,18 +3411,18 @@ localStorage.setItem(
 
 }
     
-  async function selectAnswer(
+ async function selectAnswer(
   questionId: string,
   answer: string
 ) {
   if (!sessionToken) {
+    toast.error(
+      "Session not initialized"
+    );
 
-  toast.error(
-    "Session not initialized"
-  );
+    return;
+  }
 
-  return;
-}
   if (
     alreadyAttempted ||
     submitted
@@ -3319,80 +3430,108 @@ localStorage.setItem(
     return;
   }
 
-  
+  /*
+   * Calculate the new value from the current
+   * in-memory answer state.
+   *
+   * Clicking the same option again deselects it.
+   */
+  const newValue =
+    answers[questionId] === answer
+      ? null
+      : answer;
 
- const newValue =
-  answers[questionId] === answer
-    ? null
-    : answer;
+  /*
+   * IMPORTANT:
+   *
+   * Update the UI immediately.
+   *
+   * The exam must NEVER wait for Supabase
+   * before showing the student's selection.
+   */
+  setAnswers((prev: any) => {
+    const updated = {
+      ...prev,
+      [questionId]: newValue,
+    };
 
+    /*
+     * Persist the complete local answer state
+     * immediately.
+     *
+     * This protects the answer if the browser
+     * refreshes or the network disappears.
+     */
+    try {
+      localStorage.setItem(
+        `exam-answers-${examId}-${userId}`,
+        JSON.stringify(updated)
+      );
+    } catch (error) {
+      console.warn(
+        "Unable to persist answer locally:",
+        error
+      );
+    }
 
+    return updated;
+  });
 
-setAnswers(
-  (prev: any) => ({
-    ...prev,
-
-    [questionId]: newValue,
-  })
-);
-const updatedAnswers = {
-  ...answers,
-  [questionId]: newValue,
-};
-
-try {
-  localStorage.setItem(
-    `exam-answers-${examId}-${userId}`,
-    JSON.stringify(updatedAnswers)
-  );
-} catch (error) {
-  console.warn(
-    "Unable to persist answer locally:",
-    error
-  );
-}
-setPendingSaves(prev => {
-
-  const filtered = prev.filter(
-    item => item.questionId !== questionId
-  );
-
-  return [
-    ...filtered,
-    {
-      questionId,
-      selectedOption: newValue,
-    },
-  ];
-
-});
-
-if (!newValue) {
-
-  setAnsweredQuestions(
-    prev =>
+  /*
+   * Add/update the answer in the pending
+   * synchronization queue.
+   *
+   * If the same question was changed multiple
+   * times while offline/slow, only the latest
+   * value needs to be synchronized.
+   */
+  setPendingSaves((prev) => {
+    const filtered =
       prev.filter(
-        q =>
-          q !== currentQuestion
-      )
-  );
+        (item) =>
+          item.questionId !== questionId
+      );
 
-} else {
+    return [
+      ...filtered,
+      {
+        questionId,
+        selectedOption: newValue,
+      },
+    ];
+  });
 
-  setAnsweredQuestions(
-    prev =>
-      prev.includes(
-        currentQuestion
-      )
-        ? prev
-        : [
-            ...prev,
-            currentQuestion,
-          ]
-  );
-}
-  
-  return;
+  /*
+   * Update the question palette immediately.
+   */
+  if (!newValue) {
+    setAnsweredQuestions(
+      (prev) =>
+        prev.filter(
+          (q) =>
+            q !== currentQuestion
+        )
+    );
+  } else {
+    setAnsweredQuestions(
+      (prev) =>
+        prev.includes(
+          currentQuestion
+        )
+          ? prev
+          : [
+              ...prev,
+              currentQuestion,
+            ]
+    );
+  }
+
+  /*
+   * DO NOT call Supabase here.
+   *
+   * The background answer-sync system should
+   * consume pendingSaves.
+   */
 }
 useEffect(() => {
   if (
@@ -3418,20 +3557,38 @@ useEffect(() => {
   submitted,
 ]);
 useEffect(() => {
-  if (!sessionToken || pendingSaves.length === 0) {
+  if (
+    !sessionToken ||
+    pendingSaves.length === 0
+  ) {
     return;
   }
 
+  let cancelled = false;
+
   const saveAll = async () => {
+    if (cancelled) {
+      return;
+    }
+
+    /*
+     * Only one synchronization worker may run
+     * at a time.
+     */
     if (savingRef.current) {
       return;
     }
 
+    /*
+     * Never attempt network synchronization
+     * while offline.
+     */
     if (!navigator.onLine) {
       return;
     }
 
-    const queue = [...pendingSaves];
+    const queue =
+      [...pendingSaves];
 
     if (queue.length === 0) {
       return;
@@ -3442,9 +3599,18 @@ useEffect(() => {
     setSavingAnswers(true);
 
     try {
-      for (const item of queue) {
-        try {
-         const response = await fetchWithTimeout(
+  /*
+   * Save queued answers independently.
+   *
+   * IMPORTANT:
+   * One slow/failed request must NEVER block
+   * the other answers in the queue.
+   */
+  await Promise.all(
+    queue.map(async (item) => {
+      try {
+        const response =
+          await fetchWithTimeout(
             "/api/exam/save-answer",
             {
               method: "POST",
@@ -3465,76 +3631,110 @@ useEffect(() => {
             }
           );
 
-          if (!response.ok) {
-            const result =
-              await response
-                .json()
-                .catch(() => null);
+        if (!response.ok) {
+          const result =
+            await response
+              .json()
+              .catch(() => null);
 
-            throw new Error(
-              result?.error ||
-                "Failed to save answer"
-            );
-          }
-
-          /*
-           * Remove ONLY the answer that was
-           * successfully saved.
-           *
-           * If the student changed the answer
-           * while this request was running,
-           * the newer answer will remain queued.
-           */
-          setPendingSaves((current) =>
-            current.filter(
-              (currentItem) =>
-                !(
-                  currentItem.questionId ===
-                    item.questionId &&
-                  currentItem.selectedOption ===
-                    item.selectedOption
-                )
-            )
+          throw new Error(
+            result?.error ||
+              "Failed to save answer"
           );
-        } catch (error) {
-          /*
-           * IMPORTANT:
-           * Do NOT remove the failed answer.
-           * It stays in pendingSaves and will
-           * be retried when the connection returns.
-           */
-          console.warn(
-            "Answer save failed. Keeping answer in queue.",
-            error
-          );
-
-          break;
         }
+
+        /*
+         * Remove ONLY this exact queued version.
+         *
+         * If the student changed the answer
+         * while this request was running,
+         * the newer value remains in the queue.
+         */
+        setPendingSaves((current) =>
+          current.filter(
+            (currentItem) =>
+              !(
+                currentItem.questionId ===
+                  item.questionId &&
+                currentItem.selectedOption ===
+                  item.selectedOption
+              )
+          )
+        );
+
+      } catch (error) {
+        /*
+         * Keep failed answers in the queue.
+         * They will be retried later.
+         */
+        console.warn(
+          "Answer save failed. Keeping answer in queue:",
+          item.questionId,
+          error
+        );
       }
-    } finally {
-      savingAnswersRef.current = false;
-      savingRef.current = false;
-      setSavingAnswers(false);
+    })
+  );
+
+}  finally {
+      savingAnswersRef.current =
+        false;
+
+      savingRef.current =
+        false;
+
+      if (!cancelled) {
+        setSavingAnswers(false);
+      }
     }
   };
 
+  /*
+   * Attempt synchronization immediately
+   * when there are pending answers.
+   */
   void saveAll();
 
-  const handleOnline = () => {
+  /*
+   * Network came back.
+   *
+   * Resume synchronization immediately.
+   */
+ const handleOnline = () => {
+  if (
+    !savingRef.current &&
+    navigator.onLine
+  ) {
     void saveAll();
-  };
+  }
+};
 
   window.addEventListener(
     "online",
     handleOnline
   );
 
+  /*
+   * Retry periodically, but less aggressively.
+   *
+   * 10 seconds is enough because answers are
+   * already stored locally.
+   *
+   * The exam UI NEVER waits for this.
+   */
   const retryInterval =
-    window.setInterval(() => {
+  window.setInterval(() => {
+    if (
+      !savingRef.current &&
+      navigator.onLine
+    ) {
       void saveAll();
-    }, 5000);
+    }
+  }, 10000);
 
   return () => {
+    cancelled = true;
+
     window.removeEventListener(
       "online",
       handleOnline
@@ -3544,6 +3744,7 @@ useEffect(() => {
       retryInterval
     );
   };
+
 }, [
   pendingSaves,
   sessionToken,
@@ -3807,7 +4008,41 @@ if (!token) {
   }
 
   // Save anything still waiting in the queue
-  const queue = [...pendingSaves];
+ /*
+ * Build a snapshot containing only the latest
+ * answer for each question.
+ *
+ * If a student changes:
+ *
+ * Q1 → A
+ * Q1 → B
+ * Q1 → C
+ *
+ * we only need to send C.
+ */
+const latestAnswers = new Map<
+  string,
+  string | null
+>();
+
+for (const item of pendingSaves) {
+  latestAnswers.set(
+    item.questionId,
+    item.selectedOption
+  );
+}
+
+const queue = Array.from(
+  latestAnswers.entries()
+).map(
+  ([
+    questionId,
+    selectedOption,
+  ]) => ({
+    questionId,
+    selectedOption,
+  })
+);
 
 if (queue.length === 0) {
   return;
@@ -3933,20 +4168,25 @@ if (!navigator.onLine) {
   );
 
   await new Promise<void>((resolve) => {
-    const handleOnline = () => {
-      window.removeEventListener(
-        "online",
-        handleOnline
-      );
-
-      resolve();
-    };
-
-    window.addEventListener(
+  const handleOnline = () => {
+    window.removeEventListener(
       "online",
       handleOnline
     );
-  });
+
+    resolve();
+  };
+
+  window.addEventListener(
+    "online",
+    handleOnline,
+    { once: true }
+  );
+});
+
+toast.success(
+  "Connection restored. Continuing submission..."
+);
 }
 
   /*
@@ -4019,65 +4259,96 @@ if (!navigator.onLine) {
       "SUBMIT RESPONSE:",
       result
     );
-  } catch (error) {
-    /*
-     * ------------------------------------------------
-     * NETWORK FAILURE
-     * ------------------------------------------------
-     *
-     * The exam is NOT considered submitted.
-     * Keep the exam state alive and wait for the
-     * connection to return.
-     */
-    console.warn(
-      "Exam submission network error:",
-      error
-    );
+ } catch (error) {
+  /*
+   * ------------------------------------------------
+   * NETWORK FAILURE
+   * ------------------------------------------------
+   *
+   * The server may still have received the request.
+   * Therefore we retry carefully using the SAME
+   * session token.
+   */
 
-    toast.info(
-      "Connection interrupted. Your exam is safe. Waiting for internet..."
-    );
-
-    /*
-     * Wait for connection to return.
-     */
-   if (!navigator.onLine) {
-  toast.info(
-    "Your exam is safe. Please reconnect to the internet and try submitting again."
+  console.warn(
+    "Exam submission network error:",
+    error
   );
 
-  setSubmitting(false);
-  setFinalizingExam(false);
-  timerSubmittedRef.current = false;
+  const MAX_SUBMIT_RETRIES = 3;
 
-  return;
-}
-
-    toast.success(
-      "Connection restored. Retrying submission..."
-    );
+  for (
+    let attempt = 1;
+    attempt <= MAX_SUBMIT_RETRIES;
+    attempt++
+  ) {
 
     /*
-     * Retry submission once connection
-     * has returned.
+     * Wait for the browser to report connectivity.
      */
-    try {
-      response = await fetchWithTimeout(
-        "/api/exam/submit",
-        {
-          method: "POST",
+    if (!navigator.onLine) {
 
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-
-          body: JSON.stringify({
-            examId,
-            sessionToken: token,
-          }),
-        }
+      toast.info(
+        "Connection interrupted. Your exam is safe. Waiting for internet..."
       );
+
+      await new Promise<void>((resolve) => {
+
+        const handleOnline = () => {
+          window.removeEventListener(
+            "online",
+            handleOnline
+          );
+
+          resolve();
+        };
+
+        window.addEventListener(
+          "online",
+          handleOnline,
+          { once: true }
+        );
+      });
+    }
+
+    /*
+     * Small delay between retry attempts.
+     *
+     * This prevents an unstable connection from
+     * generating rapid repeated requests.
+     */
+    if (attempt > 1) {
+      await new Promise<void>((resolve) =>
+        setTimeout(
+          resolve,
+          1000
+        )
+      );
+    }
+
+    try {
+
+      console.log(
+        `Retrying exam submission (${attempt}/${MAX_SUBMIT_RETRIES})`
+      );
+
+      response =
+        await fetchWithTimeout(
+          "/api/exam/submit",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body: JSON.stringify({
+              examId,
+              sessionToken: token,
+            }),
+          }
+        );
 
       console.log(
         "RETRY SUBMIT STATUS:",
@@ -4093,29 +4364,51 @@ if (!navigator.onLine) {
         "RETRY SUBMIT RESPONSE:",
         result
       );
+
+      /*
+       * Request reached the server.
+       *
+       * Stop retrying even if the server returned
+       * an application-level error. That error will
+       * be handled by the normal server-error block.
+       */
+      break;
+
     } catch (retryError) {
-      console.error(
-        "Retry submission failed:",
+
+      console.warn(
+        `Submission retry ${attempt} failed:`,
         retryError
       );
 
-      toast.error(
-        "Connection is still unstable. Please keep this exam open and try again."
-      );
-
-      setSubmitting(false);
-      setFinalizingExam(false);
-
       /*
-       * Allow the student to attempt submission
-       * again without refreshing the exam.
+       * If this was the final retry, allow the
+       * student to submit again manually.
        */
-      timerSubmittedRef.current =
-        false;
+      if (
+        attempt ===
+        MAX_SUBMIT_RETRIES
+      ) {
 
-      return;
+        toast.error(
+          "Connection is still unstable. Your exam is safe. Please reconnect and try submitting again."
+        );
+
+        setSubmitting(false);
+        setFinalizingExam(false);
+
+        /*
+         * Allow another submission attempt.
+         */
+        timerSubmittedRef.current =
+          false;
+
+        return;
+      }
     }
   }
+}
+
 
   /*
    * --------------------------------------------------
@@ -4597,12 +4890,21 @@ to-[#EEF3FB]">
     examInfo
   ) {
 
-    return (
-  <main className="min-h-screen bg-gradient-to-br from-[#F7F9FC] to-[#EEF3FB] flex items-center justify-center p-6">
+   return (
+  <>
+    {networkStatus !== "online" && (
+      <div className="fixed top-2 left-1/2 z-[100] -translate-x-1/2 rounded-full px-4 py-2 text-xs font-medium shadow-lg">
+        {networkStatus === "offline"
+          ? "Offline — your answers are saved on this device"
+          : "Connection unstable — continuing exam"}
+      </div>
+    )}
 
-    <div className="w-full max-w-3xl bg-white rounded-[36px] border border-[#243B6B]/10 shadow-[0_20px_60px_rgba(36,59,107,0.12)] overflow-hidden">
+    <main className="min-h-screen bg-gradient-to-br from-[#F7F9FC] to-[#EEF3FB] flex items-center justify-center p-6">
 
-      {/* Header */}
+      <div className="w-full max-w-3xl bg-white rounded-[36px] border border-[#243B6B]/10 shadow-[0_20px_60px_rgba(36,59,107,0.12)] overflow-hidden">
+
+        {/* Header */}
 
       <div className="bg-gradient-to-r from-[#243B6B] to-[#36558F] px-8 py-8 text-center">
 
@@ -4825,6 +5127,7 @@ to-[#EEF3FB]">
     </div>
 
   </main>
+    </>
 );
   }
 
@@ -5045,8 +5348,9 @@ setCurrentQuestion={
   async (index: number) => {
 
     /*
-     * FAST PATH:
-     * Question is already cached locally.
+     * ==========================================
+     * 1. MEMORY CACHE — INSTANT
+     * ==========================================
      */
     const cachedQuestion =
       questionCacheRef.current[index];
@@ -5064,8 +5368,15 @@ setCurrentQuestion={
     }
 
     /*
-     * If the question is already being
-     * downloaded, reuse that request.
+     * ==========================================
+     * 2. ALREADY DOWNLOADING
+     * ==========================================
+     *
+     * IMPORTANT:
+     *
+     * Do NOT await the network request directly.
+     *
+     * The current exam UI must remain responsive.
      */
     const existingRequest =
       prefetchingRef.current.get(
@@ -5073,10 +5384,29 @@ setCurrentQuestion={
       );
 
     if (existingRequest) {
+
+      /*
+       * Race the existing request against
+       * a short UI timeout.
+       *
+       * If the network is slow, we do NOT
+       * freeze the exam indefinitely.
+       */
       const question =
-        await existingRequest;
+        await Promise.race([
+          existingRequest,
+
+          new Promise<null>(
+            (resolve) =>
+              setTimeout(
+                () => resolve(null),
+                3000
+              )
+          ),
+        ]);
 
       if (question) {
+
         setCurrentQuestionData(
           question
         );
@@ -5084,36 +5414,52 @@ setCurrentQuestion={
         setCurrentQuestion(
           index
         );
+
+      } else {
+
+        /*
+         * The request is still running.
+         *
+         * DO NOT create another request.
+         *
+         * DO NOT freeze the exam.
+         */
+        toast.info(
+          "This question is still loading. Please try again in a moment."
+        );
       }
 
       return;
     }
 
     /*
-     * Question isn't cached.
-     *
-     * Only attempt a network request
-     * when we are actually online.
+     * ==========================================
+     * 3. NOT CACHED / NOT DOWNLOADING
+     * ==========================================
      */
-    if (navigator.onLine) {
-      await fetchQuestionByIndex(
-        index
+
+    if (!navigator.onLine) {
+
+      toast.info(
+        "You're offline. Only downloaded questions are available right now."
       );
 
       return;
     }
 
     /*
-     * Never hang the exam while offline.
+     * ==========================================
+     * 4. START SHARED NETWORK REQUEST
+     * ==========================================
+     *
+     * fetchQuestionByIndex() already uses
+     * prefetchQuestion(), so the request is
+     * registered in the shared in-flight map.
      */
-    console.warn(
-      "Cannot open uncached question while offline:",
+    void fetchQuestionByIndex(
       index
     );
 
-    toast.info(
-      "This question is not cached yet. Please wait for the exam cache to finish."
-    );
   }
 }
   visitedQuestions={
@@ -5480,42 +5826,49 @@ hover:bg-[#C89A1F]
       nextIndex
     );
 
-  if (existingRequest) {
-    const question =
-      await existingRequest;
-
-    if (question) {
-      setCurrentQuestionData(
-        question
-      );
-
-      setCurrentQuestion(
-        nextIndex
-      );
+ if (existingRequest) {
+  /*
+   * The question is already being downloaded.
+   *
+   * NEVER block the exam UI while waiting for
+   * the network.
+   */
+  existingRequest.then((question) => {
+    if (!question) {
+      return;
     }
-  } else if (navigator.onLine) {
-    /*
-     * We are online but the question has not
-     * started loading yet.
-     */
-    await fetchQuestionByIndex(
-      nextIndex
-    );
-  } else {
-    /*
-     * Offline and question is not cached.
-     *
-     * Do NOT block the exam indefinitely.
-     */
-    console.warn(
-      "Cannot navigate to uncached question while offline:",
-      nextIndex
-    );
 
-    toast.info(
-      "This question is still loading. Please wait for the cache to finish."
-    );
-  }
+    setCurrentQuestionData(question);
+    setCurrentQuestion(nextIndex);
+  });
+
+  break;
+} else if (navigator.onLine) {
+  /*
+   * Question is not cached and is not currently
+   * downloading.
+   *
+   * Start the request in the background.
+   * The exam UI must remain responsive.
+   */
+  void fetchQuestionByIndex(nextIndex);
+
+  break;
+} else {
+  /*
+   * Offline and question is not cached.
+   */
+  console.warn(
+    "Cannot navigate to uncached question while offline:",
+    nextIndex
+  );
+
+  toast.info(
+    "This question has not finished loading yet. Please try again in a moment."
+  );
+
+  break;
+}
 }
 
       /*
