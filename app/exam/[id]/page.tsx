@@ -3055,23 +3055,33 @@ async function prefetchQuestion(
               },
 
               body: JSON.stringify({
-                examId,
-                questionIndex: index,
-                sessionToken,
-              }),
+  examId,
+  questionIndex: index,
+  sessionToken: sessionTokenRef.current,
+}),
             }
           );
 
-        if (!response.ok) {
+       if (!response.ok) {
 
-          console.warn(
-            "Question prefetch failed:",
-            response.status,
-            index
-          );
+  const errorResult =
+    await response
+      .json()
+      .catch(() => null);
 
-          return null;
-        }
+  console.error(
+    "QUESTION API FAILED:",
+    response.status,
+    errorResult
+  );
+
+  toast.error(
+    errorResult?.error ||
+      `Question loading failed (${response.status})`
+  );
+
+  return null;
+}
 
         const result =
           await response.json();
@@ -3166,18 +3176,19 @@ async function prefetchQuestion(
 
       } catch (error) {
 
-        /*
-         * Prefetch failure must never
-         * interrupt the exam.
-         */
-        console.warn(
-          "PREFETCH ERROR:",
-          error
-        );
+  console.error(
+    "PREFETCH NETWORK ERROR:",
+    error
+  );
 
-        return null;
+  toast.error(
+    error instanceof Error
+      ? error.message
+      : "Question loading failed"
+  );
 
-      } finally {
+  return null;
+} finally {
 
         /*
          * The request has finished.
@@ -3442,7 +3453,15 @@ localStorage.setItem(
   `exam-session-${examId}-${userId}`,
   token
 );
-
+console.log(
+  "FIRST QUESTION SESSION CHECK:",
+  {
+    examId,
+    sessionToken,
+    sessionTokenRef:
+      sessionTokenRef.current,
+  }
+);
 /*
  * ==========================================
  * LOAD FIRST QUESTION
