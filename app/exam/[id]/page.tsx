@@ -3006,6 +3006,10 @@ try {
 async function prefetchQuestion(
   index: number
 ) {
+  console.log("TCD QUESTION REQUEST", {
+  index,
+  time: new Date().toISOString(),
+});
   // Never prefetch outside the exam.
   if (
     index < 0 ||
@@ -3075,10 +3079,11 @@ async function prefetchQuestion(
     errorResult
   );
 
-  toast.error(
-    errorResult?.error ||
-      `Question loading failed (${response.status})`
-  );
+ console.warn(
+  "QUESTION PREFETCH FAILED:",
+  response.status,
+  errorResult
+);
 
   return null;
 }
@@ -3181,11 +3186,10 @@ async function prefetchQuestion(
     error
   );
 
-  toast.error(
-    error instanceof Error
-      ? error.message
-      : "Question loading failed"
-  );
+  console.warn(
+  "PREFETCH NETWORK ERROR:",
+  error
+);
 
   return null;
 } finally {
