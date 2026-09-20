@@ -1884,9 +1884,13 @@ violationsRef.current =
    * These requests remain non-blocking.
    * A network/database problem must NEVER stop the exam.
    */
- if (
+const currentSessionId =
+  sessionIdRef.current;
+
+if (
   userId &&
   examId &&
+  currentSessionId &&
   navigator.onLine
 ) {
   void supabase
@@ -1894,7 +1898,7 @@ violationsRef.current =
     .update({
       total_violations: updated,
     })
-    .eq("id", sessionIdRef.current)
+    .eq("id", currentSessionId)
     .select("id, total_violations")
     .maybeSingle()
     .then(({ data: updatedSession, error: sessionError }) => {
@@ -1907,7 +1911,7 @@ violationsRef.current =
         console.error(
           "VIOLATION SESSION UPDATE MATCHED NO SESSION:",
           {
-            sessionId: sessionIdRef.current,
+            sessionId: currentSessionId,
             examId,
             userId,
             updated,
@@ -3006,10 +3010,7 @@ try {
 async function prefetchQuestion(
   index: number
 ) {
-  console.log("TCD QUESTION REQUEST", {
-  index,
-  time: new Date().toISOString(),
-});
+  
   // Never prefetch outside the exam.
   if (
     index < 0 ||
@@ -3045,7 +3046,10 @@ async function prefetchQuestion(
 
   const requestPromise =
     (async () => {
-
+console.log("TCD QUESTION NETWORK REQUEST", {
+  index,
+  time: new Date().toISOString(),
+});
       try {
 
         const response =
