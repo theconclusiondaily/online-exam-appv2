@@ -5,6 +5,10 @@ export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient();
 
+    // --------------------------------------------------
+    // 1. AUTHENTICATION
+    // --------------------------------------------------
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -15,37 +19,11 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
-// LOAD USER PROFILE
 
-const {
-  data: profileData,
-} = await supabase
+    // --------------------------------------------------
+    // 2. REQUEST DATA
+    // --------------------------------------------------
 
-  .from("users")
-
-  .select(`
-    institute_id
-  `)
-
-  .eq(
-    "id",
-    user.id
-  )
-
-  .single();
-
-if (!profileData?.institute_id) {
-
-  return NextResponse.json(
-    {
-      error:
-        "No institute assigned",
-    },
-    {
-      status: 403,
-    }
-  );
-}
     const body = await req.json();
 
     const {
@@ -54,64 +32,6 @@ if (!profileData?.institute_id) {
       selectedOption,
       sessionToken,
     } = body;
-const {
-  data: exam,
-  error: examError,
-} = await supabase
-
-  .from("exams")
-
-  .select(`
-  id,
-  duration,
-  published,
-  start_time,
-  end_time,
-  institute_id,
-  exam_scope,
-  entry_fee
-`)
-
-  .eq(
-    "id",
-    examId
-  )
-
-  .single();
-if (examError || !exam) {
-
-  return NextResponse.json(
-    {
-      error: "Exam not found",
-    },
-    {
-      status: 404,
-    }
-  );
-
-}
-
-if (exam.exam_scope !== "PUBLIC") {
-
-  if (
-    exam.institute_id !==
-    profileData.institute_id
-  ) {
-
-    return NextResponse.json(
-      {
-        error: "Unauthorized institute access",
-      },
-      {
-        status: 403,
-      }
-    );
-
-  }
-
-}
- 
-   
 
     if (!examId) {
       return NextResponse.json(
@@ -134,25 +54,38 @@ if (exam.exam_scope !== "PUBLIC") {
       );
     }
 
-    // Session validation
+    // --------------------------------------------------
+    // 3. SESSION VALIDATION
+    //
+    // The session already binds:
+    // user + exam + session token.
+    //
+    // We therefore do NOT perform the previous
+    // users → profile → exams lookup here.
+    // --------------------------------------------------
+
     const {
       data: session,
       error: sessionError,
     } = await supabase
       .from("exam_sessions")
-      .select("*")
+      .select(
+        "id, exam_id, user_id, status, expires_at"
+      )
       .eq("exam_id", examId)
       .eq("user_id", user.id)
       .eq("session_token", sessionToken)
       .maybeSingle();
 
-    
-
     if (sessionError) {
+      console.error(
+        "SAVE ANSWER SESSION ERROR:",
+        sessionError
+      );
+
       return NextResponse.json(
         {
           error: sessionError.message,
-          details: sessionError,
         },
         {
           status: 500,
@@ -164,14 +97,16 @@ if (exam.exam_scope !== "PUBLIC") {
       return NextResponse.json(
         {
           error: "Invalid session",
-          examId,
-          sessionToken,
         },
         {
           status: 403,
         }
       );
     }
+
+    // --------------------------------------------------
+    // 4. SESSION STATUS
+    // --------------------------------------------------
 
     if (session.status !== "active") {
       return NextResponse.json(
@@ -185,51 +120,58 @@ if (exam.exam_scope !== "PUBLIC") {
       );
     }
 
-    if (
-  session.expires_at &&
-  new Date(session.expires_at) < new Date()
-) {
-  console.log(
-    "Save request received after timer expired. Skipping save but allowing final submission."
-  );
+    // --------------------------------------------------
+    // 5. TIMER EXPIRY
+    //
+    // Saving after expiry is intentionally skipped.
+    // Final submission remains responsible for
+    // completing the exam.
+    // --------------------------------------------------
 
-  return NextResponse.json({
-    success: true,
-    skipped: true,
-    reason: "Session expired",
-  });
-}
+    if (
+      session.expires_at &&
+      new Date(session.expires_at) <
+        new Date()
+    ) {
+      console.log(
+        "Save request received after timer expired. Skipping save but allowing final submission."
+      );
+
+      return NextResponse.json({
+        success: true,
+        skipped: true,
+        reason: "Session expired",
+      });
+    }
+
+    // --------------------------------------------------
+    // 6. SAVE ANSWER
+    // --------------------------------------------------
 
     const payload = {
       exam_id: examId,
       user_id: user.id,
       question_id: questionId,
-      selected_option:
-        selectedOption,
-      updated_at:
-        new Date().toISOString(),
+      selected_option: selectedOption,
+      updated_at: new Date().toISOString(),
     };
 
-   
-
-    const {
-      data,
-      error,
-    } = await supabase
+    const { error } = await supabase
       .from("exam_answers")
       .upsert(payload, {
         onConflict:
           "exam_id,user_id,question_id",
-      })
-      .select();
-
-   
+      });
 
     if (error) {
+      console.error(
+        "SAVE ANSWER DATABASE ERROR:",
+        error
+      );
+
       return NextResponse.json(
         {
           error: error.message,
-          details: error,
         },
         {
           status: 500,
@@ -237,13 +179,18 @@ if (exam.exam_scope !== "PUBLIC") {
       );
     }
 
+    // --------------------------------------------------
+    // 7. MINIMAL RESPONSE
+    //
+    // The client does not need the complete database
+    // row after every answer.
+    // --------------------------------------------------
+
     return NextResponse.json({
       success: true,
-      answer: data,
     });
 
   } catch (error: any) {
-
     console.error(
       "SAVE ANSWER CATCH:",
       error

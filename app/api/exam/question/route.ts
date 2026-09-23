@@ -3,175 +3,75 @@ import {
   NextResponse,
 } from "next/server";
 
-import { createClient }
-from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
-export async function POST(
-  req: NextRequest
-) {
+export async function POST(req: NextRequest) {
   try {
+    const supabase = await createClient();
 
-    const supabase =
-      await createClient();
-
+    // 1. AUTHENTICATION
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) {
       return NextResponse.json(
-        {
-          error: "Unauthorized",
-        },
-        {
-          status: 401,
-        }
+        { error: "Unauthorized" },
+        { status: 401 }
       );
     }
-// LOAD USER PROFILE
 
-const {
-  data: profileData,
-} = await supabase
-
-  .from("users")
-
-  .select(`
-    institute_id
-  `)
-
-  .eq(
-    "id",
-    user.id
-  )
-
-  .single();
-
-if (!profileData?.institute_id) {
-
-  return NextResponse.json(
-    {
-      error:
-        "No institute assigned",
-    },
-    {
-      status: 403,
-    }
-  );
-}
+    // 2. REQUEST DATA
     const {
       examId,
       questionIndex,
       sessionToken,
     } = await req.json();
-const {
-  data: exam,
-  error: examError,
-} = await supabase
 
-  .from("exams")
-
-  .select(`
-    id,
-    duration,
-    published,
-    start_time,
-    end_time,
-    institute_id,
-    exam_scope,
-    entry_fee
-  `)
-
-  .eq("id", examId)
-
-  .single();
-if (examError || !exam) {
-
-
-
-  return NextResponse.json(
-
-    {
-
-      error: "Exam not found",
-
-    },
-
-    {
-
-      status: 404,
-
-    }
-
-  );
-
-
-
-}
-
-
-
-if (exam.exam_scope !== "PUBLIC") {
-
-
-
-  if (
-
-    exam.institute_id !==
-
-    profileData.institute_id
-
-  ) {
-
-
-
-    return NextResponse.json(
-
-      {
-
-        error:
-
-          "Unauthorized institute access",
-
-      },
-
-      {
-
-        status: 403,
-
-      }
-
-    );
-
-
-
-  }
-
-
-
-}
-    const {
-      data: session,
-    } = await supabase
-      .from("exam_sessions")
-      .select("*")
-      .eq("exam_id", examId)
-      .eq("user_id", user.id)
-      .eq("session_token", sessionToken)
-      .in("status", ["active", "completed", "expired"])
-      .maybeSingle();
-
-    if (!session) {
+    if (
+      !examId ||
+      typeof questionIndex !== "number" ||
+      !sessionToken ||
+      questionIndex < 0
+    ) {
       return NextResponse.json(
-        {
-          error: "Invalid session",
-        },
-        {
-          status: 403,
-        }
+        { error: "Invalid question request" },
+        { status: 400 }
       );
     }
 
+    // 3. VALIDATE STUDENT SESSION
+    const {
+      data: session,
+      error: sessionError,
+    } = await supabase
+      .from("exam_sessions")
+      .select("id, exam_id, user_id, status")
+      .eq("exam_id", examId)
+      .eq("user_id", user.id)
+      .eq("session_token", sessionToken)
+      .in(
+        "status",
+        ["active", "completed", "expired"]
+      )
+      .maybeSingle();
+
+    if (
+      sessionError ||
+      !session
+    ) {
+      console.error(
+        "QUESTION SESSION VALIDATION ERROR:",
+        sessionError
+      );
+
+      return NextResponse.json(
+        { error: "Invalid session" },
+        { status: 403 }
+      );
+    }
+
+    // 4. GET QUESTION MAPPING
     const {
       data: mappings,
       error: mappingError,
@@ -185,62 +85,62 @@ if (exam.exam_scope !== "PUBLIC") {
       !mappings ||
       mappings.length === 0
     ) {
+      console.error(
+        "QUESTION MAPPING ERROR:",
+        mappingError
+      );
+
       return NextResponse.json(
         {
           error:
             "No questions mapped to exam",
         },
+        { status: 404 }
+      );
+    }
+
+    // 5. CHECK INDEX
+    if (
+      questionIndex >= mappings.length
+    ) {
+      return NextResponse.json(
         {
-          status: 404,
-        }
+          error:
+            "Question index out of range",
+        },
+        { status: 400 }
       );
     }
 
-    const questionIds =
-      mappings.map(
-        (m: any) =>
-          m.question_id
-      );
-if (
-  questionIndex < 0 ||
-  questionIndex >= questionIds.length
-) {
-  return NextResponse.json(
-    {
-      error:
-        "Question index out of range",
-    },
-    {
-      status: 400,
-    }
-  );
-}
     const currentQuestionId =
-      questionIds[
-        questionIndex
-      ];
+      mappings[questionIndex]?.question_id;
 
+    if (!currentQuestionId) {
+      return NextResponse.json(
+        { error: "Question not found" },
+        { status: 404 }
+      );
+    }
+
+    // 6. LOAD QUESTION
     const {
-      data: current,
+      data: currentQuestion,
       error: questionError,
     } = await supabase
       .from("questions")
       .select(`
-  id,
-
-  question,
-  question_text_hi,
-
-  option_a,
-  option_b,
-  option_c,
-  option_d,
-
-  option_a_hi,
-  option_b_hi,
-  option_c_hi,
-  option_d_hi
-`)
+        id,
+        question,
+        question_text_hi,
+        option_a,
+        option_b,
+        option_c,
+        option_d,
+        option_a_hi,
+        option_b_hi,
+        option_c_hi,
+        option_d_hi
+      `)
       .eq(
         "id",
         currentQuestionId
@@ -249,27 +149,27 @@ if (
 
     if (
       questionError ||
-      !current
+      !currentQuestion
     ) {
+      console.error(
+        "QUESTION LOAD ERROR:",
+        questionError
+      );
+
       return NextResponse.json(
-        {
-          error:
-            "Question not found",
-        },
-        {
-          status: 404,
-        }
+        { error: "Question not found" },
+        { status: 404 }
       );
     }
 
+    // 7. RETURN QUESTION
     return NextResponse.json({
-      data: current,
+      data: currentQuestion,
       totalQuestions:
-        questionIds.length,
+        mappings.length,
     });
 
   } catch (error) {
-
     console.error(
       "QUESTION API ERROR:",
       error
@@ -277,12 +177,9 @@ if (
 
     return NextResponse.json(
       {
-        error:
-          "Internal server error",
+        error: "Internal server error",
       },
-      {
-        status: 500,
-      }
+      { status: 500 }
     );
   }
 }

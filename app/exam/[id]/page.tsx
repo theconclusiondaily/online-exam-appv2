@@ -221,10 +221,36 @@ const pendingSnapshotRef =
       HTMLCanvasElement
     >
   >(new Map());
+
   const pendingSnapshotUploadRef =
   useRef<
     Map<number, Promise<string | null>>
   >(new Map());
+
+  const faceScanQueueRef =
+  useRef<number[]>([]);
+
+const faceScanProcessingRef =
+  useRef(false);
+
+  const snapshotRecordQueueRef =
+  useRef<string[]>([]);
+
+const snapshotRecordProcessingRef =
+  useRef(false);
+
+const violationQueueRef =
+  useRef<
+    Array<{
+      reason: string;
+      violationCount: number;
+    }>
+  >([]);
+
+const violationProcessingRef =
+  useRef(false);
+
+
   useEffect(() => {
 
   if (
@@ -324,28 +350,17 @@ if (
       faceCount
     );
 
-    /*
-     * Recover the canvas belonging to
-     * this specific detection request.
-     */
-    const canvas =
-      pendingSnapshotRef.current.get(
-        requestId
-      );
-
-    pendingSnapshotRef.current.delete(
-      requestId
-    );
-
-    /*
-     * Upload the snapshot in the background.
-     * This must never block the next detection.
-     */
-    if (canvas) {
-      void uploadProctoringSnapshot(
-        canvas,
-      );
-    }
+  /*
+ * Recover and release the canvas reference.
+ *
+ * The snapshot upload was already started
+ * inside uploadSnapshot().
+ *
+ * DO NOT upload it again here.
+ */
+pendingSnapshotRef.current.delete(
+  requestId
+);
 
     /*
      * Worker is ready for another frame.
@@ -459,7 +474,8 @@ const questionCacheRef =
   useRef(false);
   const pendingNavigationRef =
   useRef(0);
-   
+   const submittingRef =
+  useRef(false);
     
     const [attemptId, setAttemptId] =
   useState<string | null>(null);
@@ -506,24 +522,23 @@ const [
 const [visitedQuestions,
   setVisitedQuestions] =
   useState<number[]>([0]); 
-  useEffect(() => {
+useEffect(() => {
 
-  setVisitedQuestions(
-    (prev) =>
-
-      prev.includes(
-        currentQuestion
-      )
-
-        ? prev
-
-        : [
-            ...prev,
-            currentQuestion,
-          ]
+  handleQuestionVisited(
+    currentQuestion
   );
 
-}, [currentQuestion]); 
+  /*
+   * Keep the next few questions ready
+   * in the background.
+   *
+   * This never blocks the current question.
+   */
+  void prefetchQuestionsAhead(
+    currentQuestion
+  );
+
+}, [currentQuestion]);
 const [loading,
     setLoading] =
     useState(true);
@@ -727,7 +742,10 @@ const [resumeAvailable,
     setViolations] =
     useState(0);
     const violationsRef = useRef(0);
-    
+
+    const localAnswerChangeRef =
+  useRef(false);
+
 const [finalizingExam, setFinalizingExam] =
   useState(false);
   const [cameraAllowed,
@@ -1073,75 +1091,119 @@ const instituteIds =
 
   return;
 }
-let savedAnswersData = null;
-
-try {
-  /*
-   * Restoring saved answers is helpful, but it must
-   * NEVER prevent the exam UI from starting.
-   *
-   * Supabase is allowed to fail here.
-   */
-  const result = await supabase
-    .from("exam_answers")
-    .select(`
-      question_id,
-      selected_option
-    `)
-    .eq(
-      "exam_id",
-      examId
-    )
-    .eq(
-      "user_id",
-      currentUser.id
-    );
-
-  if (result.error) {
-    console.warn(
-      "Unable to restore saved answers:",
-      result.error
-    );
-  } else {
-    savedAnswersData =
-      result.data;
-  }
-
-} catch (error) {
-  console.warn(
-    "Saved answers restoration failed:",
-    error
-  );
-}
-if (savedAnswersData) {
-
-  const formattedAnswers =
-    savedAnswersData.reduce(
-      (
-        acc: any,
-        item: any
-      ) => {
-
-        acc[
-          item.question_id
-        ] =
-          item.selected_option;
-
-        return acc;
-
-      },
-      {}
-    );
-
-  setAnswers(
-    formattedAnswers
-  );
-  setAnsweredQuestions(
-  Object.keys(formattedAnswers).map(
-    (questionId) => Number(questionId)
+/*
+ * Restore saved answers in the background.
+ *
+ * IMPORTANT:
+ *
+ * Exam startup must NOT wait for this query.
+ * The student can start seeing the exam immediately.
+ *
+ * If the request succeeds, the answers are restored
+ * into the local state.
+ *
+ * If it fails, the exam continues normally.
+ */
+void supabase
+  .from("exam_answers")
+  .select(`
+    question_id,
+    selected_option
+  `)
+  .eq(
+    "exam_id",
+    examId
   )
-);
+  .eq(
+    "user_id",
+    currentUser.id
+  )
+  .then(
+    ({
+      data: savedAnswersData,
+      error: savedAnswersError,
+    }) => {
+
+      if (savedAnswersError) {
+
+        console.warn(
+          "Unable to restore saved answers:",
+          savedAnswersError
+        );
+
+        return;
+      }
+
+      if (!savedAnswersData) {
+        return;
+      }
+
+      const formattedAnswers =
+        savedAnswersData.reduce(
+          (
+            acc: Record<
+              string,
+              string | null
+            >,
+            item: {
+              question_id: string;
+              selected_option:
+                | string
+                | null;
+            }
+          ) => {
+
+            acc[
+              item.question_id
+            ] =
+              item.selected_option;
+
+            return acc;
+
+          },
+          {}
+        );
+/*
+ * Do not overwrite an answer that the
+ * student has already changed locally.
+ */
+if (
+  localAnswerChangeRef.current
+) {
+  return;
 }
+      /*
+       * Restore answer state.
+       */
+      setAnswers(
+        formattedAnswers
+      );
+
+      /*
+       * Restore answered question
+       * palette state.
+       *
+       * Only questions with an actual
+       * selected option are considered
+       * answered.
+       */
+      setAnsweredQuestions(
+        Object.entries(
+          formattedAnswers
+        )
+          .filter(
+            ([, answer]) =>
+              answer !== null &&
+              answer !== ""
+          )
+          .map(
+            ([questionId]) =>
+              Number(questionId)
+          )
+      );
+
+    }
+  );
       setStudentName(
 
   currentUser.user_metadata
@@ -1803,7 +1865,125 @@ useEffect(() => {
 
   });
 
-  
+async function syncViolationCount(
+  violationCount: number
+) {
+  if (
+    !userId ||
+    !examId ||
+    !sessionIdRef.current ||
+    !navigator.onLine
+  ) {
+    return;
+  }
+
+  const sessionId =
+    sessionIdRef.current;
+
+  try {
+    const {
+      error,
+    } = await supabase
+      .from("exam_sessions")
+      .update({
+        total_violations:
+          violationCount,
+      })
+      .eq(
+        "id",
+        sessionId
+      );
+
+    if (error) {
+      console.error(
+        "VIOLATION SESSION UPDATE ERROR:",
+        error
+      );
+
+      return;
+    }
+
+  } catch (error) {
+
+    console.error(
+      "VIOLATION SESSION HANDLER ERROR:",
+      error
+    );
+  }
+}
+
+async function saveViolationEvent(
+  reason: string
+) {
+  if (
+    !userId ||
+    !attemptIdRef.current ||
+    !navigator.onLine
+  ) {
+    return;
+  }
+
+  /*
+   * Capture immutable values for this
+   * specific violation event.
+   *
+   * The exam may continue while this
+   * request is running.
+   */
+  const studentId =
+    userId;
+
+  const attemptId =
+    attemptIdRef.current;
+
+  const violationReason =
+    reason;
+
+  const createdAt =
+    new Date().toISOString();
+
+  try {
+
+    const {
+      error,
+    } = await supabase
+      .from(
+        "proctoring_events"
+      )
+      .insert({
+        attempt_id:
+          attemptId,
+
+        student_id:
+          studentId,
+
+        event_type:
+          "violation",
+
+        violation_reason:
+          violationReason,
+
+        created_at:
+          createdAt,
+      });
+
+    if (error) {
+      console.error(
+        "PROCTORING VIOLATION INSERT ERROR:",
+        error
+      );
+
+      return;
+    }
+
+  } catch (error) {
+
+    console.error(
+      "VIOLATION EVENT HANDLER ERROR:",
+      error
+    );
+  }
+}
 async function handleViolation(
   reason: string
 ) {
@@ -1884,65 +2064,18 @@ violationsRef.current =
    * These requests remain non-blocking.
    * A network/database problem must NEVER stop the exam.
    */
-const currentSessionId =
-  sessionIdRef.current;
 
-if (
-  userId &&
-  examId &&
-  currentSessionId &&
-  navigator.onLine
-) {
-  void supabase
-    .from("exam_sessions")
-    .update({
-      total_violations: updated,
-    })
-    .eq("id", currentSessionId)
-    .select("id, total_violations")
-    .maybeSingle()
-    .then(({ data: updatedSession, error: sessionError }) => {
-      if (sessionError) {
-        console.error(
-          "VIOLATION SESSION UPDATE ERROR:",
-          sessionError
-        );
-      } else if (!updatedSession) {
-        console.error(
-          "VIOLATION SESSION UPDATE MATCHED NO SESSION:",
-          {
-            sessionId: currentSessionId,
-            examId,
-            userId,
-            updated,
-          }
-        );
-      } else {
-        console.log(
-          "VIOLATION SESSION UPDATED:",
-          updatedSession
-        );
-      }
-    });
+/*
+ * Server synchronization is completely
+ * independent from the exam UI.
+ */
+void syncViolationCount(
+  updated
+);
 
-  void supabase
-    .from("proctoring_events")
-    .insert({
-      attempt_id: attemptIdRef.current,
-      student_id: userId,
-      event_type: "violation",
-      violation_reason: reason,
-      created_at: new Date().toISOString(),
-    })
-    .then(({ error: eventError }) => {
-      if (eventError) {
-        console.error(
-          "PROCTORING VIOLATION INSERT ERROR:",
-          eventError
-        );
-      }
-    });
-}
+void saveViolationEvent(
+  reason
+);
 }
 async function enterExamFullscreen() {
   if (isIOSDevice()) {
@@ -2262,9 +2395,20 @@ async function uploadProctoringSnapshot(
 ): Promise<string | null> {
 
   try {
+    /*
+     * ==========================================
+     * 1. NETWORK CHECK
+     * ==========================================
+     */
     if (!navigator.onLine) {
       return null;
     }
+
+    /*
+     * ==========================================
+     * 2. CREATE IMAGE
+     * ==========================================
+     */
     const blob =
       await new Promise<Blob | null>(
         (resolve) =>
@@ -2283,46 +2427,51 @@ async function uploadProctoringSnapshot(
       return null;
     }
 
+    /*
+     * ==========================================
+     * 3. STORAGE UPLOAD
+     * ==========================================
+     */
     const fileName =
       `${userId}/${examId}/${Date.now()}.jpg`;
-if (!navigator.onLine) {
-  return null;
-}
-   const uploadResult =
-  await Promise.race([
-    supabase.storage
-      .from("proctoring")
-      .upload(
-        fileName,
-        blob,
-        {
-          upsert: false,
-          contentType: "image/jpeg",
-        }
-      ),
 
-    new Promise<{
-      data: null;
-      error: Error;
-    }>((resolve) =>
-      setTimeout(() => {
-        resolve({
-          data: null,
-          error: new Error(
-            "Proctoring snapshot upload timed out"
+    const uploadResult =
+      await Promise.race([
+        supabase.storage
+          .from("proctoring")
+          .upload(
+            fileName,
+            blob,
+            {
+              upsert: false,
+              contentType: "image/jpeg",
+            }
           ),
-        });
-      }, 8000)
-    ),
-  ]);
 
-const {
-  data: uploadData,
-  error: uploadError,
-} = uploadResult;
+        new Promise<{
+          data: null;
+          error: Error;
+        }>((resolve) =>
+          setTimeout(() => {
+            resolve({
+              data: null,
+              error: new Error(
+                "Proctoring snapshot upload timed out"
+              ),
+            });
+          }, 8000)
+        ),
+      ]);
 
-    if (uploadError) {
+    const {
+      data: uploadData,
+      error: uploadError,
+    } = uploadResult;
 
+    if (
+      uploadError ||
+      !uploadData?.path
+    ) {
       console.error(
         "Proctoring snapshot upload failed:",
         uploadError
@@ -2331,6 +2480,11 @@ const {
       return null;
     }
 
+    /*
+     * ==========================================
+     * 4. GET IMAGE URL
+     * ==========================================
+     */
     const {
       data: publicUrlData,
     } =
@@ -2344,44 +2498,26 @@ const {
       publicUrlData.publicUrl;
 
     /*
+     * ==========================================
+     * 5. DATABASE REGISTRATION
+     * ==========================================
+     *
      * IMPORTANT:
      *
-     * Insert the snapshot immediately.
+     * This is deliberately NON-BLOCKING.
      *
-     * face_count is intentionally NULL here.
-     * The Face Detection Worker will update it
-     * when/if detection succeeds.
+     * The exam must never wait for the
+     * proctoring database insert.
      */
-    void supabase
-  .from("proctoring_snapshots")
-  .insert({
-    attempt_id:
-      attemptIdRef.current,
-    student_id:
-      userId,
-    image_url:
-      imageUrl,
-    face_count:
-      null,
-  })
-  .then(
-    ({
-      error: snapshotInsertError,
-    }) => {
-      if (snapshotInsertError) {
-        console.error(
-          "Proctoring snapshot DB insert failed:",
-          snapshotInsertError
-        );
-      } else {
-        console.log(
-          "PROCTORING SNAPSHOT SAVED"
-        );
-      }
-    }
-  );
+    void saveProctoringSnapshotRecord(
+      imageUrl
+    );
 
-return imageUrl;
+    /*
+     * Return immediately after the
+     * Storage upload succeeds.
+     */
+    return imageUrl;
 
   } catch (error) {
 
@@ -2394,6 +2530,334 @@ return imageUrl;
   }
 }
 
+function saveProctoringSnapshotRecord(
+  imageUrl: string
+) {
+  /*
+   * ==========================================
+   * SNAPSHOT RECORD QUEUE
+   * ==========================================
+   *
+   * Storage upload has already succeeded.
+   * We only queue the database registration.
+   */
+  if (
+    !navigator.onLine ||
+    !userId ||
+    !attemptIdRef.current
+  ) {
+    return;
+  }
+
+  snapshotRecordQueueRef.current.push(
+    imageUrl
+  );
+
+  /*
+   * Do not start another processor if
+   * one is already running.
+   */
+  if (
+    snapshotRecordProcessingRef.current
+  ) {
+    return;
+  }
+
+  void processSnapshotRecordQueue();
+}
+
+
+async function processSnapshotRecordQueue() {
+  /*
+   * Only ONE snapshot DB processor
+   * can run at a time.
+   */
+  if (
+    snapshotRecordProcessingRef.current
+  ) {
+    return;
+  }
+
+  snapshotRecordProcessingRef.current =
+    true;
+
+  try {
+
+    while (
+      snapshotRecordQueueRef.current.length >
+      0
+    ) {
+
+      if (
+        !navigator.onLine ||
+        !userId ||
+        !attemptIdRef.current
+      ) {
+        break;
+      }
+
+      const imageUrl =
+        snapshotRecordQueueRef.current.shift();
+
+      if (!imageUrl) {
+        continue;
+      }
+
+      try {
+
+        const {
+          error,
+        } = await supabase
+          .from(
+            "proctoring_snapshots"
+          )
+          .insert({
+            attempt_id:
+              attemptIdRef.current,
+
+            student_id:
+              userId,
+
+            image_url:
+              imageUrl,
+
+            face_count:
+              null,
+          });
+
+        if (error) {
+
+          console.error(
+            "PROCTORING SNAPSHOT DB INSERT ERROR:",
+            error
+          );
+
+          /*
+           * Preserve the failed record
+           * for a later retry.
+           */
+          snapshotRecordQueueRef.current.unshift(
+            imageUrl
+          );
+
+          break;
+        }
+
+        console.log(
+          "PROCTORING SNAPSHOT DB RECORD SAVED"
+        );
+
+      } catch (error) {
+
+        console.error(
+          "PROCTORING SNAPSHOT DB HANDLER ERROR:",
+          error
+        );
+
+        snapshotRecordQueueRef.current.unshift(
+          imageUrl
+        );
+
+        break;
+      }
+    }
+
+  } finally {
+
+    snapshotRecordProcessingRef.current =
+      false;
+
+    /*
+     * If another snapshot arrived while
+     * processing was finishing, continue
+     * with exactly one processor.
+     */
+    if (
+      snapshotRecordQueueRef.current.length >
+        0 &&
+      navigator.onLine &&
+      userId &&
+      attemptIdRef.current
+    ) {
+      void processSnapshotRecordQueue();
+    }
+  }
+}
+
+
+function saveFaceScanEvent(
+  faceCount: number
+) {
+  /*
+   * ==========================================
+   * FACE SCAN QUEUE
+   * ==========================================
+   *
+   * Do NOT write to Supabase directly from
+   * the face-detection result handler.
+   *
+   * Add the latest detection to the local queue.
+   */
+  if (
+    !navigator.onLine ||
+    !userId ||
+    !attemptIdRef.current
+  ) {
+    return;
+  }
+
+  /*
+   * Add the face-count result to the queue.
+   */
+  faceScanQueueRef.current.push(
+    faceCount
+  );
+
+  /*
+   * A processor is already running.
+   *
+   * Do not start another Supabase worker.
+   */
+  if (
+    faceScanProcessingRef.current
+  ) {
+    return;
+  }
+
+  /*
+   * Start exactly ONE background processor.
+   */
+  void processFaceScanQueue();
+}
+async function processFaceScanQueue() {
+  /*
+   * Prevent multiple processors from
+   * running at the same time.
+   */
+  if (
+    faceScanProcessingRef.current
+  ) {
+    return;
+  }
+
+  faceScanProcessingRef.current =
+    true;
+
+  try {
+
+    while (
+      faceScanQueueRef.current.length >
+      0
+    ) {
+
+      /*
+       * If the network disappears,
+       * leave the remaining events queued.
+       */
+      if (
+        !navigator.onLine ||
+        !userId ||
+        !attemptIdRef.current
+      ) {
+        break;
+      }
+
+      /*
+       * Take ONE event from the queue.
+       */
+      const faceCount =
+        faceScanQueueRef.current.shift();
+
+      if (
+        faceCount === undefined
+      ) {
+        continue;
+      }
+
+      try {
+
+        const {
+          error,
+        } = await supabase
+          .from(
+            "proctoring_events"
+          )
+          .insert({
+            attempt_id:
+              attemptIdRef.current,
+
+            student_id:
+              userId,
+
+            event_type:
+              "face_scan",
+
+            face_count:
+              faceCount,
+          });
+
+        if (error) {
+
+          console.error(
+            "FACE SCAN EVENT INSERT ERROR:",
+            error
+          );
+
+          /*
+           * Put the event back into the
+           * queue so it can be retried.
+           */
+          faceScanQueueRef.current.unshift(
+            faceCount
+          );
+
+          break;
+        }
+
+        console.log(
+          "FACE SCAN EVENT SAVED:",
+          faceCount
+        );
+
+      } catch (error) {
+
+        console.error(
+          "FACE SCAN EVENT HANDLER ERROR:",
+          error
+        );
+
+        /*
+         * Preserve the event for retry.
+         */
+        faceScanQueueRef.current.unshift(
+          faceCount
+        );
+
+        break;
+      }
+    }
+
+  } finally {
+
+    faceScanProcessingRef.current =
+      false;
+
+    /*
+     * If another event arrived while
+     * the processor was finishing,
+     * restart exactly one processor.
+     */
+    if (
+      faceScanQueueRef.current.length >
+        0 &&
+      navigator.onLine &&
+      userId &&
+      attemptIdRef.current
+    ) {
+      void processFaceScanQueue();
+    }
+  }
+}
 async function handleFaceDetectionResult(
   faceCount: number
 ) {
@@ -2402,29 +2866,9 @@ async function handleFaceDetectionResult(
    * Save the face scan in the background.
    * It must never block question navigation.
    */
-if (navigator.onLine) {
-  void supabase
-    .from("proctoring_events")
-    .insert({
-      attempt_id: attemptIdRef.current,
-      student_id: userId,
-      event_type: "face_scan",
-      face_count: faceCount,
-    })
-    .then(({ error: faceEventError }) => {
-      if (faceEventError) {
-        console.error(
-          "FACE SCAN EVENT INSERT ERROR:",
-          faceEventError
-        );
-      } else {
-        console.log(
-          "FACE SCAN EVENT SAVED:",
-          faceCount
-        );
-      }
-    });
-}
+void saveFaceScanEvent(
+  faceCount
+);
 
   /*
    * No face detection
@@ -2845,15 +3289,14 @@ async function fetchQuestionByIndex(
   }
 
   /*
+   * ==========================================
    * 1. MEMORY CACHE
-   *
-   * Fastest possible path.
+   * ==========================================
    */
   const cachedQuestion =
     questionCacheRef.current[index];
 
   if (cachedQuestion) {
-
     setCurrentQuestionData(
       cachedQuestion
     );
@@ -2866,13 +3309,11 @@ async function fetchQuestionByIndex(
   }
 
   /*
-   * 2. PERSISTENT CACHE
-   *
-   * Recover questions loaded earlier
-   * in this exam.
+   * ==========================================
+   * 2. PERSISTENT SESSION CACHE
+   * ==========================================
    */
   try {
-
     const storageKey =
       `exam-question-cache-${examId}`;
 
@@ -2882,7 +3323,6 @@ async function fetchQuestionByIndex(
       );
 
     if (stored) {
-
       const parsed =
         JSON.parse(stored);
 
@@ -2890,24 +3330,13 @@ async function fetchQuestionByIndex(
         parsed?.[index];
 
       if (storedQuestion) {
+        questionCacheRef.current[index] =
+          storedQuestion;
 
-        /*
-         * Restore memory cache.
-         */
-        questionCacheRef.current[
-          index
-        ] = storedQuestion;
-
-        /*
-         * Restore React cache.
-         */
         setQuestionCache(
           parsed
         );
 
-        /*
-         * Show immediately.
-         */
         setCurrentQuestionData(
           storedQuestion
         );
@@ -2919,21 +3348,19 @@ async function fetchQuestionByIndex(
         return;
       }
     }
-
   } catch (error) {
-
     console.warn(
       "Unable to read cached exam question:",
       error
     );
-
   }
 
   /*
-   * 3. OFFLINE CHECK
+   * ==========================================
+   * 3. OFFLINE
+   * ==========================================
    */
   if (!navigator.onLine) {
-
     console.warn(
       "Question is not cached and device is offline:",
       index
@@ -2943,74 +3370,73 @@ async function fetchQuestionByIndex(
   }
 
   /*
- * 4. SHARED NETWORK LOADER
- *
- * The requested question is loaded independently.
- *
- * IMPORTANT:
- *
- * We NEVER block the exam with a fixed timeout.
- * prefetchQuestion() already has its own network
- * timeout and failure handling.
- *
- * If the network is slow, the current question
- * remains on screen instead of the entire exam
- * appearing frozen.
- */
-try {
-  const question =
-    await prefetchQuestion(index);
+   * ==========================================
+   * 4. SHARED QUESTION LOADER
+   * ==========================================
+   *
+   * prefetchQuestion() is the ONLY function
+   * responsible for the network request.
+   *
+   * It also owns:
+   *
+   * - in-flight request deduplication
+   * - timeout
+   * - server request
+   * - option shuffle
+   * - memory cache
+   * - React cache
+   * - sessionStorage
+   */
+  try {
+    const question =
+      await prefetchQuestion(index);
 
-  if (!question) {
-    console.warn(
-      "Unable to load question:",
+    if (!question) {
+      console.warn(
+        "Unable to load question:",
+        index
+      );
+
+      return;
+    }
+
+    /*
+     * The question is now available.
+     *
+     * This function only controls
+     * what is displayed.
+     */
+    setCurrentQuestionData(
+      question
+    );
+
+    setCurrentQuestion(
       index
     );
 
+  } catch (error) {
     /*
-     * Keep the current question visible.
-     * Do NOT clear currentQuestionData.
-     * Do NOT move the student to another question.
+     * Network failure must never
+     * terminate the exam.
      */
-    return;
+    console.warn(
+      "Unable to load exam question:",
+      error
+    );
   }
-
-  /*
-   * prefetchQuestion() has already:
-   *
-   * - updated memory cache
-   * - shuffled options
-   * - updated React cache
-   * - updated sessionStorage
-   *
-   * We only need to display it.
-   */
-  setCurrentQuestionData(
-    question
-  );
-
-  setCurrentQuestion(
-    index
-  );
-
-} catch (error) {
-
-  /*
-   * Network failure must never terminate
-   * or freeze the exam.
-   *
-   * Keep the currently visible question.
-   */
-  console.warn(
-    "Unable to load exam question:",
-    error
-  );
-}
 }
 async function prefetchQuestion(
   index: number
 ) {
-  
+  /*
+ * Never allow an invalid question
+ * to reach the API.
+ */
+if (
+  !sessionTokenRef.current
+) {
+  return null;
+}
   // Never prefetch outside the exam.
   if (
     index < 0 ||
@@ -3083,11 +3509,6 @@ console.log("TCD QUESTION NETWORK REQUEST", {
     errorResult
   );
 
- console.warn(
-  "QUESTION PREFETCH FAILED:",
-  response.status,
-  errorResult
-);
 
   return null;
 }
@@ -3242,19 +3663,13 @@ async function prefetchQuestionsAhead(
   /*
    * Keep a small rolling buffer.
    *
-   * Current Q1  → Q2, Q3, Q4
-   * Current Q50 → Q51, Q52, Q53
-   *
-   * Do NOT preload the entire exam.
+   * Current Q1 → Q2, Q3, Q4
    */
   const PREFETCH_AHEAD = 3;
 
   /*
    * Only TWO requests are allowed to run
    * simultaneously.
-   *
-   * This protects the student's active
-   * question/answer traffic.
    */
   const BATCH_SIZE = 2;
 
@@ -3262,7 +3677,14 @@ async function prefetchQuestionsAhead(
     totalQuestions > 0
       ? totalQuestions
       : 0;
-
+console.log(
+  "[TCD PREFETCH]",
+  {
+    startIndex,
+    totalQuestions,
+    knownTotal,
+  }
+);
   if (knownTotal <= 0) {
     return;
   }
@@ -3298,27 +3720,23 @@ async function prefetchQuestionsAhead(
     missingIndexes.push(index);
   }
 
-  if (missingIndexes.length === 0) {
+  if (
+    missingIndexes.length === 0
+  ) {
     return;
   }
 
   /*
    * Load in small batches.
    *
-   * IMPORTANT:
-   *
-   * Promise.allSettled() means one failed
-   * question does NOT cancel the others.
+   * One failed request must never cancel
+   * the remaining prefetches.
    */
   for (
     let i = 0;
     i < missingIndexes.length;
     i += BATCH_SIZE
   ) {
-    /*
-     * Network may have disappeared while
-     * the previous batch was running.
-     */
     if (!navigator.onLine) {
       return;
     }
@@ -3478,23 +3896,49 @@ console.log(
 
 try {
 
-  const firstQuestion =
-    await prefetchQuestion(0);
+/*
+ * Load Question 1 through the shared question loader.
+ *
+ * IMPORTANT:
+ * There must be only ONE network-loading path
+ * for exam questions.
+ *
+ * prefetchQuestion():
+ * - reuses existing requests
+ * - caches the question
+ * - persists it in sessionStorage
+ * - prevents duplicate requests
+ */
+const firstQuestion =
+  await prefetchQuestion(0);
 
-  if (!firstQuestion) {
+if (!firstQuestion) {
 
-    toast.error(
-      "Unable to load the first question. Please check your connection and try again."
-    );
-
-    return;
-  }
-
-  setCurrentQuestionData(
-    firstQuestion
+  toast.error(
+    "Unable to load the first question. Please check your connection and try again."
   );
 
-  setCurrentQuestion(0);
+  return;
+}
+
+/*
+ * Display Question 1 immediately.
+ *
+ * prefetchQuestion() has already placed it
+ * into the memory/session cache.
+ */
+setCurrentQuestionData(
+  firstQuestion
+);
+
+setCurrentQuestion(0);
+
+/*
+ * Start loading the next question in the
+ * background.
+ *
+ * This does NOT block the exam UI.
+ */
 
 } catch (error) {
 
@@ -3551,6 +3995,8 @@ localStorage.setItem(
       ? null
       : answer;
 
+localAnswerChangeRef.current =
+  true;
   /*
    * IMPORTANT:
    *
@@ -3709,6 +4155,85 @@ useEffect(() => {
     setSavingAnswers(true);
 
     try {
+      async function syncAnswer(
+  item: {
+    questionId: string;
+    selectedOption: string | null;
+  }
+) {
+  try {
+    const response =
+      await fetchWithTimeout(
+        "/api/exam/save-answer",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify({
+            examId,
+            questionId:
+              item.questionId,
+            selectedOption:
+              item.selectedOption,
+            sessionToken:
+  sessionTokenRef.current,
+          }),
+        }
+      );
+
+    if (!response.ok) {
+      const result =
+        await response
+          .json()
+          .catch(() => null);
+
+      throw new Error(
+        result?.error ||
+          "Failed to save answer"
+      );
+    }
+
+    /*
+     * Remove ONLY the exact version
+     * that was successfully synchronized.
+     *
+     * If the student changed the answer
+     * while this request was running,
+     * the newer value remains queued.
+     */
+    setPendingSaves((current) =>
+      current.filter(
+        (currentItem) =>
+          !(
+            currentItem.questionId ===
+              item.questionId &&
+            currentItem.selectedOption ===
+              item.selectedOption
+          )
+      )
+    );
+
+    return true;
+
+  } catch (error) {
+
+    /*
+     * Keep failed answers queued.
+     * They will be retried later.
+     */
+    console.warn(
+      "Answer save failed. Keeping answer in queue:",
+      item.questionId,
+      error
+    );
+
+    return false;
+  }
+}
   /*
    * Save queued answers independently.
    *
@@ -3716,75 +4241,11 @@ useEffect(() => {
    * One slow/failed request must NEVER block
    * the other answers in the queue.
    */
-  await Promise.all(
-    queue.map(async (item) => {
-      try {
-        const response =
-          await fetchWithTimeout(
-            "/api/exam/save-answer",
-            {
-              method: "POST",
-
-              headers: {
-                "Content-Type":
-                  "application/json",
-              },
-
-              body: JSON.stringify({
-                examId,
-                questionId:
-                  item.questionId,
-                selectedOption:
-                  item.selectedOption,
-                sessionToken,
-              }),
-            }
-          );
-
-        if (!response.ok) {
-          const result =
-            await response
-              .json()
-              .catch(() => null);
-
-          throw new Error(
-            result?.error ||
-              "Failed to save answer"
-          );
-        }
-
-        /*
-         * Remove ONLY this exact queued version.
-         *
-         * If the student changed the answer
-         * while this request was running,
-         * the newer value remains in the queue.
-         */
-        setPendingSaves((current) =>
-          current.filter(
-            (currentItem) =>
-              !(
-                currentItem.questionId ===
-                  item.questionId &&
-                currentItem.selectedOption ===
-                  item.selectedOption
-              )
-          )
-        );
-
-      } catch (error) {
-        /*
-         * Keep failed answers in the queue.
-         * They will be retried later.
-         */
-        console.warn(
-          "Answer save failed. Keeping answer in queue:",
-          item.questionId,
-          error
-        );
-      }
-    })
-  );
+await Promise.all(
+  queue.map((item) =>
+    syncAnswer(item)
+  )
+);
 
 }  finally {
       savingAnswersRef.current =
@@ -4225,35 +4686,128 @@ if (!navigator.onLine) {
     setSavingAnswers(false);
   }
 }
+async function handleConfirmSubmit() {
+  setShowSubmitSummary(false);
+
+  await submitExam();
+}
+
+async function submitExamRequest(
+  token: string
+): Promise<{
+  response: Response | null;
+  result: any;
+  networkError: unknown | null;
+}> {
+  try {
+    const response =
+      await fetchWithTimeout(
+        "/api/exam/submit",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify({
+            examId,
+            sessionToken: token,
+          }),
+        }
+      );
+
+    const result =
+      await response
+        .json()
+        .catch(() => null);
+
+    return {
+      response,
+      result,
+      networkError: null,
+    };
+
+  } catch (error) {
+
+    console.warn(
+      "Exam submission network error:",
+      error
+    );
+
+    return {
+      response: null,
+      result: null,
+      networkError: error,
+    };
+  }
+}
+
+
 async function submitExam() {
   console.log(
     "========== AUTO SUBMIT START =========="
   );
 
+  /*
+   * ==================================================
+   * 0. SYNCHRONOUS SUBMISSION LOCK
+   * ==================================================
+   *
+   * Prevent simultaneous submissions from:
+   *
+   * - Submit button
+   * - Timer
+   * - Violation auto-submit
+   * - Multiple rapid events
+   *
+   * React state is asynchronous, therefore the ref
+   * is used as the first-line synchronous lock.
+   */
+  if (submittingRef.current) {
+    console.log(
+      "Submit blocked by submittingRef"
+    );
+
+    return;
+  }
+
+  submittingRef.current = true;
+
+  /*
+   * Existing React/state based guards.
+   *
+   * If one of these already says that submission
+   * is in progress/completed, release our ref lock
+   * before returning.
+   */
   if (
     submitting ||
     submitted ||
     timerSubmittedRef.current
   ) {
-    console.log("Submit blocked");
+    console.log(
+      "Submit blocked"
+    );
+
+    submittingRef.current = false;
+
     return;
   }
 
+  /*
+   * Prevent another timer-triggered submission.
+   */
   timerSubmittedRef.current = true;
 
   setSubmitting(true);
   setFinalizingExam(true);
 
   /*
-   * --------------------------------------------------
+   * ==================================================
    * 1. SAVE ALL PENDING ANSWERS FIRST
-   * --------------------------------------------------
-   *
-   * If the device is offline, flushPendingAnswers()
-   * will not be able to save them. That's okay.
-   *
-   * We keep the exam state locally and wait for the
-   * connection before final submission.
+   * ==================================================
    */
   try {
     await flushPendingAnswers();
@@ -4265,48 +4819,50 @@ async function submitExam() {
   }
 
   /*
-   * --------------------------------------------------
-   * 2. WAIT FOR NETWORK BEFORE FINAL SUBMISSION
-   * --------------------------------------------------
+   * ==================================================
+   * 2. WAIT FOR NETWORK
+   * ==================================================
+   *
+   * If the browser is offline, do not submit with
+   * incomplete server state.
+   *
+   * Local exam state remains safe.
    */
-/*
- * Wait for connection to return.
- */
-if (!navigator.onLine) {
-  toast.info(
-    "Your exam is safe. Waiting for internet connection..."
-  );
-
-  await new Promise<void>((resolve) => {
-  const handleOnline = () => {
-    window.removeEventListener(
-      "online",
-      handleOnline
+  if (!navigator.onLine) {
+    toast.info(
+      "Your exam is safe. Waiting for internet connection..."
     );
 
-    resolve();
-  };
+    await new Promise<void>((resolve) => {
+      const handleOnline = () => {
+        window.removeEventListener(
+          "online",
+          handleOnline
+        );
 
-  window.addEventListener(
-    "online",
-    handleOnline,
-    { once: true }
-  );
-});
+        resolve();
+      };
 
-toast.success(
-  "Connection restored. Continuing submission..."
-);
-}
+      window.addEventListener(
+        "online",
+        handleOnline,
+        { once: true }
+      );
+    });
+
+    toast.success(
+      "Connection restored. Continuing submission..."
+    );
+  }
 
   /*
-   * --------------------------------------------------
-   * 3. GET SESSION TOKEN
-   * --------------------------------------------------
+   * ==================================================
+   * 3. GET CURRENT SESSION TOKEN
+   * ==================================================
    */
   const token =
-    sessionToken ||
-    sessionTokenRef.current;
+    sessionTokenRef.current ||
+    sessionToken;
 
   if (!token) {
     console.error(
@@ -4319,18 +4875,23 @@ toast.success(
 
     setSubmitting(false);
     setFinalizingExam(false);
-    timerSubmittedRef.current = false;
+
+    timerSubmittedRef.current =
+      false;
+
+    submittingRef.current =
+      false;
 
     return;
   }
 
   /*
-   * --------------------------------------------------
+   * ==================================================
    * 4. SUBMIT EXAM
-   * --------------------------------------------------
+   * ==================================================
    *
-   * Network errors are handled separately from
-   * server errors.
+   * All actual /api/exam/submit traffic goes through
+   * submitExamRequest().
    */
   let response: Response | null =
     null;
@@ -4338,284 +4899,303 @@ toast.success(
   let result: any = null;
 
   try {
-    response = await fetchWithTimeout(
-      "/api/exam/submit",
-      {
-        method: "POST",
+    const submission =
+      await submitExamRequest(
+        token
+      );
 
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
+    response =
+      submission.response;
 
-        body: JSON.stringify({
-          examId,
-          sessionToken: token,
-        }),
-      }
-    );
+    result =
+      submission.result;
+
+    if (
+      submission.networkError
+    ) {
+      throw submission.networkError;
+    }
 
     console.log(
       "SUBMIT STATUS:",
-      response.status
+      response?.status
     );
-
-    result =
-      await response
-        .json()
-        .catch(() => null);
 
     console.log(
       "SUBMIT RESPONSE:",
       result
     );
- } catch (error) {
-  /*
-   * ------------------------------------------------
-   * NETWORK FAILURE
-   * ------------------------------------------------
-   *
-   * The server may still have received the request.
-   * Therefore we retry carefully using the SAME
-   * session token.
-   */
 
-  console.warn(
-    "Exam submission network error:",
-    error
-  );
-
-  const MAX_SUBMIT_RETRIES = 3;
-
-  for (
-    let attempt = 1;
-    attempt <= MAX_SUBMIT_RETRIES;
-    attempt++
-  ) {
+  } catch (error) {
 
     /*
-     * Wait for the browser to report connectivity.
-     */
-    if (!navigator.onLine) {
-
-      toast.info(
-        "Connection interrupted. Your exam is safe. Waiting for internet..."
-      );
-
-      await new Promise<void>((resolve) => {
-
-        const handleOnline = () => {
-          window.removeEventListener(
-            "online",
-            handleOnline
-          );
-
-          resolve();
-        };
-
-        window.addEventListener(
-          "online",
-          handleOnline,
-          { once: true }
-        );
-      });
-    }
-
-    /*
-     * Small delay between retry attempts.
+     * ==================================================
+     * NETWORK FAILURE
+     * ==================================================
      *
-     * This prevents an unstable connection from
-     * generating rapid repeated requests.
+     * The request may have reached the server even
+     * though the browser did not receive the response.
+     *
+     * Therefore retry using the SAME session token.
      */
-    if (attempt > 1) {
-      await new Promise<void>((resolve) =>
-        setTimeout(
-          resolve,
-          1000
-        )
-      );
-    }
+    console.warn(
+      "Exam submission network error:",
+      error
+    );
 
-    try {
+    const MAX_SUBMIT_RETRIES =
+      3;
 
-      console.log(
-        `Retrying exam submission (${attempt}/${MAX_SUBMIT_RETRIES})`
-      );
+    for (
+      let attempt = 1;
+      attempt <=
+      MAX_SUBMIT_RETRIES;
+      attempt++
+    ) {
 
-      response =
-        await fetchWithTimeout(
-          "/api/exam/submit",
-          {
-            method: "POST",
+      /*
+       * Wait for connectivity.
+       */
+      if (!navigator.onLine) {
+        toast.info(
+          "Connection interrupted. Your exam is safe. Waiting for internet..."
+        );
 
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
+        await new Promise<void>(
+          (resolve) => {
 
-            body: JSON.stringify({
-              examId,
-              sessionToken: token,
-            }),
+            const handleOnline =
+              () => {
+
+                window.removeEventListener(
+                  "online",
+                  handleOnline
+                );
+
+                resolve();
+              };
+
+            window.addEventListener(
+              "online",
+              handleOnline,
+              { once: true }
+            );
           }
         );
-
-      console.log(
-        "RETRY SUBMIT STATUS:",
-        response.status
-      );
-
-      result =
-        await response
-          .json()
-          .catch(() => null);
-
-      console.log(
-        "RETRY SUBMIT RESPONSE:",
-        result
-      );
+      }
 
       /*
-       * Request reached the server.
-       *
-       * Stop retrying even if the server returned
-       * an application-level error. That error will
-       * be handled by the normal server-error block.
+       * Small delay between retry attempts.
        */
-      break;
+      if (attempt > 1) {
+        await new Promise<void>(
+          (resolve) =>
+            setTimeout(
+              resolve,
+              1000
+            )
+        );
+      }
 
-    } catch (retryError) {
-
-      console.warn(
-        `Submission retry ${attempt} failed:`,
-        retryError
-      );
-
-      /*
-       * If this was the final retry, allow the
-       * student to submit again manually.
-       */
-      if (
-        attempt ===
-        MAX_SUBMIT_RETRIES
-      ) {
-
-        toast.error(
-          "Connection is still unstable. Your exam is safe. Please reconnect and try submitting again."
+      try {
+        console.log(
+          `Retrying exam submission (${attempt}/${MAX_SUBMIT_RETRIES})`
         );
 
-        setSubmitting(false);
-        setFinalizingExam(false);
+        const retrySubmission =
+          await submitExamRequest(
+            token
+          );
+
+        response =
+          retrySubmission.response;
+
+        result =
+          retrySubmission.result;
+
+        if (
+          retrySubmission.networkError
+        ) {
+          throw retrySubmission.networkError;
+        }
+
+        console.log(
+          "RETRY SUBMIT STATUS:",
+          response?.status
+        );
+
+        console.log(
+          "RETRY SUBMIT RESPONSE:",
+          result
+        );
 
         /*
-         * Allow another submission attempt.
+         * Request reached the server.
+         *
+         * Stop retrying even if the server returned
+         * an application-level error.
          */
-        timerSubmittedRef.current =
-          false;
+        break;
 
-        return;
+      } catch (retryError) {
+
+        console.warn(
+          `Submission retry ${attempt} failed:`,
+          retryError
+        );
+
+        /*
+         * Final retry failed.
+         *
+         * Allow the student to submit again manually.
+         */
+        if (
+          attempt ===
+          MAX_SUBMIT_RETRIES
+        ) {
+
+          toast.error(
+            "Connection is still unstable. Your exam is safe. Please reconnect and try submitting again."
+          );
+
+          setSubmitting(false);
+          setFinalizingExam(false);
+
+          timerSubmittedRef.current =
+            false;
+
+          submittingRef.current =
+            false;
+
+          return;
+        }
       }
     }
   }
-}
-
 
   /*
-   * --------------------------------------------------
+   * ==================================================
    * 5. SERVER ERROR
-   * --------------------------------------------------
+   * ==================================================
    */
- if (
-  !response ||
-  !response.ok
-) {
-  /*
-   * The server may have completed the submission
-   * even if the browser lost the original response.
-   */
- if (
-  result?.error ===
-  "Exam already submitted"
-) {
-  console.log(
-    "Exam was already submitted on the server."
-  );
-
-  /*
-   * Recover the existing submitted attempt
-   * instead of sending the student back into
-   * the exam.
-   */
-  const {
-    data: submittedAttempt,
-    error: submittedAttemptError,
-  } = await supabase
-    .from("exam_attempts")
-    .select("id, score, status")
-    .eq("exam_id", examId)
-    .eq(
-  "user_id",
-  userId
-)
-    .eq("status", "submitted")
-    .order("created_at", {
-      ascending: false,
-    })
-    .limit(1)
-    .maybeSingle();
-
   if (
-    submittedAttempt &&
-    !submittedAttemptError
+    !response ||
+    !response.ok
   ) {
-    router.replace(
-      `/exam-result/${submittedAttempt.id}`
+
+    /*
+     * The server may have successfully submitted the
+     * exam even though the browser lost the original
+     * response.
+     *
+     * Recover the submitted attempt.
+     */
+    if (
+      result?.error ===
+      "Exam already submitted"
+    ) {
+
+      console.log(
+        "Exam was already submitted on the server."
+      );
+
+      const {
+        data: submittedAttempt,
+        error:
+          submittedAttemptError,
+      } = await supabase
+        .from("exam_attempts")
+        .select(
+          "id, score, status"
+        )
+        .eq(
+          "exam_id",
+          examId
+        )
+        .eq(
+          "user_id",
+          userId
+        )
+        .eq(
+          "status",
+          "submitted"
+        )
+        .order(
+          "created_at",
+          {
+            ascending: false,
+          }
+        )
+        .limit(1)
+        .maybeSingle();
+
+      if (
+        submittedAttempt &&
+        !submittedAttemptError
+      ) {
+
+        submittingRef.current =
+          false;
+
+        router.replace(
+          `/exam-result/${submittedAttempt.id}`
+        );
+
+        return;
+      }
+
+      console.error(
+        "Could not recover submitted attempt:",
+        submittedAttemptError
+      );
+
+      toast.error(
+        "Your exam was submitted, but the result could not be loaded. Please refresh."
+      );
+
+      setSubmitting(false);
+      setFinalizingExam(false);
+
+      timerSubmittedRef.current =
+        false;
+
+      submittingRef.current =
+        false;
+
+      return;
+    }
+
+    /*
+     * Normal server-side failure.
+     */
+    toast.error(
+      result?.error ||
+        "Submission failed. Please try again."
     );
+
+    setSubmitting(false);
+    setFinalizingExam(false);
+
+    timerSubmittedRef.current =
+      false;
+
+    submittingRef.current =
+      false;
 
     return;
   }
 
-  console.error(
-    "Could not recover submitted attempt:",
-    submittedAttemptError
-  );
-
-  toast.error(
-    "Your exam was submitted, but the result could not be loaded. Please refresh."
-  );
-
-  setSubmitting(false);
-  setFinalizingExam(false);
-
-  timerSubmittedRef.current =
-    false;
-
-  return;
-}
-
-  toast.error(
-    result?.error ||
-      "Submission failed. Please try again."
-  );
-
-  setSubmitting(false);
-  setFinalizingExam(false);
-
-  timerSubmittedRef.current =
-    false;
-
-  return;
-}
   /*
-   * --------------------------------------------------
+   * ==================================================
    * 6. SERVER CONFIRMED SUBMISSION
-   * --------------------------------------------------
+   * ==================================================
    *
    * From this point onward the attempt is safely
-   * submitted. Everything below is post-submission
-   * processing.
+   * submitted.
    */
-  setScore(result.score);
+  setScore(
+    result.score
+  );
 
   localStorage.setItem(
     `exam-score-${examId}-${userId}`,
@@ -4623,191 +5203,232 @@ toast.success(
   );
 
   /*
-   * --------------------------------------------------
-   * 7. LEVEL / RANK INFORMATION
-   * --------------------------------------------------
+   * ==================================================
+   * 7. POST-SUBMISSION LEVEL / RANK INFORMATION
+   * ==================================================
+   *
+   * UI enhancement only.
+   * Never block the submitted exam result.
    */
-  /*
- * --------------------------------------------------
- * 7. POST-SUBMISSION LEVEL / RANK INFORMATION
- * --------------------------------------------------
- *
- * These are UI enhancements only.
- * They must never block the submitted exam result.
- */
-void (async () => {
-  try {
-    const {
-      data: beforeLevel,
-    } = await supabase
-      .from("user_levels")
-      .select("level")
-      .eq("user_id", userId)
-      .single();
+  void (async () => {
+    try {
 
-    const {
-      data: beforeRanks,
-    } = await supabase
-      .from("leaderboard_view")
-      .select("user_id")
-      .order("xp", {
-  ascending: false,
-  nullsFirst: false,
-})
+      const {
+        data: beforeLevel,
+      } = await supabase
+        .from("user_levels")
+        .select("level")
+        .eq(
+          "user_id",
+          userId
+        )
+        .single();
 
-    const previousRankIndex =
-      beforeRanks?.findIndex(
-        (r: any) =>
-          r.user_id === userId
+      const {
+        data: beforeRanks,
+      } = await supabase
+        .from("leaderboard_view")
+        .select("user_id")
+        .order(
+          "xp",
+          {
+            ascending: false,
+            nullsFirst: false,
+          }
+        );
+
+      const previousRankIndex =
+        beforeRanks?.findIndex(
+          (r: any) =>
+            r.user_id ===
+            userId
+        );
+
+      const previousRank =
+        previousRankIndex !==
+          undefined &&
+        previousRankIndex >= 0
+          ? previousRankIndex + 1
+          : null;
+
+      const {
+        data: afterRanks,
+      } = await supabase
+        .from("leaderboard_view")
+        .select("user_id")
+        .order(
+          "xp",
+          {
+            ascending: false,
+            nullsFirst: false,
+          }
+        );
+
+      const newRankIndex =
+        afterRanks?.findIndex(
+          (r: any) =>
+            r.user_id ===
+            userId
+        );
+
+      const newRank =
+        newRankIndex !==
+          undefined &&
+        newRankIndex >= 0
+          ? newRankIndex + 1
+          : null;
+
+      if (
+        previousRank &&
+        newRank &&
+        newRank <
+          previousRank
+      ) {
+
+        void supabase
+          .from("activity_feed")
+          .insert({
+            user_id:
+              userId,
+
+            activity_type:
+              "rank",
+
+            title:
+              "Leaderboard Updated",
+
+            description:
+              `Moved from #${previousRank} to #${newRank}`,
+
+            metadata: {
+              old_rank:
+                previousRank,
+
+              new_rank:
+                newRank,
+            },
+          });
+      }
+
+      const {
+        data: afterLevel,
+      } = await supabase
+        .from("user_levels")
+        .select("level")
+        .eq(
+          "user_id",
+          userId
+        )
+        .single();
+
+      if (
+        afterLevel?.level >
+        beforeLevel?.level
+      ) {
+        setLevelUp(true);
+      }
+
+      setShowXP(true);
+
+    } catch (error) {
+
+      console.warn(
+        "Post-submission level/rank processing failed:",
+        error
       );
-
-    const previousRank =
-      previousRankIndex !==
-        undefined &&
-      previousRankIndex >= 0
-        ? previousRankIndex + 1
-        : null;
-
-    const {
-      data: afterRanks,
-    } = await supabase
-      .from("leaderboard_view")
-      .select("user_id")
-      .order("xp", {
-  ascending: false,
-  nullsFirst: false,
-})
-
-    const newRankIndex =
-      afterRanks?.findIndex(
-        (r: any) =>
-          r.user_id === userId
-      );
-
-    const newRank =
-      newRankIndex !==
-        undefined &&
-      newRankIndex >= 0
-        ? newRankIndex + 1
-        : null;
-
-    if (
-      previousRank &&
-      newRank &&
-      newRank < previousRank
-    ) {
-      void supabase
-        .from("activity_feed")
-        .insert({
-          user_id: userId,
-          activity_type: "rank",
-          title:
-            "Leaderboard Updated",
-          description:
-            `Moved from #${previousRank} to #${newRank}`,
-          metadata: {
-            old_rank:
-              previousRank,
-            new_rank:
-              newRank,
-          },
-        });
     }
+  })();
 
-    const {
-      data: afterLevel,
-    } = await supabase
-      .from("user_levels")
-      .select("level")
-      .eq("user_id", userId)
-      .single();
-
-    if (
-      afterLevel?.level >
-      beforeLevel?.level
-    ) {
-      setLevelUp(true);
-    }
-
-    setShowXP(true);
-  } catch (error) {
-    console.warn(
-      "Post-submission level/rank processing failed:",
-      error
-    );
-  }
-})();
   /*
-   * --------------------------------------------------
+   * ==================================================
    * 8. ACTIVITY FEED
-   * --------------------------------------------------
+   * ==================================================
    */
   void supabase
-  .from("activity_feed")
-  .insert({
-    user_id: userId,
+    .from("activity_feed")
+    .insert({
+      user_id:
+        userId,
 
-    activity_type:
-      "exam",
+      activity_type:
+        "exam",
 
-    title:
-      "Exam Completed",
+      title:
+        "Exam Completed",
 
-    description:
-      `Scored ${result.percentage}% in ${examInfo?.title}`,
+      description:
+        `Scored ${result.percentage}% in ${examInfo?.title}`,
 
-    metadata: {
-      score: result.score,
+      metadata: {
+        score:
+          result.score,
 
-      percentage:
-        result.percentage,
+        percentage:
+          result.percentage,
 
-      exam_id: examId,
+        exam_id:
+          examId,
 
-      xp_earned:
-        10 +
-        Math.floor(
-          result.percentage / 2
-        ),
-    },
-  })
-  .then(({ error }) => {
-    if (error) {
-      console.warn(
-        "Exam activity feed update failed:",
-        error
-      );
-    }
-  });
+        xp_earned:
+          10 +
+          Math.floor(
+            result.percentage /
+              2
+          ),
+      },
+    })
+    .then(
+      ({ error }) => {
+
+        if (error) {
+          console.warn(
+            "Exam activity feed update failed:",
+            error
+          );
+        }
+      }
+    );
 
   /*
-   * --------------------------------------------------
+   * ==================================================
    * 9. UPDATE LIVE STATUS
-   * --------------------------------------------------
+   * ==================================================
    */
-void supabase
-  .from("exam_live_status")
-  .update({
-    submitted: true,
-    fullscreen: false,
-  })
-  .eq("exam_id", examId)
-  .eq("user_id", userId)
-  .then(({ error }) => {
-    if (error) {
-      console.warn(
-        "Live status submission update failed:",
-        error
-      );
-    }
-  });
+  void supabase
+    .from("exam_live_status")
+    .update({
+      submitted:
+        true,
+
+      fullscreen:
+        false,
+    })
+    .eq(
+      "exam_id",
+      examId
+    )
+    .eq(
+      "user_id",
+      userId
+    )
+    .then(
+      ({ error }) => {
+
+        if (error) {
+          console.warn(
+            "Live status submission update failed:",
+            error
+          );
+        }
+      }
+    );
 
   /*
-   * --------------------------------------------------
+   * ==================================================
    * 10. CLEAR EXAM STATE
-   * --------------------------------------------------
+   * ==================================================
    *
-   * ONLY clear local exam state AFTER the server
+   * ONLY clear local exam state after the server
    * has confirmed successful submission.
    */
   localStorage.setItem(
@@ -4834,7 +5455,9 @@ void supabase
   setSubmitted(true);
 
   /*
-   * Stop camera.
+   * ==================================================
+   * 11. STOP CAMERA
+   * ==================================================
    */
   if (
     streamRef.current
@@ -4848,16 +5471,27 @@ void supabase
   }
 
   /*
-   * Exit fullscreen.
+   * ==================================================
+   * 12. EXIT FULLSCREEN
+   * ==================================================
    */
   if (
     document.fullscreenElement
   ) {
-    await document.exitFullscreen();
+    try {
+      await document.exitFullscreen();
+    } catch (error) {
+      console.warn(
+        "Unable to exit fullscreen:",
+        error
+      );
+    }
   }
 
   /*
-   * Clear session.
+   * ==================================================
+   * 13. CLEAR SESSION
+   * ==================================================
    */
   localStorage.removeItem(
     `exam-session-${examId}-${userId}`
@@ -4867,33 +5501,458 @@ void supabase
     "";
 
   /*
-   * --------------------------------------------------
-   * 11. REDIRECT TO RESULT
-   * --------------------------------------------------
+   * ==================================================
+   * 14. REDIRECT TO RESULT
+   * ==================================================
    */
- setShowXP(false);
+  setShowXP(false);
 
-sessionStorage.setItem(
-  `achievement-count-${result.attemptId}`,
-  String(
-    result.achievementCount || 0
-  )
-);
+  sessionStorage.setItem(
+    `achievement-count-${result.attemptId}`,
+    String(
+      result.achievementCount ||
+        0
+    )
+  );
 
-sessionStorage.setItem(
-  `achievement-reward-${result.attemptId}`,
-  String(
-    result.achievementReward || 0
-  )
-);
+  sessionStorage.setItem(
+    `achievement-reward-${result.attemptId}`,
+    String(
+      result.achievementReward ||
+        0
+    )
+  );
 
-console.log(
-  "Redirecting to result page..."
-);
+  console.log(
+    "Redirecting to result page..."
+  );
 
-router.replace(
-  `/exam-result/${result.attemptId}`
-);
+  /*
+   * Release the synchronous lock immediately
+   * before navigation.
+   */
+  submittingRef.current =
+    false;
+
+  router.replace(
+    `/exam-result/${result.attemptId}`
+  );
+}
+function handleQuestionVisited(
+  index: number
+) {
+  setVisitedQuestions((prev) =>
+    prev.includes(index)
+      ? prev
+      : [
+          ...prev,
+          index,
+        ]
+  );
+}
+async function handlePreviousQuestion() {
+  /*
+   * Prevent overlapping navigation.
+   */
+  if (
+    questionNavigationLockRef.current
+  ) {
+    return;
+  }
+
+  questionNavigationLockRef.current =
+    true;
+
+  const prevIndex =
+    Math.max(
+      currentQuestion - 1,
+      0
+    );
+
+  /*
+   * Already at the first question.
+   */
+  if (
+    prevIndex === currentQuestion
+  ) {
+    questionNavigationLockRef.current =
+      false;
+
+    return;
+  }
+
+  /*
+   * FAST PATH:
+   * Previous question is already cached.
+   */
+  const cachedQuestion =
+    questionCacheRef.current[
+      prevIndex
+    ];
+
+  if (cachedQuestion) {
+
+    setCurrentQuestionData(
+      cachedQuestion
+    );
+
+    setCurrentQuestion(
+      prevIndex
+    );
+
+    requestAnimationFrame(() => {
+
+      moveCameraAwayFrom(
+        document.getElementById(
+          "previous-button"
+        )
+      );
+
+      questionNavigationLockRef.current =
+        false;
+    });
+
+    return;
+  }
+
+  /*
+   * Previous question is not cached.
+   *
+   * Reuse the existing question handler.
+   */
+  try {
+
+    await fetchQuestionByIndex(
+      prevIndex
+    );
+
+  } finally {
+
+    questionNavigationLockRef.current =
+      false;
+  }
+
+  requestAnimationFrame(() => {
+
+    moveCameraAwayFrom(
+      document.getElementById(
+        "previous-button"
+      )
+    );
+
+  });
+}
+function handleMarkForReview() {
+  setMarkedQuestions((prev) => {
+    const updated =
+      prev.includes(currentQuestion)
+        ? prev.filter(
+            (q) =>
+              q !== currentQuestion
+          )
+        : [
+            ...prev,
+            currentQuestion,
+          ];
+
+    try {
+      localStorage.setItem(
+        `exam-marked-${examId}-${userId}`,
+        JSON.stringify(updated)
+      );
+    } catch (error) {
+      console.warn(
+        "Unable to persist marked questions locally:",
+        error
+      );
+    }
+
+    return updated;
+  });
+}
+async function handleNextQuestion() {
+  /*
+   * If another navigation is currently
+   * loading, remember this click.
+   */
+  if (
+    questionNavigationLockRef.current
+  ) {
+    pendingNavigationRef.current += 1;
+    return;
+  }
+
+  questionNavigationLockRef.current =
+    true;
+
+  /*
+   * React state updates are asynchronous.
+   * Use a local navigation pointer.
+   */
+  let targetIndex =
+    currentQuestion;
+
+  try {
+    /*
+     * Process the current click first,
+     * then any rapid clicks that arrived
+     * while navigation was busy.
+     */
+    while (true) {
+
+      const nextIndex =
+        targetIndex + 1;
+
+      /*
+       * End of exam.
+       */
+      if (
+        nextIndex >= totalQuestions
+      ) {
+        break;
+      }
+
+      /*
+       * Move navigation pointer immediately.
+       */
+      targetIndex =
+        nextIndex;
+
+      /*
+       * FAST PATH:
+       * Question already exists in memory.
+       */
+      const cachedQuestion =
+        questionCacheRef.current[
+          nextIndex
+        ];
+
+      if (cachedQuestion) {
+
+        setCurrentQuestionData(
+          cachedQuestion
+        );
+
+        setCurrentQuestion(
+          nextIndex
+        );
+
+      } else {
+
+        /*
+         * Question is not in memory.
+         *
+         * Check whether the same question
+         * is already being downloaded.
+         */
+        const existingRequest =
+          prefetchingRef.current.get(
+            nextIndex
+          );
+
+        if (existingRequest) {
+
+          /*
+           * Reuse the existing request.
+           */
+          const question =
+            await existingRequest;
+
+          if (question) {
+
+            setCurrentQuestionData(
+              question
+            );
+
+            setCurrentQuestion(
+              nextIndex
+            );
+
+          }
+
+        } else if (
+          navigator.onLine
+        ) {
+
+          /*
+           * Start the question request.
+           */
+          await fetchQuestionByIndex(
+            nextIndex
+          );
+
+        } else {
+
+          /*
+           * Offline and question is
+           * not available locally.
+           */
+          console.warn(
+            "Cannot navigate to uncached question while offline:",
+            nextIndex
+          );
+
+          toast.info(
+            "This question is still loading. Please wait for the cache to finish."
+          );
+
+          break;
+        }
+      }
+
+      /*
+       * Process another Next click if
+       * one arrived while loading.
+       */
+      if (
+        pendingNavigationRef.current >
+        0
+      ) {
+
+        pendingNavigationRef.current -=
+          1;
+
+        continue;
+      }
+
+      break;
+    }
+
+  } finally {
+
+    questionNavigationLockRef.current =
+      false;
+
+    /*
+     * Safety reset.
+     */
+    if (
+      pendingNavigationRef.current < 0
+    ) {
+      pendingNavigationRef.current =
+        0;
+    }
+  }
+}
+async function handleQuestionNavigation(
+  index: number
+) {
+  /*
+   * Prevent overlapping navigation.
+   */
+  if (
+    questionNavigationLockRef.current
+  ) {
+    return;
+  }
+
+  questionNavigationLockRef.current =
+    true;
+
+  try {
+
+    /*
+     * ==========================================
+     * 1. MEMORY CACHE — INSTANT
+     * ==========================================
+     */
+    const cachedQuestion =
+      questionCacheRef.current[index];
+
+    if (cachedQuestion) {
+
+      setCurrentQuestionData(
+        cachedQuestion
+      );
+
+      setCurrentQuestion(
+        index
+      );
+
+      return;
+    }
+
+    /*
+     * ==========================================
+     * 2. ALREADY DOWNLOADING
+     * ==========================================
+     *
+     * Reuse the existing request.
+     * Never create a duplicate request.
+     */
+    const existingRequest =
+      prefetchingRef.current.get(
+        index
+      );
+
+    if (existingRequest) {
+
+      const question =
+        await Promise.race([
+          existingRequest,
+
+          new Promise<null>(
+            (resolve) =>
+              setTimeout(
+                () => resolve(null),
+                3000
+              )
+          ),
+        ]);
+
+      if (question) {
+
+        setCurrentQuestionData(
+          question
+        );
+
+        setCurrentQuestion(
+          index
+        );
+
+      } else {
+
+        /*
+         * Request is still running.
+         *
+         * Do not create another request.
+         */
+        toast.info(
+          "This question is still loading. Please try again in a moment."
+        );
+      }
+
+      return;
+    }
+
+    /*
+     * ==========================================
+     * 3. NOT CACHED / NOT DOWNLOADING
+     * ==========================================
+     */
+    if (!navigator.onLine) {
+
+      toast.info(
+        "You're offline. Only downloaded questions are available right now."
+      );
+
+      return;
+    }
+
+    /*
+     * ==========================================
+     * 4. START SHARED NETWORK REQUEST
+     * ==========================================
+     */
+    await fetchQuestionByIndex(
+      index
+    );
+
+  } finally {
+
+    questionNavigationLockRef.current =
+      false;
+  }
 }
 const answeredCount = Object.keys(answers).length;
 
@@ -5455,122 +6514,7 @@ font-black
   answers={answers}
   currentQuestion={currentQuestion}
 setCurrentQuestion={
-  async (index: number) => {
-
-    /*
-     * ==========================================
-     * 1. MEMORY CACHE — INSTANT
-     * ==========================================
-     */
-    const cachedQuestion =
-      questionCacheRef.current[index];
-
-    if (cachedQuestion) {
-      setCurrentQuestionData(
-        cachedQuestion
-      );
-
-      setCurrentQuestion(
-        index
-      );
-
-      return;
-    }
-
-    /*
-     * ==========================================
-     * 2. ALREADY DOWNLOADING
-     * ==========================================
-     *
-     * IMPORTANT:
-     *
-     * Do NOT await the network request directly.
-     *
-     * The current exam UI must remain responsive.
-     */
-    const existingRequest =
-      prefetchingRef.current.get(
-        index
-      );
-
-    if (existingRequest) {
-
-      /*
-       * Race the existing request against
-       * a short UI timeout.
-       *
-       * If the network is slow, we do NOT
-       * freeze the exam indefinitely.
-       */
-      const question =
-        await Promise.race([
-          existingRequest,
-
-          new Promise<null>(
-            (resolve) =>
-              setTimeout(
-                () => resolve(null),
-                3000
-              )
-          ),
-        ]);
-
-      if (question) {
-
-        setCurrentQuestionData(
-          question
-        );
-
-        setCurrentQuestion(
-          index
-        );
-
-      } else {
-
-        /*
-         * The request is still running.
-         *
-         * DO NOT create another request.
-         *
-         * DO NOT freeze the exam.
-         */
-        toast.info(
-          "This question is still loading. Please try again in a moment."
-        );
-      }
-
-      return;
-    }
-
-    /*
-     * ==========================================
-     * 3. NOT CACHED / NOT DOWNLOADING
-     * ==========================================
-     */
-
-    if (!navigator.onLine) {
-
-      toast.info(
-        "You're offline. Only downloaded questions are available right now."
-      );
-
-      return;
-    }
-
-    /*
-     * ==========================================
-     * 4. START SHARED NETWORK REQUEST
-     * ==========================================
-     *
-     * fetchQuestionByIndex() already uses
-     * prefetchQuestion(), so the request is
-     * registered in the shared in-flight map.
-     */
-    void fetchQuestionByIndex(
-      index
-    );
-
-  }
+  handleQuestionNavigation
 }
   visitedQuestions={
     visitedQuestions
@@ -5683,87 +6627,7 @@ setCurrentQuestion={
 
         <button
   id="previous-button"
-  onClick={async () => {
-    if (
-  questionNavigationLockRef.current
-) {
-  return;
-}
-
-questionNavigationLockRef.current =
-  true;
-  const prevIndex =
-    Math.max(
-      currentQuestion - 1,
-      0
-    );
-
-  if (
-    prevIndex === currentQuestion
-  ) {
-    return;
-  }
-
-  /*
-   * If the previous question is already
-   * cached, display it immediately.
-   */
-  const cachedQuestion =
-    questionCacheRef.current[
-      prevIndex
-    ];
-
-  if (cachedQuestion) {
-
-  setCurrentQuestionData(
-    cachedQuestion
-  );
-
-  setCurrentQuestion(
-    prevIndex
-  );
-
-  requestAnimationFrame(() => {
-
-    moveCameraAwayFrom(
-      document.getElementById(
-        "previous-button"
-      )
-    );
-
-    questionNavigationLockRef.current =
-      false;
-
-  });
-
-  return;
-}
-
-  /*
-   * Fallback if the previous question
-   * was not cached.
-   */
- try {
-
-  await fetchQuestionByIndex(
-    prevIndex
-  );
-
-} finally {
-
-  questionNavigationLockRef.current =
-    false;
-
-}
-
-  requestAnimationFrame(() => {
-    moveCameraAwayFrom(
-      document.getElementById(
-        "previous-button"
-      )
-    );
-  });
-}}
+  onClick={handlePreviousQuestion}
 
   disabled={
     currentQuestion === 0
@@ -5798,24 +6662,7 @@ hover:bg-[#243B6B]/5
 </button>
   <button
   id="mark-review-button"
-  onClick={() => {
-
-    setMarkedQuestions(
-      prev =>
-        prev.includes(
-          currentQuestion
-        )
-          ? prev
-          : [
-              ...prev,
-              currentQuestion
-            ]
-    );
-
-    toast.success(
-      "Marked for review"
-    );
-  }}
+ onClick={handleMarkForReview}
 
   className="
     px-8
@@ -5845,184 +6692,7 @@ hover:bg-[#C89A1F]
 
   <button
   id="next-button"
-  onClick={async () => {
-
-  /*
-   * If another navigation is currently
-   * loading, remember this click.
-   *
-   * We do NOT discard rapid clicks.
-   */
-  if (
-    questionNavigationLockRef.current
-  ) {
-
-    pendingNavigationRef.current += 1;
-
-    return;
-  }
-
-  questionNavigationLockRef.current =
-    true;
-
-  /*
-   * This local variable is critical.
-   *
-   * React state updates are asynchronous,
-   * so we must NOT repeatedly read
-   * currentQuestion while processing
-   * rapid clicks.
-   */
-  let targetIndex =
-    currentQuestion;
-
-  try {
-
-    /*
-     * Process the current click first,
-     * then any clicks that arrived while
-     * navigation was busy.
-     */
-    while (true) {
-
-      const nextIndex =
-        targetIndex + 1;
-
-      /*
-       * End of exam.
-       */
-      if (
-        nextIndex >= totalQuestions
-      ) {
-        break;
-      }
-
-      /*
-       * Move our navigation pointer
-       * immediately.
-       */
-      targetIndex =
-        nextIndex;
-
-      /*
-       * FAST PATH:
-       *
-       * Question already exists in memory.
-       */
-      const cachedQuestion =
-        questionCacheRef.current[
-          nextIndex
-        ];
-
-      if (cachedQuestion) {
-
-        setCurrentQuestionData(
-          cachedQuestion
-        );
-
-        setCurrentQuestion(
-          nextIndex
-        );
-
-  } else {
-  /*
-   * The question is not in memory yet.
-   *
-   * If it is already being prefetched, wait for
-   * that SAME request.
-   */
-  const existingRequest =
-    prefetchingRef.current.get(
-      nextIndex
-    );
-
- if (existingRequest) {
-  /*
-   * The question is already being downloaded.
-   *
-   * NEVER block the exam UI while waiting for
-   * the network.
-   */
-  existingRequest.then((question) => {
-    if (!question) {
-      return;
-    }
-
-    setCurrentQuestionData(question);
-    setCurrentQuestion(nextIndex);
-  });
-
-  break;
-} else if (navigator.onLine) {
-  /*
-   * Question is not cached and is not currently
-   * downloading.
-   *
-   * Start the request in the background.
-   * The exam UI must remain responsive.
-   */
-  void fetchQuestionByIndex(nextIndex);
-
-  break;
-} else {
-  /*
-   * Offline and question is not cached.
-   */
-  console.warn(
-    "Cannot navigate to uncached question while offline:",
-    nextIndex
-  );
-
-  toast.info(
-    "This question has not finished loading yet. Please try again in a moment."
-  );
-
-  break;
-}
-}
-
-      /*
-       * Was another Next click made
-       * while this question was loading?
-       */
-      if (
-        pendingNavigationRef.current >
-        0
-      ) {
-
-        pendingNavigationRef.current -=
-          1;
-
-        /*
-         * Continue immediately to
-         * the next requested question.
-         */
-        continue;
-      }
-
-      /*
-       * No more pending clicks.
-       */
-      break;
-    }
-
-  } finally {
-
-    questionNavigationLockRef.current =
-      false;
-
-    /*
-     * Safety reset.
-     */
-    if (
-      pendingNavigationRef.current < 0
-    ) {
-      pendingNavigationRef.current =
-        0;
-    }
-  }
-
-}}
+  onClick={handleNextQuestion}
 
       className="
         px-8
@@ -6445,13 +7115,7 @@ animate-[tcdPop_.25s_ease-out]
   </button>
 
   <button
-    onClick={async () => {
-
-      setShowSubmitSummary(false);
-
-      await submitExam();
-
-    }}
+    onClick={handleConfirmSubmit}
     className="
       flex-1
       py-4
