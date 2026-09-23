@@ -3677,14 +3677,7 @@ async function prefetchQuestionsAhead(
     totalQuestions > 0
       ? totalQuestions
       : 0;
-console.log(
-  "[TCD PREFETCH]",
-  {
-    startIndex,
-    totalQuestions,
-    knownTotal,
-  }
-);
+
   if (knownTotal <= 0) {
     return;
   }
@@ -5013,29 +5006,58 @@ async function submitExam() {
         result =
           retrySubmission.result;
 
-        if (
-          retrySubmission.networkError
-        ) {
-          throw retrySubmission.networkError;
-        }
+      if (
+  retrySubmission.networkError
+) {
+  throw retrySubmission.networkError;
+}
 
-        console.log(
-          "RETRY SUBMIT STATUS:",
-          response?.status
-        );
+console.log(
+  "RETRY SUBMIT STATUS:",
+  response?.status
+);
 
-        console.log(
-          "RETRY SUBMIT RESPONSE:",
-          result
-        );
+console.log(
+  "RETRY SUBMIT RESPONSE:",
+  result
+);
 
-        /*
-         * Request reached the server.
-         *
-         * Stop retrying even if the server returned
-         * an application-level error.
-         */
-        break;
+/*
+ * IMPORTANT:
+ *
+ * A 409 / "Exam already submitted" means
+ * the original request may have succeeded on
+ * the server even though the browser received
+ * an AbortError.
+ *
+ * Do NOT submit again.
+ */
+if (
+  response?.status === 409 ||
+  result?.error ===
+    "Exam already submitted"
+) {
+  console.log(
+    "SERVER CONFIRMED EXAM WAS ALREADY SUBMITTED."
+  );
+
+  /*
+   * Leave the retry loop.
+   *
+   * The existing recovery logic below will
+   * load the submitted attempt and redirect
+   * to the result page.
+   */
+  break;
+}
+
+/*
+ * A normal HTTP response means the request
+ * reached the server.
+ *
+ * Stop retrying.
+ */
+break;
 
       } catch (retryError) {
 
