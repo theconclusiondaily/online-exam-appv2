@@ -2086,7 +2086,7 @@ async function enterExamFullscreen(): Promise<boolean> {
 
   try {
     const element =
-      examContainerRef.current;
+      document.documentElement;
 
     if (!element) {
       console.error(
@@ -2098,9 +2098,6 @@ async function enterExamFullscreen(): Promise<boolean> {
 
     await element.requestFullscreen();
 
-    /*
-     * Browser has confirmed fullscreen.
-     */
     if (document.fullscreenElement) {
       setIsFullscreenBlurred(false);
 
@@ -3776,7 +3773,7 @@ async function prefetchQuestionsAhead(
       return;
     }
 
-    
+
 if (!isIOSDevice()) {
   const fullscreenEntered =
     await enterExamFullscreen();
