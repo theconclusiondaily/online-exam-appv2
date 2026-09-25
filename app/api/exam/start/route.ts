@@ -339,10 +339,87 @@ if (exam.entry_fee > 0) {
       );
     }
 
-    return NextResponse.json({
-  success: true,
-  session,
-});
+   // ======================================
+// GET OR CREATE EXAM ATTEMPT
+// ======================================
+
+let attemptId: string | null = null;
+
+const {
+  data: existingAttempt,
+  error: existingAttemptError,
+} =
+  await supabase
+    .from("exam_attempts")
+    .select("id, status")
+    .eq("exam_id", examId)
+    .eq("user_id", user.id)
+    .eq("status", "active")
+    .maybeSingle();
+
+if (existingAttemptError) {
+
+  console.error(
+    "EXAM ATTEMPT LOOKUP ERROR:",
+    existingAttemptError
+  );
+
+  return NextResponse.json(
+    {
+      error:
+        "Unable to initialize exam attempt",
+    },
+    {
+      status: 500,
+    }
+  );
+}
+
+if (existingAttempt) {
+
+  attemptId =
+    existingAttempt.id;
+
+} else {
+
+  const {
+    data: newAttempt,
+    error: newAttemptError,
+  } =
+    await supabase
+      .from("exam_attempts")
+      .insert({
+        exam_id: examId,
+        user_id: user.id,
+        status: "active",
+      })
+      .select("id")
+      .single();
+
+  if (
+    newAttemptError ||
+    !newAttempt
+  ) {
+
+    console.error(
+      "EXAM ATTEMPT CREATION ERROR:",
+      newAttemptError
+    );
+
+    return NextResponse.json(
+      {
+        error:
+          "Unable to create exam attempt",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
+
+  attemptId =
+    newAttempt.id;
+}
   
   } catch (error) {
     console.error("START EXAM ERROR:", error);
