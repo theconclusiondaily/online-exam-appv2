@@ -479,6 +479,7 @@ const questionCacheRef =
     
     const [attemptId, setAttemptId] =
   useState<string | null>(null);
+  
   const attemptIdRef =
   useRef<string | null>(null);
 const sessionIdRef =
@@ -2077,11 +2078,12 @@ void saveViolationEvent(
   reason
 );
 }
-async function enterExamFullscreen() {
+async function enterExamFullscreen(): Promise<boolean> {
   if (isIOSDevice()) {
-  setIsFullscreenBlurred(false);
-  return;
-}
+    setIsFullscreenBlurred(false);
+    return true;
+  }
+
   try {
     const element =
       examContainerRef.current;
@@ -2091,31 +2093,32 @@ async function enterExamFullscreen() {
         "Fullscreen target element not found"
       );
 
-      return;
+      return false;
     }
 
     await element.requestFullscreen();
 
     /*
-     * Fullscreen request succeeded.
-     *
-     * Remove the blocking overlay only after
-     * the browser confirms fullscreen.
+     * Browser has confirmed fullscreen.
      */
     if (document.fullscreenElement) {
       setIsFullscreenBlurred(false);
 
-      /*
-       * The student has successfully returned
-       * to the examination environment.
-       */
-      return;
+      console.log(
+        "TCD FULLSCREEN ENTERED"
+      );
+
+      return true;
     }
 
     console.warn(
       "Fullscreen request completed but fullscreenElement is still null"
     );
+
+    return false;
+
   } catch (error) {
+
     console.error(
       "Unable to enter fullscreen:",
       error
@@ -2124,6 +2127,8 @@ async function enterExamFullscreen() {
     toast.error(
       "Unable to enter fullscreen. Please try again."
     );
+
+    return false;
   }
 }
   async function requestPermissions() {
@@ -2496,7 +2501,16 @@ async function uploadProctoringSnapshot(
 
     const imageUrl =
       publicUrlData.publicUrl;
-
+console.log(
+  "TCD SNAPSHOT READY",
+  {
+    attemptId:
+      attemptIdRef.current,
+    userId,
+    examId,
+    imageUrl,
+  }
+);
     /*
      * ==========================================
      * 5. DATABASE REGISTRATION
@@ -3761,16 +3775,18 @@ async function prefetchQuestionsAhead(
 
       return;
     }
+
+    
 if (!isIOSDevice()) {
-  try {
-    if (document.documentElement) {
-      await document.documentElement.requestFullscreen();
-    }
-  } catch (error) {
-    console.warn(
-      "Fullscreen unavailable. Continuing exam:",
-      error
+  const fullscreenEntered =
+    await enterExamFullscreen();
+
+  if (!fullscreenEntered) {
+    toast.error(
+      "Please enter fullscreen mode before starting the exam."
     );
+
+    return;
   }
 }
 /*
@@ -3845,6 +3861,22 @@ if (!response.ok) {
 
   return;
 }
+
+const startedAttemptId =
+  result?.session?.attempt_id ||
+  null;
+
+setAttemptId(
+  startedAttemptId
+);
+
+attemptIdRef.current =
+  startedAttemptId;
+
+console.log(
+  "TCD ATTEMPT ID:",
+  attemptIdRef.current
+);
 
 const token =
   result?.session?.session_token;
