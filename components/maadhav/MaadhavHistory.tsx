@@ -93,19 +93,7 @@ export default function MaadhavHistory({
       <div className="shrink-0 border-b border-slate-100 px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#274472]/[0.06]">
-              <TCDLogo size={27} />
-            </div>
-
-            <div className="min-w-0">
-              <div className="truncate text-sm font-bold text-[#274472]">
-                Maadhav
-              </div>
-
-              <div className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                Learning companion
-              </div>
-            </div>
+           
           </div>
 
           {mobile && onClose && (
