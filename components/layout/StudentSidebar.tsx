@@ -31,8 +31,8 @@ export default function StudentSidebar({
   },
 
   {
+  name: "Maadhav",
   href: "/dashboard/maadhav",
-  label: "Maadhav",
   icon: <TCDLogo size={20} />,
 },
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { TCDIcons } from "@/components/ui/tcd-icons";
-
+import TCDLogo from "@/components/brand/TCDLogo";
 interface MaadhavWelcomeProps {
   onPrompt: (prompt: string) => void;
 }
@@ -51,9 +51,7 @@ export default function MaadhavWelcome({
             <div className="absolute inset-0 scale-150 rounded-full bg-[#E6C06E]/10 blur-2xl" />
 
             <div className="relative flex h-20 w-20 items-center justify-center rounded-[24px] border border-[#E6C06E]/30 bg-white shadow-[0_12px_40px_rgba(39,68,114,0.10)]">
-              <div className="h-12 w-12">
-                {TCDIcons.mastery}
-              </div>
+              <TCDLogo size={32} />
             </div>
           </div>
 
