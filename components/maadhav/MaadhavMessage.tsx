@@ -1,4 +1,9 @@
+
 "use client";
+
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 
 import { TCDIcons } from "@/components/ui/tcd-icons";
 
@@ -6,84 +11,6 @@ interface MaadhavMessageProps {
   role: "user" | "assistant";
   content: string;
   onAction?: (action: string, content: string) => void;
-}
-
-function renderContent(content: string) {
-  const lines = content.split("\n");
-
-  return lines.map((line, index) => {
-    const trimmed = line.trim();
-
-    if (!trimmed) {
-      return <div key={index} className="h-2" />;
-    }
-
-    if (trimmed.startsWith("- ") || trimmed.startsWith("• ")) {
-      return (
-        <div key={index} className="flex gap-2">
-          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#E6C06E]" />
-          <span>{formatInlineText(trimmed.slice(2))}</span>
-        </div>
-      );
-    }
-
-    const numberedMatch = trimmed.match(/^(\d+)\.\s+(.*)$/);
-
-    if (numberedMatch) {
-      return (
-        <div key={index} className="flex gap-2">
-          <span className="font-semibold text-[#274472]">
-            {numberedMatch[1]}.
-          </span>
-          <span>{formatInlineText(numberedMatch[2])}</span>
-        </div>
-      );
-    }
-
-    if (trimmed.startsWith("### ")) {
-      return (
-        <h3
-          key={index}
-          className="mt-2 text-sm font-bold text-[#274472]"
-        >
-          {formatInlineText(trimmed.replace(/^###\s+/, ""))}
-        </h3>
-      );
-    }
-
-    if (trimmed.startsWith("## ")) {
-      return (
-        <h2
-          key={index}
-          className="mt-2 text-base font-bold text-[#274472]"
-        >
-          {formatInlineText(trimmed.replace(/^##\s+/, ""))}
-        </h2>
-      );
-    }
-
-    return (
-      <p key={index} className="leading-7">
-        {formatInlineText(trimmed)}
-      </p>
-    );
-  });
-}
-
-function formatInlineText(text: string) {
-  const parts = text.split(/(\*\*.*?\*\*)/g);
-
-  return parts.map((part, index) => {
-    if (part.startsWith("**") && part.endsWith("**")) {
-      return (
-        <strong key={index} className="font-semibold text-[#274472]">
-          {part.slice(2, -2)}
-        </strong>
-      );
-    }
-
-    return <span key={index}>{part}</span>;
-  });
 }
 
 export default function MaadhavMessage({
@@ -108,6 +35,7 @@ export default function MaadhavMessage({
           isAssistant ? "flex-row" : "flex-row-reverse"
         }`}
       >
+        {/* Avatar */}
         <div
           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
             isAssistant
@@ -120,6 +48,7 @@ export default function MaadhavMessage({
           </div>
         </div>
 
+        {/* Message */}
         <div
           className={`min-w-0 rounded-2xl px-4 py-3.5 text-sm ${
             isAssistant
@@ -127,10 +56,118 @@ export default function MaadhavMessage({
               : "rounded-tr-md bg-[#274472] text-white shadow-[0_4px_15px_rgba(39,68,114,0.15)]"
           }`}
         >
-          <div className="space-y-1.5">
-            {renderContent(content)}
+          <div
+            className={
+              isAssistant
+                ? "maadhav-markdown"
+                : "maadhav-markdown maadhav-user-markdown"
+            }
+          >
+            <ReactMarkdown
+              remarkPlugins={[remarkMath]}
+              rehypePlugins={[rehypeKatex]}
+              components={{
+                h1: ({ children }) => (
+                  <h1 className="mb-3 mt-1 text-lg font-bold text-[#274472]">
+                    {children}
+                  </h1>
+                ),
+
+                h2: ({ children }) => (
+                  <h2 className="mb-2 mt-4 text-base font-bold text-[#274472]">
+                    {children}
+                  </h2>
+                ),
+
+                h3: ({ children }) => (
+                  <h3 className="mb-2 mt-3 text-sm font-bold text-[#274472]">
+                    {children}
+                  </h3>
+                ),
+
+                p: ({ children }) => (
+                  <p className="mb-3 leading-7 last:mb-0">
+                    {children}
+                  </p>
+                ),
+
+                ul: ({ children }) => (
+                  <ul className="mb-3 ml-1 space-y-2">
+                    {children}
+                  </ul>
+                ),
+
+                ol: ({ children }) => (
+                  <ol className="mb-3 ml-5 list-decimal space-y-2">
+                    {children}
+                  </ol>
+                ),
+
+                li: ({ children }) => (
+                  <li className="flex gap-2 leading-7">
+                    <span
+                      className={`mt-[11px] h-1.5 w-1.5 shrink-0 rounded-full ${
+                        isAssistant
+                          ? "bg-[#E6C06E]"
+                          : "bg-white/70"
+                      }`}
+                    />
+                    <span>{children}</span>
+                  </li>
+                ),
+
+                strong: ({ children }) => (
+                  <strong
+                    className={
+                      isAssistant
+                        ? "font-semibold text-[#274472]"
+                        : "font-semibold text-white"
+                    }
+                  >
+                    {children}
+                  </strong>
+                ),
+
+                blockquote: ({ children }) => (
+                  <blockquote className="my-3 border-l-2 border-[#E6C06E] pl-4 italic text-slate-500">
+                    {children}
+                  </blockquote>
+                ),
+
+                code: ({ children, className }) => {
+                  const isBlock = className?.includes("language-");
+
+                  if (isBlock) {
+                    return (
+                      <pre className="my-3 overflow-x-auto rounded-xl bg-slate-950 p-4 text-xs leading-6 text-slate-100">
+                        <code>{children}</code>
+                      </pre>
+                    );
+                  }
+
+                  return (
+                    <code
+                      className={`rounded-md px-1.5 py-0.5 text-[0.9em] ${
+                        isAssistant
+                          ? "bg-[#274472]/[0.07] text-[#274472]"
+                          : "bg-white/10 text-white"
+                      }`}
+                    >
+                      {children}
+                    </code>
+                  );
+                },
+
+                hr: () => (
+                  <hr className="my-4 border-slate-200" />
+                ),
+              }}
+            >
+              {content}
+            </ReactMarkdown>
           </div>
 
+          {/* Assistant actions */}
           {isAssistant && onAction && (
             <div className="mt-4 flex flex-wrap gap-2 border-t border-slate-100 pt-3">
               <button
