@@ -5,85 +5,227 @@ import {
 
 import { createClient } from "@/lib/supabase/server";
 
-export async function POST(req: NextRequest) {
+export async function POST(
+  req: NextRequest
+) {
   try {
-    const supabase = await createClient();
+    const supabase =
+      await createClient();
 
-    // 1. AUTHENTICATION
+    /*
+     * ==========================================
+     * 1. AUTHENTICATION
+     * ==========================================
+     */
     const {
       data: { user },
-    } = await supabase.auth.getUser();
+      error: authError,
+    } =
+      await supabase.auth.getUser();
 
-    if (!user) {
+    if (
+      authError ||
+      !user
+    ) {
       return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
+        {
+          error:
+            "Unauthorized",
+        },
+        {
+          status: 401,
+        }
       );
     }
 
-    // 2. REQUEST DATA
+    /*
+     * ==========================================
+     * 2. REQUEST DATA
+     * ==========================================
+     */
+    const body =
+      await req.json();
+
     const {
       examId,
       questionIndex,
       sessionToken,
-    } = await req.json();
+    } = body;
 
     if (
       !examId ||
-      typeof questionIndex !== "number" ||
-      !sessionToken ||
-      questionIndex < 0
+      typeof questionIndex !==
+        "number" ||
+      !Number.isInteger(
+        questionIndex
+      ) ||
+      questionIndex < 0 ||
+      !sessionToken
     ) {
       return NextResponse.json(
-        { error: "Invalid question request" },
-        { status: 400 }
+        {
+          error:
+            "Invalid question request",
+        },
+        {
+          status: 400,
+        }
       );
     }
 
-    // 3. VALIDATE STUDENT SESSION
+    /*
+     * ==========================================
+     * 3. VALIDATE ACTIVE EXAM SESSION
+     * ==========================================
+     *
+     * The composite database index:
+     *
+     * exam_id
+     * user_id
+     * session_token
+     *
+     * makes this lookup fast even with
+     * high concurrent traffic.
+     */
     const {
       data: session,
       error: sessionError,
-    } = await supabase
-      .from("exam_sessions")
-      .select("id, exam_id, user_id, status")
-      .eq("exam_id", examId)
-      .eq("user_id", user.id)
-      .eq("session_token", sessionToken)
-      .in(
-        "status",
-        ["active", "completed", "expired"]
-      )
-      .maybeSingle();
+    } =
+      await supabase
+        .from("exam_sessions")
+        .select(
+          "id, exam_id, user_id, status, expires_at"
+        )
+        .eq(
+          "exam_id",
+          examId
+        )
+        .eq(
+          "user_id",
+          user.id
+        )
+        .eq(
+          "session_token",
+          sessionToken
+        )
+        .in(
+          "status",
+          [
+            "active",
+            "completed",
+            "expired",
+          ]
+        )
+        .maybeSingle();
 
     if (
-      sessionError ||
-      !session
+      sessionError
     ) {
       console.error(
-        "QUESTION SESSION VALIDATION ERROR:",
+        "EXAM SESSION VALIDATION ERROR:",
         sessionError
       );
 
       return NextResponse.json(
-        { error: "Invalid session" },
-        { status: 403 }
+        {
+          error:
+            "Unable to validate exam session",
+        },
+        {
+          status: 500,
+        }
       );
     }
 
-    // 4. GET QUESTION MAPPING
+    if (!session) {
+      return NextResponse.json(
+        {
+          error:
+            "Invalid session",
+        },
+        {
+          status: 403,
+        }
+      );
+    }
+
+    /*
+     * ==========================================
+     * 4. SESSION EXPIRY CHECK
+     * ==========================================
+     */
+    if (
+      session.expires_at
+    ) {
+      const expiresAt =
+        new Date(
+          session.expires_at
+        ).getTime();
+
+      if (
+        Number.isFinite(
+          expiresAt
+        ) &&
+        expiresAt <=
+          Date.now()
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Exam session expired",
+          },
+          {
+            status: 403,
+          }
+        );
+      }
+    }
+
+    /*
+     * ==========================================
+     * 5. GET QUESTION MAPPING
+     * ==========================================
+     *
+     * question_order is ZERO based:
+     *
+     * Question 1 -> 0
+     * Question 2 -> 1
+     * Question 3 -> 2
+     * ...
+     *
+     * We query exactly ONE mapping.
+     *
+     * IMPORTANT:
+     *
+     * Do NOT use .range() here.
+     *
+     * PostgreSQL does not guarantee physical
+     * row order.
+     *
+     * The question_order column provides the
+     * permanent deterministic ordering.
+     */
     const {
-      data: mappings,
+      data: mapping,
       error: mappingError,
-    } = await supabase
-      .from("exam_questions")
-      .select("question_id")
-      .eq("exam_id", examId);
+    } =
+      await supabase
+        .from("exam_questions")
+        .select(
+          "question_id"
+        )
+        .eq(
+          "exam_id",
+          examId
+        )
+        .eq(
+          "question_order",
+          questionIndex
+        )
+        .maybeSingle();
 
     if (
-      mappingError ||
-      !mappings ||
-      mappings.length === 0
+      mappingError
     ) {
       console.error(
         "QUESTION MAPPING ERROR:",
@@ -93,63 +235,63 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "No questions mapped to exam",
+            "Unable to load question mapping",
         },
-        { status: 404 }
+        {
+          status: 500,
+        }
       );
     }
 
-    // 5. CHECK INDEX
     if (
-      questionIndex >= mappings.length
+      !mapping?.question_id
     ) {
       return NextResponse.json(
         {
           error:
-            "Question index out of range",
+            "Question not found",
         },
-        { status: 400 }
+        {
+          status: 404,
+        }
       );
     }
 
-    const currentQuestionId =
-      mappings[questionIndex]?.question_id;
+    const questionId =
+      mapping.question_id;
 
-    if (!currentQuestionId) {
-      return NextResponse.json(
-        { error: "Question not found" },
-        { status: 404 }
-      );
-    }
-
-    // 6. LOAD QUESTION
+    /*
+     * ==========================================
+     * 6. LOAD QUESTION
+     * ==========================================
+     */
     const {
-      data: currentQuestion,
+      data: question,
       error: questionError,
-    } = await supabase
-      .from("questions")
-      .select(`
-        id,
-        question,
-        question_text_hi,
-        option_a,
-        option_b,
-        option_c,
-        option_d,
-        option_a_hi,
-        option_b_hi,
-        option_c_hi,
-        option_d_hi
-      `)
-      .eq(
-        "id",
-        currentQuestionId
-      )
-      .single();
+    } =
+      await supabase
+        .from("questions")
+        .select(`
+          id,
+          question,
+          question_text_hi,
+          option_a,
+          option_b,
+          option_c,
+          option_d,
+          option_a_hi,
+          option_b_hi,
+          option_c_hi,
+          option_d_hi
+        `)
+        .eq(
+          "id",
+          questionId
+        )
+        .maybeSingle();
 
     if (
-      questionError ||
-      !currentQuestion
+      questionError
     ) {
       console.error(
         "QUESTION LOAD ERROR:",
@@ -157,16 +299,84 @@ export async function POST(req: NextRequest) {
       );
 
       return NextResponse.json(
-        { error: "Question not found" },
-        { status: 404 }
+        {
+          error:
+            "Unable to load question",
+        },
+        {
+          status: 500,
+        }
       );
     }
 
-    // 7. RETURN QUESTION
+    if (!question) {
+      return NextResponse.json(
+        {
+          error:
+            "Question not found",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
+    /*
+     * ==========================================
+     * 7. GET TOTAL QUESTION COUNT
+     * ==========================================
+     *
+     * COUNT ONLY.
+     *
+     * No question rows are transferred.
+     */
+    const {
+      count,
+      error: countError,
+    } =
+      await supabase
+        .from("exam_questions")
+        .select(
+          "id",
+          {
+            count:
+              "exact",
+            head: true,
+          }
+        )
+        .eq(
+          "exam_id",
+          examId
+        );
+
+    if (
+      countError
+    ) {
+      console.error(
+        "QUESTION COUNT ERROR:",
+        countError
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            "Unable to determine exam question count",
+        },
+        {
+          status: 500,
+        }
+      );
+    }
+
+    /*
+     * ==========================================
+     * 8. RETURN QUESTION
+     * ==========================================
+     */
     return NextResponse.json({
-      data: currentQuestion,
+      data: question,
       totalQuestions:
-        mappings.length,
+        count ?? 0,
     });
 
   } catch (error) {
@@ -177,9 +387,12 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       {
-        error: "Internal server error",
+        error:
+          "Internal server error",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }

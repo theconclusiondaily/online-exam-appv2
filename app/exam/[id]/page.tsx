@@ -164,7 +164,13 @@ const networkCheckRef =
   useRef<ReturnType<typeof setTimeout> | null>(
     null
   );
-  
+  const questionRequestRef =
+  useRef<
+    Map<
+      number,
+      Promise<any>
+    >
+  >(new Map());
   
    const audioContextRef =
   useRef<AudioContext | null>(null);
@@ -463,13 +469,13 @@ const [
     useState<any>({});
 const questionCacheRef =
   useRef<Record<number, any>>({});
-  const [currentQuestion,
-    setCurrentQuestion] =
-    useState(0);
   const prefetchingRef =
   useRef<
     Map<number, Promise<any>>
   >(new Map());
+  const [currentQuestion,
+    setCurrentQuestion] =
+    useState(0);
   const questionNavigationLockRef =
   useRef(false);
   const pendingNavigationRef =
@@ -3440,15 +3446,17 @@ async function prefetchQuestion(
   index: number
 ) {
   /*
- * Never allow an invalid question
- * to reach the API.
- */
-if (
-  !sessionTokenRef.current
-) {
-  return null;
-}
-  // Never prefetch outside the exam.
+   * ==========================================
+   * 1. VALIDATION
+   * ==========================================
+   */
+  const token =
+    sessionTokenRef.current;
+
+  if (!token) {
+    return null;
+  }
+
   if (
     index < 0 ||
     (
@@ -3459,7 +3467,11 @@ if (
     return null;
   }
 
-  // Already cached in memory.
+  /*
+   * ==========================================
+   * 2. MEMORY CACHE
+   * ==========================================
+   */
   const cachedQuestion =
     questionCacheRef.current[index];
 
@@ -3467,30 +3479,68 @@ if (
     return cachedQuestion;
   }
 
-  // Already being fetched.
-  // Reuse the SAME network request.
+  /*
+   * ==========================================
+   * 3. EXISTING IN-FLIGHT REQUEST
+   * ==========================================
+   *
+   * This is critical for scale.
+   *
+   * If Q5 is requested by:
+   *
+   * - navigation
+   * - prefetch
+   * - resume
+   * - another React effect
+   *
+   * all callers receive the SAME Promise.
+   */
   const existingRequest =
-    prefetchingRef.current.get(index);
+    prefetchingRef.current.get(
+      index
+    );
 
   if (existingRequest) {
     return existingRequest;
   }
 
-  // Do not create network requests while offline.
+  /*
+   * ==========================================
+   * 4. OFFLINE
+   * ==========================================
+   */
   if (!navigator.onLine) {
     return null;
   }
 
+  /*
+   * Capture the token used for THIS request.
+   *
+   * Do not repeatedly read sessionTokenRef.current
+   * during the request.
+   */
+  const requestToken = token;
+
+  /*
+   * ==========================================
+   * 5. CREATE ONE REQUEST
+   * ==========================================
+   */
   const requestPromise =
     (async () => {
-console.log("TCD QUESTION NETWORK REQUEST", {
-  index,
-  time: new Date().toISOString(),
-});
       try {
+        console.log(
+          "TCD QUESTION NETWORK REQUEST",
+          {
+            index,
+            time:
+              new Date().toISOString(),
+          }
+        );
 
         const response =
-          await fetchWithTimeout("/api/exam/question",
+          await fetchWithTimeout(
+            "/api/exam/question",
             {
               method: "POST",
 
@@ -3500,40 +3550,61 @@ console.log("TCD QUESTION NETWORK REQUEST", {
               },
 
               body: JSON.stringify({
-  examId,
-  questionIndex: index,
-  sessionToken: sessionTokenRef.current,
-}),
+                examId,
+                questionIndex:
+                  index,
+                sessionToken:
+                  requestToken,
+              }),
             }
           );
 
-       if (!response.ok) {
+        /*
+         * ======================================
+         * RESPONSE VALIDATION
+         * ======================================
+         */
+        let result: any = null;
 
-  const errorResult =
-    await response
-      .json()
-      .catch(() => null);
+        try {
+          result =
+            await response.json();
+        } catch {
+          result = null;
+        }
 
-  console.error(
-    "QUESTION API FAILED:",
-    response.status,
-    errorResult
-  );
+        if (!response.ok) {
+          console.error(
+            "QUESTION API FAILED:",
+            {
+              index,
+              status:
+                response.status,
+              error:
+                result?.error ??
+                null,
+            }
+          );
 
+          return null;
+        }
 
-  return null;
-}
+        if (!result?.data) {
+          console.error(
+            "QUESTION API RETURNED NO DATA:",
+            {
+              index,
+              result,
+            }
+          );
 
-        const result =
-          await response.json();
-
-        if (!result.data) {
           return null;
         }
 
         /*
-         * Keep totalQuestions updated
-         * from the server response.
+         * ======================================
+         * TOTAL QUESTIONS
+         * ======================================
          */
         const serverTotal =
           result.totalQuestions;
@@ -3548,15 +3619,18 @@ console.log("TCD QUESTION NETWORK REQUEST", {
           );
         }
 
+        /*
+         * ======================================
+         * QUESTION
+         * ======================================
+         */
         const question =
           result.data;
 
         /*
-         * Shuffle ONCE.
-         *
-         * The same question object stays
-         * in the cache, so navigating back
-         * will never reshuffle it.
+         * ======================================
+         * SHUFFLE ONCE
+         * ======================================
          */
         const shuffledQuestion = {
           ...question,
@@ -3572,86 +3646,79 @@ console.log("TCD QUESTION NETWORK REQUEST", {
         };
 
         /*
-         * 1. MEMORY CACHE
-         *
-         * This is the fastest path used
-         * by Next/Previous.
+         * ======================================
+         * 6. MEMORY CACHE
+         * ======================================
          */
-        questionCacheRef.current[index] =
-          shuffledQuestion;
+        questionCacheRef.current[
+          index
+        ] = shuffledQuestion;
 
         /*
-         * 2. REACT + SESSION CACHE
+         * ======================================
+         * 7. REACT + SESSION CACHE
+         * ======================================
          */
-        setQuestionCache((prev) => {
+        setQuestionCache(
+          (previous) => {
+            const updated = {
+              ...previous,
+              [index]:
+                shuffledQuestion,
+            };
 
-          const updated = {
-            ...prev,
-            [index]:
-              shuffledQuestion,
-          };
+            try {
+              const storageKey =
+                `exam-question-cache-${examId}`;
 
-          try {
+              sessionStorage.setItem(
+                storageKey,
+                JSON.stringify(
+                  updated
+                )
+              );
+            } catch (storageError) {
+              console.warn(
+                "Unable to persist question cache:",
+                storageError
+              );
+            }
 
-            const storageKey =
-              `exam-question-cache-${examId}`;
-
-            sessionStorage.setItem(
-              storageKey,
-              JSON.stringify(updated)
-            );
-
-          } catch (error) {
-
-            console.warn(
-              "Unable to persist question cache:",
-              error
-            );
-
+            return updated;
           }
-
-          return updated;
-        });
+        );
 
         return shuffledQuestion;
 
       } catch (error) {
+        console.error(
+          "PREFETCH NETWORK ERROR:",
+          {
+            index,
+            error,
+          }
+        );
 
-  console.error(
-    "PREFETCH NETWORK ERROR:",
-    error
-  );
+        return null;
 
-  console.warn(
-  "PREFETCH NETWORK ERROR:",
-  error
-);
-
-  return null;
-} finally {
-
+      } finally {
         /*
-         * The request has finished.
-         *
-         * Remove it so a future request
-         * can be created if necessary.
+         * Remove ONLY after the Promise
+         * has completely finished.
          */
         prefetchingRef.current.delete(
           index
         );
       }
-
     })();
 
   /*
-   * IMPORTANT:
+   * ==========================================
+   * 8. REGISTER IN-FLIGHT REQUEST
+   * ==========================================
    *
-   * Store the Promise BEFORE returning.
-   *
-   * Any other caller asking for this
-   * question now receives this exact
-   * same Promise instead of creating
-   * another network request.
+   * This MUST happen immediately after
+   * creating the Promise.
    */
   prefetchingRef.current.set(
     index,
@@ -3660,6 +3727,8 @@ console.log("TCD QUESTION NETWORK REQUEST", {
 
   return requestPromise;
 }
+
+
 async function prefetchQuestionsAhead(
   startIndex: number
 ) {
