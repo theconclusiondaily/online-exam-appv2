@@ -4,16 +4,26 @@ import type {
   MaadhavResponse,
 } from "./types";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 const MODEL = process.env.MAADHAV_MODEL || "gpt-5.5";
+
+function getOpenAIClient() {
+  const apiKey = process.env.OPENAI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is not configured.");
+  }
+
+  return new OpenAI({
+    apiKey,
+  });
+}
 
 export async function generateWithOpenAI(
   messages: MaadhavMessage[],
   systemPrompt: string
 ): Promise<MaadhavResponse> {
+  const openai = getOpenAIClient();
+
   const response = await openai.responses.create({
     model: MODEL,
     instructions: systemPrompt,
