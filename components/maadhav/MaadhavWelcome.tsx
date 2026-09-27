@@ -51,7 +51,7 @@ export default function MaadhavWelcome({
             <div className="absolute inset-0 scale-150 rounded-full bg-[#E6C06E]/10 blur-2xl" />
 
             <div>
-              <TCDLogo size={32} />
+              <TCDLogo size={108} />
             </div>
           </div>
 

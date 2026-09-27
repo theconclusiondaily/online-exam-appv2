@@ -13,17 +13,21 @@ interface MaadhavMessageProps {
   onAction?: (action: string, content: string) => void;
 }
 function normalizeMath(content: string) {
-  return content
-    // Convert $$ ... $$ to display math
-    .replace(
-      /\$\$([\s\S]*?)\$\$/g,
-      (_, formula) => `\n\\[\n${formula.trim()}\n\\]\n`
-    )
-    // Convert single $...$ to inline math
-    .replace(
-      /(?<!\$)\$([^$\n]+?)\$(?!\$)/g,
-      (_, formula) => `\\(${formula.trim()}\\)`
-    );
+  let normalized = content;
+
+  // Convert \[ ... \] to display math
+  normalized = normalized.replace(
+    /\\\[([\s\S]*?)\\\]/g,
+    (_, formula) => `\n\n$$\n${formula.trim()}\n$$\n\n`
+  );
+
+  // Convert \( ... \) to inline math
+  normalized = normalized.replace(
+    /\\\(([\s\S]*?)\\\)/g,
+    (_, formula) => `$${formula.trim()}$`
+  );
+
+  return normalized;
 }
 export default function MaadhavMessage({
   role,

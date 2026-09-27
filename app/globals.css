@@ -508,3 +508,23 @@ html {
 .maadhav-markdown p {
   overflow-wrap: break-word;
 }
+
+.maadhav-markdown .katex-display {
+  margin: 1rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.35rem 0;
+  text-align: center;
+}
+
+.maadhav-markdown .katex {
+  font-size: 1.05em;
+}
+
+.maadhav-markdown .katex-display > .katex {
+  max-width: 100%;
+}
+
+.maadhav-markdown .katex-html {
+  overflow-x: auto;
+}
