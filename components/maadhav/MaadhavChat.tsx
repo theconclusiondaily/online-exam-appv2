@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import MaadhavInput from "./MaadhavInput";
 import MaadhavMessage from "./MaadhavMessage";
@@ -16,6 +16,7 @@ interface Message {
 export default function MaadhavChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
+const [conversationId, setConversationId] = useState<string | null>(null);
 
  async function sendMessage(
   message: string,
@@ -45,23 +46,24 @@ export default function MaadhavChat() {
       headers: {
         "Content-Type": "application/json",
       },
-     body: JSON.stringify({
+    body: JSON.stringify({
   message: trimmedMessage,
-  conversation: conversation.map((item) => ({
-    role: item.role,
-    content: item.content,
-  })),
+  conversationId,
 }),
     });
 
     const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(
-        data?.error ||
-          "Maadhav could not process your request."
-      );
-    }
+if (!response.ok) {
+  throw new Error(
+    data?.error ||
+      "Maadhav could not process your request."
+  );
+}
+
+if (data?.conversationId) {
+  setConversationId(data.conversationId);
+}
 
     const assistantMessage: Message = {
       id: crypto.randomUUID(),

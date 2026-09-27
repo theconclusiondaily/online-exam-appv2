@@ -22,11 +22,19 @@ export default function StudentSidebar({
 
   const links = [
 
+    
+
   {
     name: "Dashboard",
     href: "/dashboard",
     icon: TCDIcons.mastery,
   },
+
+  {
+  href: "/dashboard/maadhav",
+  label: "Maadhav",
+  icon: <TCDLogo size={20} />,
+},
 
   {
     name: "Learning Journey",

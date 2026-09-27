@@ -1,6 +1,6 @@
 "use client";
 
-import { TCDIcons } from "@/components/ui/tcd-icons";
+import TCDLogo from "@/components/brand/TCDLogo";
 import MaadhavChat from "@/components/maadhav/MaadhavChat";
 
 export default function MaadhavPage() {
@@ -11,11 +11,9 @@ export default function MaadhavPage() {
 
         <div className="relative mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#274472]/[0.07]">
-              <div className="h-6 w-6">
-                {TCDIcons.mastery}
-              </div>
-            </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white">
+  <TCDLogo size={32} />
+</div>
 
             <div>
               <div className="flex items-center gap-2">

@@ -23,7 +23,19 @@ export default function MaadhavMessage({
   function handleAction(action: string) {
     onAction?.(action, content);
   }
-
+function normalizeMath(content: string) {
+  return content
+    // Convert $$ ... $$ to display math
+    .replace(
+      /\$\$([\s\S]*?)\$\$/g,
+      (_, formula) => `\n\\[\n${formula.trim()}\n\\]\n`
+    )
+    // Convert single $...$ to inline math
+    .replace(
+      /(?<!\$)\$([^$\n]+?)\$(?!\$)/g,
+      (_, formula) => `\\(${formula.trim()}\\)`
+    );
+}
   return (
     <div
       className={`flex w-full ${
@@ -64,8 +76,10 @@ export default function MaadhavMessage({
             }
           >
             <ReactMarkdown
-              remarkPlugins={[remarkMath]}
-              rehypePlugins={[rehypeKatex]}
+  remarkPlugins={[
+    [remarkMath, { singleDollarTextMath: false }],
+  ]}
+  rehypePlugins={[rehypeKatex]}
               components={{
                 h1: ({ children }) => (
                   <h1 className="mb-3 mt-1 text-lg font-bold text-[#274472]">
@@ -163,7 +177,7 @@ export default function MaadhavMessage({
                 ),
               }}
             >
-              {content}
+              {normalizeMath(content)}
             </ReactMarkdown>
           </div>
 

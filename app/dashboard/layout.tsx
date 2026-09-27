@@ -7,6 +7,7 @@ import useInactivityLogout from "@/hooks/useInactivityLogout";
 import SessionTimeoutModal from "@/components/session/SessionTimeoutModal";
 import SessionGuard from "@/components/auth/SessionGuard";
 import StudentSidebar from "@/components/layout/StudentSidebar";
+import MaadhavFloatingButton from "@/components/maadhav/MaadhavFloatingButton";
 
 export default function DashboardLayout({
   children,
@@ -181,6 +182,8 @@ export default function DashboardLayout({
           onStayLoggedIn={resetTimer}
           onLogout={logout}
         />
+
+        <MaadhavFloatingButton />
       </main>
     </div>
   );
