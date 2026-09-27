@@ -2,6 +2,8 @@
 
 import { TCDIcons } from "@/components/ui/tcd-icons";
 import TCDLogo from "@/components/brand/TCDLogo";
+import MaadhavInput from "./MaadhavInput";
+
 interface MaadhavWelcomeProps {
   onPrompt: (prompt: string) => void;
 }
@@ -44,13 +46,14 @@ export default function MaadhavWelcome({
         <div className="absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-[#E6C06E]/10 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto flex w-full max-w-5xl flex-1 flex-col items-center px-4 pb-8 pt-10 sm:px-6 sm:pt-14">
+      <div className="relative mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pb-8 pt-8 sm:px-6 sm:pt-10">
+
         {/* Brand identity */}
         <div className="flex flex-col items-center text-center">
-          <div className="relative mb-6">
+          <div className="relative mb-5">
             <div className="absolute inset-0 scale-150 rounded-full bg-[#E6C06E]/10 blur-2xl" />
 
-            <div>
+            <div className="relative">
               <TCDLogo size={108} />
             </div>
           </div>
@@ -69,40 +72,87 @@ export default function MaadhavWelcome({
           </p>
         </div>
 
-        {/* Quick actions */}
-        <div className="mt-10 grid w-full max-w-3xl gap-3 sm:grid-cols-2">
-          {actions.map((action) => (
-            <button
-              key={action.title}
-              type="button"
-              onClick={() => onPrompt(action.prompt)}
-              className="group flex items-center gap-4 rounded-2xl border border-slate-200/80 bg-white/90 p-4 text-left shadow-[0_4px_20px_rgba(39,68,114,0.04)] backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:border-[#E6C06E]/70 hover:shadow-[0_12px_30px_rgba(39,68,114,0.09)]"
-            >
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#274472]/[0.07] transition-colors group-hover:bg-[#E6C06E]/15">
-                <div className="h-7 w-7">
-                  {action.icon}
+        {/* Primary chat area */}
+        <div className="mx-auto mt-8 w-full max-w-3xl">
+          <div className="rounded-3xl border border-slate-200/80 bg-white/90 p-4 shadow-[0_10px_35px_rgba(39,68,114,0.07)] backdrop-blur-xl sm:p-5">
+
+            {/* Maadhav greeting */}
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#274472]/10 bg-[#274472]/[0.06]">
+                <div className="h-6 w-6">
+                  {TCDIcons.mastery}
                 </div>
               </div>
 
               <div className="min-w-0">
-                <div className="font-semibold text-[#274472]">
-                  {action.title}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-[#274472]">
+                    Maadhav
+                  </span>
+
+                  <span className="rounded-full bg-[#E6C06E]/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#8a6b18]">
+                    AI
+                  </span>
                 </div>
 
-                <div className="mt-1 text-xs leading-5 text-slate-400">
-                  {action.description}
-                </div>
+                <p className="mt-1 text-sm leading-6 text-slate-500">
+                  Hi! I'm Maadhav. What would you like to learn today?
+                </p>
               </div>
+            </div>
 
-              <div className="ml-auto text-lg text-slate-300 transition-transform group-hover:translate-x-1 group-hover:text-[#E6C06E]">
-                →
-              </div>
-            </button>
-          ))}
+            {/* Primary input */}
+            <div className="mt-4">
+              <MaadhavInput
+                onSend={onPrompt}
+                disabled={false}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Quick actions */}
+        <div className="mx-auto mt-7 w-full max-w-3xl">
+          <div className="mb-3 px-1">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+              Quick start
+            </span>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            {actions.map((action) => (
+              <button
+                key={action.title}
+                type="button"
+                onClick={() => onPrompt(action.prompt)}
+                className="group flex items-center gap-4 rounded-2xl border border-slate-200/80 bg-white/90 p-4 text-left shadow-[0_4px_20px_rgba(39,68,114,0.04)] backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:border-[#E6C06E]/70 hover:shadow-[0_12px_30px_rgba(39,68,114,0.09)]"
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#274472]/[0.07] transition-colors group-hover:bg-[#E6C06E]/15">
+                  <div className="h-7 w-7">
+                    {action.icon}
+                  </div>
+                </div>
+
+                <div className="min-w-0">
+                  <div className="font-semibold text-[#274472]">
+                    {action.title}
+                  </div>
+
+                  <div className="mt-1 text-xs leading-5 text-slate-400">
+                    {action.description}
+                  </div>
+                </div>
+
+                <div className="ml-auto text-lg text-slate-300 transition-transform group-hover:translate-x-1 group-hover:text-[#E6C06E]">
+                  →
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Bottom message */}
-        <div className="mt-auto pt-10 text-center">
+        <div className="mt-auto pt-7 text-center">
           <p className="text-xs text-slate-400">
             Ask naturally. Maadhav will help you learn, not just give you an answer.
           </p>
