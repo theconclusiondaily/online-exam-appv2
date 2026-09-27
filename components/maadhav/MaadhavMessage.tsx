@@ -12,17 +12,6 @@ interface MaadhavMessageProps {
   content: string;
   onAction?: (action: string, content: string) => void;
 }
-
-export default function MaadhavMessage({
-  role,
-  content,
-  onAction,
-}: MaadhavMessageProps) {
-  const isAssistant = role === "assistant";
-
-  function handleAction(action: string) {
-    onAction?.(action, content);
-  }
 function normalizeMath(content: string) {
   return content
     // Convert $$ ... $$ to display math
@@ -36,6 +25,17 @@ function normalizeMath(content: string) {
       (_, formula) => `\\(${formula.trim()}\\)`
     );
 }
+export default function MaadhavMessage({
+  role,
+  content,
+  onAction,
+}: MaadhavMessageProps) {
+  const isAssistant = role === "assistant";
+
+  function handleAction(action: string) {
+    onAction?.(action, content);
+  }
+
   return (
     <div
       className={`flex w-full ${
@@ -77,7 +77,7 @@ function normalizeMath(content: string) {
           >
             <ReactMarkdown
   remarkPlugins={[
-    [remarkMath, { singleDollarTextMath: false }],
+    [remarkMath, { singleDollarTextMath: true }],
   ]}
   rehypePlugins={[rehypeKatex]}
               components={{
