@@ -50,7 +50,7 @@ export default function MaadhavWelcome({
           <div className="relative mb-6">
             <div className="absolute inset-0 scale-150 rounded-full bg-[#E6C06E]/10 blur-2xl" />
 
-            <div className="relative flex h-20 w-20 items-center justify-center rounded-[24px] border border-[#E6C06E]/30 bg-white shadow-[0_12px_40px_rgba(39,68,114,0.10)]">
+            <div>
               <TCDLogo size={32} />
             </div>
           </div>
