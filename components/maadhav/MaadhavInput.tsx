@@ -263,42 +263,39 @@ export default function MaadhavInput({
 
     recognition.lang = "en-IN";
     recognition.continuous = false;
-    recognition.interimResults = true;
+    recognition.interimResults = false;
 
     recognition.onstart = () => {
       setListening(true);
     };
 
-    recognition.onresult = (
-      event: MaadhavSpeechRecognitionEvent
-    ) => {
-      let transcript = "";
+   recognition.onresult = (
+  event: MaadhavSpeechRecognitionEvent
+) => {
+  const result =
+    event.results[event.resultIndex];
 
-      for (
-        let i = event.resultIndex;
-        i < event.results.length;
-        i++
-      ) {
-        transcript +=
-          event.results[i][0]
-            .transcript;
-      }
+  if (!result) {
+    return;
+  }
 
-      if (!transcript.trim()) {
-        return;
-      }
+  const transcript =
+    result[0]?.transcript?.trim();
 
-      setMessage((current) => {
-        const existing =
-          current.trim();
+  if (!transcript) {
+    return;
+  }
 
-        if (!existing) {
-          return transcript;
-        }
+  setMessage((current) => {
+    const existing = current.trim();
 
-        return `${existing} ${transcript}`;
-      });
-    };
+    if (!existing) {
+      return transcript;
+    }
+
+    return `${existing} ${transcript}`;
+  });
+};
 
     recognition.onerror = (
       event: MaadhavSpeechRecognitionErrorEvent
@@ -325,11 +322,15 @@ export default function MaadhavInput({
       }
     };
 
-    recognition.onend = () => {
-      setListening(false);
-      recognitionRef.current =
-        null;
-    };
+  recognition.onend = () => {
+  setListening(false);
+
+  if (
+    recognitionRef.current === recognition
+  ) {
+    recognitionRef.current = null;
+  }
+};
 
     recognitionRef.current =
       recognition;
