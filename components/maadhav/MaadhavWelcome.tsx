@@ -28,8 +28,8 @@ const actions = [
     prompt: "Give me a practice question",
   },
   {
-    title: "Learn from my mistakes",
-    description: "Understand where I went wrong",
+    title: "Learn from your mistakes",
+    description: "Understand where you went wrong",
     icon: TCDIcons.achievement,
     prompt: "Help me understand my mistake",
   },

@@ -30,7 +30,12 @@ export default function MaadhavHistory({
   const [conversations, setConversations] = useState<Conversation[]>(
     []
   );
+
   const [loading, setLoading] = useState(true);
+
+  const [deletingId, setDeletingId] = useState<string | null>(
+    null
+  );
 
   async function loadConversations() {
     try {
@@ -48,7 +53,8 @@ export default function MaadhavHistory({
 
       if (!response.ok) {
         throw new Error(
-          data?.error || "Could not load conversations."
+          data?.error ||
+            "Could not load conversations."
         );
       }
 
@@ -72,13 +78,86 @@ export default function MaadhavHistory({
   }, [refreshKey]);
 
   function handleSelect(id: string) {
+    if (deletingId) {
+      return;
+    }
+
     onSelectConversation(id);
     onClose?.();
   }
 
   function handleNewChat() {
+    if (deletingId) {
+      return;
+    }
+
     onNewChat();
     onClose?.();
+  }
+
+  async function deleteConversation(
+    event: React.MouseEvent,
+    conversationId: string
+  ) {
+    event.stopPropagation();
+
+    if (deletingId) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Delete this Maadhav conversation? This cannot be undone."
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setDeletingId(conversationId);
+
+      const response = await fetch(
+        `/api/maadhav/conversations/${conversationId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data?.error ||
+            "Could not delete conversation."
+        );
+      }
+
+      setConversations((current) =>
+        current.filter(
+          (conversation) =>
+            conversation.id !== conversationId
+        )
+      );
+
+      if (
+        conversationId === activeConversationId
+      ) {
+        onNewChat();
+        onClose?.();
+      }
+    } catch (error) {
+      console.error(
+        "Maadhav delete conversation error:",
+        error
+      );
+
+      window.alert(
+        "Could not delete this conversation. Please try again."
+      );
+    } finally {
+      setDeletingId(null);
+    }
   }
 
   return (
@@ -93,7 +172,19 @@ export default function MaadhavHistory({
       <div className="shrink-0 border-b border-slate-100 px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex min-w-0 items-center gap-3">
-           
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#274472]/[0.06]">
+              <TCDLogo size={27} />
+            </div>
+
+            <div className="min-w-0">
+              <div className="truncate text-sm font-bold text-[#274472]">
+                Maadhav
+              </div>
+
+              <div className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                Learning companion
+              </div>
+            </div>
           </div>
 
           {mobile && onClose && (
@@ -114,7 +205,8 @@ export default function MaadhavHistory({
         <button
           type="button"
           onClick={handleNewChat}
-          className="group flex w-full items-center justify-center gap-2 rounded-xl border border-[#E6C06E]/40 bg-[#E6C06E]/10 px-4 py-2.5 text-sm font-semibold text-[#806519] transition-all duration-200 hover:border-[#E6C06E]/60 hover:bg-[#E6C06E]/20 hover:shadow-[0_6px_18px_rgba(230,192,110,0.15)]"
+          disabled={Boolean(deletingId)}
+          className="group flex w-full items-center justify-center gap-2 rounded-xl border border-[#E6C06E]/40 bg-[#E6C06E]/10 px-4 py-2.5 text-sm font-semibold text-[#806519] transition-all duration-200 hover:border-[#E6C06E]/60 hover:bg-[#E6C06E]/20 hover:shadow-[0_6px_18px_rgba(230,192,110,0.15)] disabled:cursor-not-allowed disabled:opacity-50"
         >
           <span className="text-lg font-normal leading-none transition-transform duration-200 group-hover:rotate-90">
             +
@@ -154,16 +246,16 @@ export default function MaadhavHistory({
           <div className="space-y-1.5">
             {conversations.map((conversation) => {
               const active =
-                conversation.id === activeConversationId;
+                conversation.id ===
+                activeConversationId;
+
+              const deleting =
+                deletingId === conversation.id;
 
               return (
-                <button
+                <div
                   key={conversation.id}
-                  type="button"
-                  onClick={() =>
-                    handleSelect(conversation.id)
-                  }
-                  className={`group relative w-full rounded-xl border px-3 py-3 text-left transition-all duration-200 ${
+                  className={`group relative w-full rounded-xl border transition-all duration-200 ${
                     active
                       ? "border-[#274472]/10 bg-[#274472]/[0.07] shadow-[0_4px_14px_rgba(39,68,114,0.05)]"
                       : "border-transparent hover:border-slate-100 hover:bg-slate-50"
@@ -171,53 +263,114 @@ export default function MaadhavHistory({
                 >
                   {/* Active indicator */}
                   {active && (
-                    <span className="absolute bottom-3 left-0 top-3 w-[3px] rounded-r-full bg-[#E6C06E]" />
+                    <span className="absolute bottom-3 left-0 top-3 z-10 w-[3px] rounded-r-full bg-[#E6C06E]" />
                   )}
 
-                  <div className="flex min-w-0 items-start gap-2">
-                    <div
-                      className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${
-                        active
-                          ? "bg-[#274472]/10"
-                          : "bg-slate-100 group-hover:bg-[#274472]/[0.06]"
-                      }`}
-                    >
-                      <span
-                        className={`text-xs ${
-                          active
-                            ? "text-[#274472]"
-                            : "text-slate-400"
-                        }`}
-                      >
-                        ✦
-                      </span>
-                    </div>
-
-                    <div className="min-w-0 flex-1">
+                  {/* Conversation */}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleSelect(
+                        conversation.id
+                      )
+                    }
+                    disabled={Boolean(deletingId)}
+                    className="w-full rounded-xl px-3 py-3 pr-10 text-left disabled:cursor-not-allowed"
+                  >
+                    <div className="flex min-w-0 items-start gap-2">
                       <div
-                        className={`truncate text-[13px] font-medium leading-5 ${
+                        className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${
                           active
-                            ? "text-[#274472]"
-                            : "text-slate-600"
+                            ? "bg-[#274472]/10"
+                            : "bg-slate-100 group-hover:bg-[#274472]/[0.06]"
                         }`}
-                        title={
-                          conversation.title ||
-                          "New conversation"
-                        }
                       >
-                        {formatTitle(
-                          conversation.title
-                        )}
+                        <span
+                          className={`text-xs ${
+                            active
+                              ? "text-[#274472]"
+                              : "text-slate-400"
+                          }`}
+                        >
+                          ✦
+                        </span>
                       </div>
 
-                      <div className="mt-1 text-[10px] text-slate-400">
-                        {formatConversationDate(
-                          conversation.updated_at
-                        )}
+                      <div className="min-w-0 flex-1">
+                        <div
+                          className={`truncate text-[13px] font-medium leading-5 ${
+                            active
+                              ? "text-[#274472]"
+                              : "text-slate-600"
+                          }`}
+                          title={
+                            conversation.title ||
+                            "New conversation"
+                          }
+                        >
+                          {formatTitle(
+                            conversation.title
+                          )}
+                        </div>
+
+                        <div className="mt-1 text-[10px] text-slate-400">
+                          {formatConversationDate(
+                            conversation.updated_at
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </button>
+                  </button>
+
+                  {/* Delete button */}
+                  <button
+                    type="button"
+                    aria-label={`Delete ${formatTitle(
+                      conversation.title
+                    )}`}
+                    disabled={Boolean(deletingId)}
+                    onClick={(event) =>
+                      deleteConversation(
+                        event,
+                        conversation.id
+                      )
+                    }
+                    className={`absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-lg text-slate-300 transition-all duration-150 hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed ${
+                      deleting || mobile
+                        ? "opacity-100"
+                        : "opacity-0 group-hover:opacity-100"
+                    }`}
+                  >
+                    {deleting ? (
+                      <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-200 border-t-red-400" />
+                    ) : (
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        className="h-4 w-4"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3 6h18"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M8 6V4h8v2"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M19 6l-1 14H6L5 6"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               );
             })}
           </div>
@@ -227,7 +380,8 @@ export default function MaadhavHistory({
       {/* Footer */}
       <div className="shrink-0 border-t border-slate-100 px-4 py-3">
         <p className="text-center text-[10px] leading-4 text-slate-400">
-          Your conversations are saved to your Maadhav learning history.
+          Your conversations are saved to your Maadhav learning
+          history.
         </p>
       </div>
     </aside>
@@ -304,6 +458,8 @@ function formatConversationDate(value: string) {
   return date.toLocaleDateString([], {
     day: "numeric",
     month: "short",
-    ...(sameYear ? {} : { year: "numeric" }),
+    ...(sameYear
+      ? {}
+      : { year: "numeric" }),
   });
 }

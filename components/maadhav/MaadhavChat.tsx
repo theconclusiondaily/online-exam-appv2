@@ -20,9 +20,12 @@ export default function MaadhavChat() {
   const [conversationId, setConversationId] =
     useState<string | null>(null);
 
-  const [historyOpen, setHistoryOpen] = useState(false);
-const [historyRefreshKey, setHistoryRefreshKey] =
-  useState(0);
+  const [historyOpen, setHistoryOpen] =
+    useState(false);
+
+  const [historyRefreshKey, setHistoryRefreshKey] =
+    useState(0);
+
   async function loadConversation(id: string) {
     if (loading) {
       return;
@@ -52,13 +55,17 @@ const [historyRefreshKey, setHistoryRefreshKey] =
 
       setMessages(
         Array.isArray(data.messages)
-          ? data.messages.map((message: Message) => ({
-              id: message.id,
-              role: message.role,
-              content: message.content,
-            }))
+          ? data.messages.map(
+              (message: Message) => ({
+                id: message.id,
+                role: message.role,
+                content: message.content,
+              })
+            )
           : []
       );
+
+      setHistoryOpen(false);
     } catch (error) {
       console.error(
         "Maadhav conversation loading error:",
@@ -77,18 +84,29 @@ const [historyRefreshKey, setHistoryRefreshKey] =
 
   async function sendMessage(
     message: string,
-    context?: string
+    image?: File
   ) {
     const trimmedMessage = message.trim();
 
-    if (!trimmedMessage || loading) {
+    /*
+     * Allow:
+     * 1. Text only
+     * 2. Image only
+     * 3. Text + image
+     */
+    if (
+      (!trimmedMessage && !image) ||
+      loading
+    ) {
       return;
     }
 
     const userMessage: Message = {
       id: crypto.randomUUID(),
       role: "user",
-      content: trimmedMessage,
+      content:
+        trimmedMessage ||
+        "Please analyze this image.",
     };
 
     const conversation = [
@@ -100,18 +118,34 @@ const [historyRefreshKey, setHistoryRefreshKey] =
     setLoading(true);
 
     try {
+      /*
+       * Use FormData because the request may contain
+       * an actual image file.
+       */
+      const formData = new FormData();
+
+      formData.append(
+        "message",
+        trimmedMessage
+      );
+
+      if (conversationId) {
+        formData.append(
+          "conversationId",
+          conversationId
+        );
+      }
+
+      if (image) {
+        formData.append("image", image);
+      }
+
       const response = await fetch(
         "/api/maadhav/chat",
         {
           method: "POST",
           credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            message: trimmedMessage,
-            conversationId,
-          }),
+          body: formData,
         }
       );
 
@@ -124,20 +158,29 @@ const [historyRefreshKey, setHistoryRefreshKey] =
         );
       }
 
-     if (data?.conversationId) {
-  const isNewConversation =
-    !conversationId;
+      /*
+       * Save the conversation ID returned by
+       * the server.
+       */
+      if (data?.conversationId) {
+        const isNewConversation =
+          !conversationId;
 
-  setConversationId(
-    data.conversationId
-  );
+        setConversationId(
+          data.conversationId
+        );
 
-  if (isNewConversation) {
-    setHistoryRefreshKey(
-      (current) => current + 1
-    );
-  }
-}
+        /*
+         * Refresh the history sidebar when
+         * the first message creates a new
+         * conversation.
+         */
+        if (isNewConversation) {
+          setHistoryRefreshKey(
+            (current) => current + 1
+          );
+        }
+      }
 
       const assistantMessage: Message = {
         id: crypto.randomUUID(),
@@ -153,6 +196,14 @@ const [historyRefreshKey, setHistoryRefreshKey] =
         ...current,
         assistantMessage,
       ]);
+
+      /*
+       * Refresh history after every successful
+       * message so updated_at/title stays current.
+       */
+      setHistoryRefreshKey(
+        (current) => current + 1
+      );
     } catch (error) {
       console.error(
         "Maadhav chat error:",
@@ -175,25 +226,25 @@ const [historyRefreshKey, setHistoryRefreshKey] =
 
   return (
     <div className="flex h-full min-h-0 overflow-hidden bg-gradient-to-b from-white/60 to-slate-50/40">
-
       {/* Desktop history */}
       <div className="hidden h-full md:block">
         <MaadhavHistory
-  activeConversationId={conversationId}
-  onSelectConversation={loadConversation}
-  onNewChat={startNewChat}
-  refreshKey={historyRefreshKey}
-/>
+          activeConversationId={conversationId}
+          onSelectConversation={loadConversation}
+          onNewChat={startNewChat}
+          refreshKey={historyRefreshKey}
+        />
       </div>
 
       {/* Main Maadhav area */}
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-
         {/* Mobile history button */}
         <div className="flex shrink-0 items-center justify-between border-b border-slate-200/70 bg-white/80 px-4 py-2.5 backdrop-blur-xl md:hidden">
           <button
             type="button"
-            onClick={() => setHistoryOpen(true)}
+            onClick={() =>
+              setHistoryOpen(true)
+            }
             className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-[#274472] transition hover:bg-slate-100"
           >
             <span className="text-lg">
@@ -240,7 +291,7 @@ const [historyRefreshKey, setHistoryRefreshKey] =
           )}
         </div>
 
-        {/* Composer after conversation starts */}
+        {/* Composer */}
         {messages.length > 0 && (
           <div className="shrink-0 border-t border-slate-200/70 bg-white/85 px-3 py-3 backdrop-blur-xl sm:px-5 sm:py-4">
             <div className="mx-auto w-full max-w-4xl">
@@ -260,20 +311,28 @@ const [historyRefreshKey, setHistoryRefreshKey] =
           <button
             type="button"
             aria-label="Close history"
-            onClick={() => setHistoryOpen(false)}
+            onClick={() =>
+              setHistoryOpen(false)
+            }
             className="absolute inset-0 bg-slate-950/30 backdrop-blur-[2px]"
           />
 
           {/* Drawer */}
           <div className="relative z-10 h-full w-[88%] max-w-sm shadow-2xl">
-           <MaadhavHistory
-  mobile
-  activeConversationId={conversationId}
-  onSelectConversation={loadConversation}
-  onNewChat={startNewChat}
-  onClose={() => setHistoryOpen(false)}
-  refreshKey={historyRefreshKey}
-/>
+            <MaadhavHistory
+              mobile
+              activeConversationId={
+                conversationId
+              }
+              onSelectConversation={
+                loadConversation
+              }
+              onNewChat={startNewChat}
+              onClose={() =>
+                setHistoryOpen(false)
+              }
+              refreshKey={historyRefreshKey}
+            />
           </div>
         </div>
       )}
