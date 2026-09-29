@@ -4006,7 +4006,7 @@ if (!response.ok) {
 }
 
 const startedAttemptId =
-  result?.session?.attempt_id || null;
+  result?.attempt_id || null;
 
 if (!startedAttemptId) {
   console.error(
