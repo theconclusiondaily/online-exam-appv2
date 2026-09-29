@@ -1,185 +1,167 @@
-import { NextResponse } from "next/server";
-
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+
 import { askMaadhav } from "@/lib/maadhav/orchestrator";
-import type { MaadhavRequest } from "@/lib/maadhav/types";
+import type {
+  MaadhavImage,
+  MaadhavMessage,
+} from "@/lib/maadhav/types";
 
-const RECENT_MESSAGE_LIMIT = 12;
-
-const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10 MB
-
-const ALLOWED_IMAGE_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-];
-
-export async function POST(request: Request) {
+export async function POST(
+  request: NextRequest
+) {
   try {
     const supabase = await createClient();
 
-    // ---------------------------------------------------------
-    // 1. Verify authenticated user
-    // ---------------------------------------------------------
     const {
       data: { user },
+      error: userError,
     } = await supabase.auth.getUser();
 
-    if (!user) {
+    if (userError || !user) {
       return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
+        {
+          error: "Unauthorized",
+        },
+        {
+          status: 401,
+        }
       );
     }
 
-    // ---------------------------------------------------------
-    // 2. Read multipart/form-data request
-    // ---------------------------------------------------------
-    const formData = await request.formData();
-
-    const rawMessage = formData.get("message");
-    const rawConversationId =
-      formData.get("conversationId");
-    const rawImage = formData.get("image");
+    const body = await request.json();
 
     const message =
-      typeof rawMessage === "string"
-        ? rawMessage.trim()
+      typeof body?.message === "string"
+        ? body.message.trim()
         : "";
 
     const conversationId =
-      typeof rawConversationId === "string" &&
-      rawConversationId.trim()
-        ? rawConversationId.trim()
-        : undefined;
-
-    const image =
-      rawImage instanceof File
-        ? rawImage
+      typeof body?.conversationId === "string"
+        ? body.conversationId
         : null;
 
-    // ---------------------------------------------------------
-    // 3. Validate message / image
-    // ---------------------------------------------------------
+    /*
+     * Optional image sent by the frontend.
+     *
+     * Expected structure:
+     *
+     * {
+     *   dataUrl: "data:image/png;base64,...",
+     *   mimeType: "image/png",
+     *   name: "question.png"
+     * }
+     */
+    const image: MaadhavImage | undefined =
+      body?.image &&
+      typeof body.image.dataUrl === "string" &&
+      typeof body.image.mimeType === "string"
+        ? {
+            dataUrl: body.image.dataUrl,
+            mimeType: body.image.mimeType,
+            name:
+              typeof body.image.name === "string"
+                ? body.image.name
+                : undefined,
+          }
+        : undefined;
+
     if (!message && !image) {
       return NextResponse.json(
         {
           error:
-            "Message or image is required.",
+            "Please provide a message or image.",
         },
-        { status: 400 }
+        {
+          status: 400,
+        }
       );
     }
 
-    // ---------------------------------------------------------
-    // 4. Validate image
-    // ---------------------------------------------------------
-    if (image) {
-      if (!ALLOWED_IMAGE_TYPES.includes(image.type)) {
-        return NextResponse.json(
-          {
-            error:
-              "Unsupported image format. Please use JPG, PNG, WEBP, or GIF.",
-          },
-          { status: 400 }
-        );
-      }
-
-      if (image.size > MAX_IMAGE_SIZE) {
-        return NextResponse.json(
-          {
-            error:
-              "Image is too large. Please upload an image smaller than 10 MB.",
-          },
-          { status: 400 }
-        );
-      }
-    }
-
-    // ---------------------------------------------------------
-    // 5. Convert image to data URL
-    // ---------------------------------------------------------
-    let imageDataUrl: string | null = null;
-
-    if (image) {
-      const buffer = Buffer.from(
-        await image.arrayBuffer()
-      );
-
-      imageDataUrl = `data:${image.type};base64,${buffer.toString(
-        "base64"
-      )}`;
-    }
-
-    // ---------------------------------------------------------
-    // 6. Get or create conversation
-    // ---------------------------------------------------------
+    /*
+     * Make sure the conversation belongs
+     * to the authenticated student.
+     */
     let activeConversationId =
       conversationId;
 
     if (activeConversationId) {
-      const {
-        data: conversation,
-        error: conversationError,
-      } = await supabase
-        .from("maadhav_conversations")
-        .select("id, user_id")
-        .eq("id", activeConversationId)
-        .eq("user_id", user.id)
-        .single();
+      const { data: conversation, error } =
+        await supabase
+          .from("maadhav_conversations")
+          .select("id")
+          .eq("id", activeConversationId)
+          .eq("user_id", user.id)
+          .maybeSingle();
 
-      if (
-        conversationError ||
-        !conversation
-      ) {
+      if (error) {
+        console.error(
+          "Maadhav conversation lookup error:",
+          error
+        );
+
+        return NextResponse.json(
+          {
+            error:
+              "Could not verify the conversation.",
+          },
+          {
+            status: 500,
+          }
+        );
+      }
+
+      if (!conversation) {
         return NextResponse.json(
           {
             error:
               "Conversation not found.",
           },
-          { status: 404 }
+          {
+            status: 404,
+          }
         );
       }
-    } else {
-      /*
-       * If the user sends an image without text,
-       * create a meaningful conversation title.
-       */
-      const conversationTitle =
+    }
+
+    /*
+     * Create a new conversation when
+     * this is the first message.
+     */
+    if (!activeConversationId) {
+      const titleSource =
         message ||
         "Image question";
 
-      const {
-        data: conversation,
-        error: createError,
-      } = await supabase
-        .from("maadhav_conversations")
-        .insert({
-          user_id: user.id,
-          title: conversationTitle.slice(
-            0,
-            60
-          ),
-        })
-        .select("id")
-        .single();
+      const title =
+        titleSource.length > 60
+          ? `${titleSource.slice(0, 57)}...`
+          : titleSource;
 
-      if (
-        createError ||
-        !conversation
-      ) {
+      const { data: conversation, error } =
+        await supabase
+          .from("maadhav_conversations")
+          .insert({
+            user_id: user.id,
+            title,
+          })
+          .select("id")
+          .single();
+
+      if (error || !conversation) {
         console.error(
           "Maadhav conversation creation error:",
-          createError
+          error
         );
 
         return NextResponse.json(
           {
             error:
-              "Could not create Maadhav conversation.",
+              "Could not create the conversation.",
           },
-          { status: 500 }
+          {
+            status: 500,
+          }
         );
       }
 
@@ -187,177 +169,144 @@ export async function POST(request: Request) {
         conversation.id;
     }
 
-    // ---------------------------------------------------------
-    // 7. Load recent conversation history
-    // ---------------------------------------------------------
+    /*
+     * Load previous messages so Maadhav
+     * retains conversation context.
+     */
     const {
-      data: history,
-      error: historyError,
+      data: previousMessages,
+      error: messagesError,
     } = await supabase
       .from("maadhav_messages")
       .select(
-        "role, content, created_at"
+        "id, role, content, created_at"
       )
       .eq(
         "conversation_id",
         activeConversationId
       )
-      .eq("user_id", user.id)
       .order("created_at", {
-        ascending: false,
-      })
-      .limit(RECENT_MESSAGE_LIMIT);
+        ascending: true,
+      });
 
-    if (historyError) {
+    if (messagesError) {
       console.error(
-        "Maadhav history error:",
-        historyError
+        "Maadhav message loading error:",
+        messagesError
       );
 
       return NextResponse.json(
         {
           error:
-            "Could not load Maadhav history.",
+            "Could not load conversation history.",
         },
-        { status: 500 }
+        {
+          status: 500,
+        }
       );
     }
 
-    const conversationHistory =
-      (history ?? [])
-        .reverse()
+    const conversation: MaadhavMessage[] =
+      (previousMessages ?? [])
+        .filter(
+          (
+            item
+          ): item is {
+            id: string;
+            role: "user" | "assistant";
+            content: string;
+            created_at: string;
+          } =>
+            item.role === "user" ||
+            item.role === "assistant"
+        )
         .map((item) => ({
-          role: item.role as
-            | "user"
-            | "assistant",
+          role: item.role,
           content: item.content,
         }));
 
-    // ---------------------------------------------------------
-    // 8. Save user's message
-    // ---------------------------------------------------------
-    const messageToSave =
-      message ||
-      "Please analyze the attached image.";
+    /*
+     * Ask Maadhav.
+     *
+     * The optional image is passed only
+     * with the current user message.
+     */
+    const result = await askMaadhav({
+      message,
+      conversation,
+      image,
+    });
 
-    const {
-      error: userMessageError,
-    } = await supabase
-      .from("maadhav_messages")
-      .insert({
-        conversation_id:
-          activeConversationId,
-        user_id: user.id,
-        role: "user",
-        content: messageToSave,
-      });
+    /*
+     * Save the user's message.
+     *
+     * We currently save the text content.
+     * The image itself is sent to the model
+     * but is not stored permanently in the
+     * conversation database yet.
+     */
+    const { error: userMessageError } =
+      await supabase
+        .from("maadhav_messages")
+        .insert({
+          conversation_id:
+            activeConversationId,
+          role: "user",
+          content:
+            message ||
+            "[Image attached]",
+        });
 
     if (userMessageError) {
       console.error(
-        "Maadhav user message error:",
+        "Maadhav user message save error:",
         userMessageError
-      );
-
-      return NextResponse.json(
-        {
-          error:
-            "Could not save your message.",
-        },
-        { status: 500 }
       );
     }
 
-    // ---------------------------------------------------------
-    // 9. Ask Maadhav
-    // ---------------------------------------------------------
     /*
-     * Keep the existing Maadhav request structure,
-     * while additionally passing image information.
-     *
-     * The orchestrator must support imageDataUrl
-     * for the image to actually be sent to the
-     * vision-capable model.
+     * Save Maadhav's response.
      */
-    const maadhavRequest =
-      {
-        message: messageToSave,
-        conversation:
-          conversationHistory,
-        ...(imageDataUrl
-          ? {
-              imageDataUrl,
-            }
-          : {}),
-      } as MaadhavRequest & {
-        imageDataUrl?: string;
-      };
-
-    const response =
-      await askMaadhav(
-        maadhavRequest
-      );
-
-    // ---------------------------------------------------------
-    // 10. Save Maadhav's response
-    // ---------------------------------------------------------
-    const {
-      error: assistantMessageError,
-    } = await supabase
-      .from("maadhav_messages")
-      .insert({
-        conversation_id:
-          activeConversationId,
-        user_id: user.id,
-        role: "assistant",
-        content: response.content,
-      });
+    const { error: assistantMessageError } =
+      await supabase
+        .from("maadhav_messages")
+        .insert({
+          conversation_id:
+            activeConversationId,
+          role: "assistant",
+          content: result.content,
+        });
 
     if (assistantMessageError) {
       console.error(
-        "Maadhav assistant message error:",
+        "Maadhav assistant message save error:",
         assistantMessageError
-      );
-
-      return NextResponse.json(
-        {
-          error:
-            "Maadhav responded, but the response could not be saved.",
-        },
-        { status: 500 }
       );
     }
 
-    // ---------------------------------------------------------
-    // 11. Update conversation timestamp
-    // ---------------------------------------------------------
-    const {
-      error: updateError,
-    } = await supabase
+    /*
+     * Update conversation timestamp.
+     */
+    await supabase
       .from("maadhav_conversations")
       .update({
-        updated_at:
-          new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       })
       .eq(
         "id",
         activeConversationId
       )
-      .eq("user_id", user.id);
-
-    if (updateError) {
-      console.error(
-        "Maadhav conversation update error:",
-        updateError
+      .eq(
+        "user_id",
+        user.id
       );
-    }
 
-    // ---------------------------------------------------------
-    // 12. Return response
-    // ---------------------------------------------------------
     return NextResponse.json({
-      ...response,
+      content: result.content,
       conversationId:
         activeConversationId,
+      provider: result.provider,
+      model: result.model,
     });
   } catch (error) {
     console.error(
@@ -368,9 +317,13 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Maadhav could not process the request.",
+          error instanceof Error
+            ? error.message
+            : "Maadhav could not process your request.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }

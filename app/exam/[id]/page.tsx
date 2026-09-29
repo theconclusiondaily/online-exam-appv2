@@ -134,6 +134,7 @@ const [pendingSaves, setPendingSaves] =
   >([]);
   const [savingAnswers, setSavingAnswers] = useState(false);
   const savingAnswersRef = useRef(false);
+  
   const examId = Array.isArray(
     params.id
   )
@@ -239,8 +240,13 @@ const pendingSnapshotRef =
 const faceScanProcessingRef =
   useRef(false);
 
-  const snapshotRecordQueueRef =
-  useRef<string[]>([]);
+const snapshotRecordQueueRef =
+  useRef<
+    {
+      imageUrl: string;
+      attemptId: string;
+    }[]
+  >([]);
 
 const snapshotRecordProcessingRef =
   useRef(false);
@@ -2401,14 +2407,36 @@ function stopAudioMonitoring() {
 async function uploadProctoringSnapshot(
   canvas: HTMLCanvasElement
 ): Promise<string | null> {
-
   try {
     /*
      * ==========================================
-     * 1. NETWORK CHECK
+     * 1. REQUIRED EXAM STATE
      * ==========================================
+     *
+     * A snapshot without an attempt_id is useless
+     * to the admin proctoring system.
+     *
+     * Therefore NEVER upload a proctoring snapshot
+     * unless the exam attempt already exists.
      */
-    if (!navigator.onLine) {
+    const currentAttemptId =
+      attemptIdRef.current;
+
+    if (
+      !navigator.onLine ||
+      !userId ||
+      !examId ||
+      !currentAttemptId
+    ) {
+      console.warn(
+        "PROCTORING SNAPSHOT SKIPPED: missing exam attempt",
+        {
+          userId,
+          examId,
+          attemptId: currentAttemptId,
+        }
+      );
+
       return null;
     }
 
@@ -2419,17 +2447,18 @@ async function uploadProctoringSnapshot(
      */
     const blob =
       await new Promise<Blob | null>(
-        (resolve) =>
+        (resolve) => {
           canvas.toBlob(
             resolve,
             "image/jpeg",
             0.7
-          )
+          );
+        }
       );
 
     if (!blob) {
       console.error(
-        "Proctoring snapshot: unable to create image blob"
+        "PROCTORING SNAPSHOT: unable to create image blob"
       );
 
       return null;
@@ -2437,12 +2466,23 @@ async function uploadProctoringSnapshot(
 
     /*
      * ==========================================
-     * 3. STORAGE UPLOAD
+     * 3. STORAGE PATH
      * ==========================================
+     *
+     * Include attempt ID in the path.
+     *
+     * This makes every snapshot traceable to:
+     *
+     * student → exam → attempt
      */
     const fileName =
-      `${userId}/${examId}/${Date.now()}.jpg`;
+      `${userId}/${examId}/${currentAttemptId}/${Date.now()}.jpg`;
 
+    /*
+     * ==========================================
+     * 4. UPLOAD
+     * ==========================================
+     */
     const uploadResult =
       await Promise.race([
         supabase.storage
@@ -2452,7 +2492,8 @@ async function uploadProctoringSnapshot(
             blob,
             {
               upsert: false,
-              contentType: "image/jpeg",
+              contentType:
+                "image/jpeg",
             }
           ),
 
@@ -2463,9 +2504,10 @@ async function uploadProctoringSnapshot(
           setTimeout(() => {
             resolve({
               data: null,
-              error: new Error(
-                "Proctoring snapshot upload timed out"
-              ),
+              error:
+                new Error(
+                  "Proctoring snapshot upload timed out"
+                ),
             });
           }, 8000)
         ),
@@ -2481,7 +2523,7 @@ async function uploadProctoringSnapshot(
       !uploadData?.path
     ) {
       console.error(
-        "Proctoring snapshot upload failed:",
+        "PROCTORING SNAPSHOT UPLOAD FAILED:",
         uploadError
       );
 
@@ -2490,7 +2532,7 @@ async function uploadProctoringSnapshot(
 
     /*
      * ==========================================
-     * 4. GET IMAGE URL
+     * 5. PUBLIC URL
      * ==========================================
      */
     const {
@@ -2504,42 +2546,31 @@ async function uploadProctoringSnapshot(
 
     const imageUrl =
       publicUrlData.publicUrl;
-console.log(
-  "TCD SNAPSHOT READY",
-  {
-    attemptId:
-      attemptIdRef.current,
-    userId,
-    examId,
-    imageUrl,
-  }
-);
+
     /*
      * ==========================================
-     * 5. DATABASE REGISTRATION
+     * 6. SAVE DATABASE RECORD
      * ==========================================
      *
      * IMPORTANT:
      *
-     * This is deliberately NON-BLOCKING.
+     * Pass the captured attempt ID.
      *
-     * The exam must never wait for the
-     * proctoring database insert.
+     * DO NOT read attemptIdRef.current again
+     * inside the queue.
+     *
+     * This eliminates the race condition.
      */
     void saveProctoringSnapshotRecord(
-      imageUrl
+      imageUrl,
+      currentAttemptId
     );
 
-    /*
-     * Return immediately after the
-     * Storage upload succeeds.
-     */
     return imageUrl;
 
   } catch (error) {
-
     console.error(
-      "Background proctoring snapshot error:",
+      "BACKGROUND PROCTORING SNAPSHOT ERROR:",
       error
     );
 
@@ -2548,7 +2579,8 @@ console.log(
 }
 
 function saveProctoringSnapshotRecord(
-  imageUrl: string
+  imageUrl: string,
+  attemptId: string
 ) {
   /*
    * ==========================================
@@ -2556,23 +2588,39 @@ function saveProctoringSnapshotRecord(
    * ==========================================
    *
    * Storage upload has already succeeded.
-   * We only queue the database registration.
+   *
+   * The attempt ID passed into this function
+   * belongs to THIS uploaded snapshot.
+   *
+   * IMPORTANT:
+   * NEVER read attemptIdRef.current here.
+   *
+   * The attempt ID is intentionally captured
+   * at upload time so a later state/ref change
+   * cannot corrupt this database record.
    */
+
   if (
     !navigator.onLine ||
     !userId ||
-    !attemptIdRef.current
+    !attemptId
   ) {
     return;
   }
 
-  snapshotRecordQueueRef.current.push(
-    imageUrl
-  );
+  /*
+   * Store BOTH values together.
+   *
+   * This record is now immutable with respect
+   * to the exam attempt.
+   */
+  snapshotRecordQueueRef.current.push({
+    imageUrl,
+    attemptId,
+  });
 
   /*
-   * Do not start another processor if
-   * one is already running.
+   * Only one database processor may run.
    */
   if (
     snapshotRecordProcessingRef.current
@@ -2586,9 +2634,11 @@ function saveProctoringSnapshotRecord(
 
 async function processSnapshotRecordQueue() {
   /*
-   * Only ONE snapshot DB processor
-   * can run at a time.
+   * ==========================================
+   * SINGLE SNAPSHOT DATABASE WORKER
+   * ==========================================
    */
+
   if (
     snapshotRecordProcessingRef.current
   ) {
@@ -2599,29 +2649,51 @@ async function processSnapshotRecordQueue() {
     true;
 
   try {
-
     while (
       snapshotRecordQueueRef.current.length >
       0
     ) {
-
+      /*
+       * Stop processing if the network is
+       * unavailable.
+       *
+       * The remaining queue stays intact.
+       */
       if (
         !navigator.onLine ||
-        !userId ||
-        !attemptIdRef.current
+        !userId
       ) {
         break;
       }
 
-      const imageUrl =
+      /*
+       * Remove ONE snapshot record.
+       */
+      const record =
         snapshotRecordQueueRef.current.shift();
 
-      if (!imageUrl) {
+      if (!record) {
+        continue;
+      }
+
+      const {
+        imageUrl,
+        attemptId,
+      } = record;
+
+      /*
+       * Never insert a snapshot without an
+       * attempt ID.
+       */
+      if (!attemptId) {
+        console.error(
+          "SNAPSHOT RECORD REJECTED: missing attempt ID"
+        );
+
         continue;
       }
 
       try {
-
         const {
           error,
         } = await supabase
@@ -2630,7 +2702,7 @@ async function processSnapshotRecordQueue() {
           )
           .insert({
             attempt_id:
-              attemptIdRef.current,
+              attemptId,
 
             student_id:
               userId,
@@ -2643,36 +2715,44 @@ async function processSnapshotRecordQueue() {
           });
 
         if (error) {
-
           console.error(
             "PROCTORING SNAPSHOT DB INSERT ERROR:",
             error
           );
 
           /*
-           * Preserve the failed record
-           * for a later retry.
+           * Put the COMPLETE record back
+           * into the queue.
+           *
+           * This preserves the original
+           * attempt ID.
            */
           snapshotRecordQueueRef.current.unshift(
-            imageUrl
+            record
           );
 
           break;
         }
 
         console.log(
-          "PROCTORING SNAPSHOT DB RECORD SAVED"
+          "PROCTORING SNAPSHOT DB RECORD SAVED:",
+          {
+            attemptId,
+            imageUrl,
+          }
         );
 
       } catch (error) {
-
         console.error(
           "PROCTORING SNAPSHOT DB HANDLER ERROR:",
           error
         );
 
+        /*
+         * Retry the complete record.
+         */
         snapshotRecordQueueRef.current.unshift(
-          imageUrl
+          record
         );
 
         break;
@@ -2680,21 +2760,18 @@ async function processSnapshotRecordQueue() {
     }
 
   } finally {
-
     snapshotRecordProcessingRef.current =
       false;
 
     /*
      * If another snapshot arrived while
-     * processing was finishing, continue
-     * with exactly one processor.
+     * the worker was finishing, restart it.
      */
     if (
       snapshotRecordQueueRef.current.length >
         0 &&
       navigator.onLine &&
-      userId &&
-      attemptIdRef.current
+      userId
     ) {
       void processSnapshotRecordQueue();
     }
@@ -3929,8 +4006,20 @@ if (!response.ok) {
 }
 
 const startedAttemptId =
-  result?.session?.attempt_id ||
-  null;
+  result?.session?.attempt_id || null;
+
+if (!startedAttemptId) {
+  console.error(
+    "EXAM START FAILED: server returned no attempt/session ID",
+    result
+  );
+
+  toast.error(
+    "Unable to initialize your exam attempt. Please try again."
+  );
+
+  return;
+}
 
 setAttemptId(
   startedAttemptId
@@ -3940,8 +4029,8 @@ attemptIdRef.current =
   startedAttemptId;
 
 console.log(
-  "TCD ATTEMPT ID:",
-  attemptIdRef.current
+  "TCD ATTEMPT ID READY:",
+  startedAttemptId
 );
 
 const token =

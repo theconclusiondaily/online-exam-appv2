@@ -5,94 +5,60 @@ import {
   useRef,
   useState,
 } from "react";
-
 import {
   Image as ImageIcon,
   Mic,
-  MicOff,
+  Paperclip,
   Send,
   X,
 } from "lucide-react";
-
-/**
- * Browser Speech Recognition typings.
- *
- * SpeechRecognition is supported by Chrome/Edge,
- * but is not included in TypeScript's standard
- * Window definitions.
- */
-interface MaadhavSpeechRecognitionResult {
-  [index: number]: {
-    transcript: string;
-  };
-}
-
-interface MaadhavSpeechRecognitionResultList {
-  [index: number]: MaadhavSpeechRecognitionResult;
-  length: number;
-}
-
-interface MaadhavSpeechRecognitionEvent
-  extends Event {
-  resultIndex: number;
-  results: MaadhavSpeechRecognitionResultList;
-}
-
-interface MaadhavSpeechRecognitionErrorEvent
-  extends Event {
-  error: string;
-  message?: string;
-}
-
-interface MaadhavSpeechRecognition {
-  lang: string;
-  continuous: boolean;
-  interimResults: boolean;
-
-  start: () => void;
-  stop: () => void;
-  abort: () => void;
-
-  onstart:
-    | (() => void)
-    | null;
-
-  onresult:
-    | ((
-        event: MaadhavSpeechRecognitionEvent
-      ) => void)
-    | null;
-
-  onerror:
-    | ((
-        event: MaadhavSpeechRecognitionErrorEvent
-      ) => void)
-    | null;
-
-  onend:
-    | (() => void)
-    | null;
-}
-
-interface MaadhavSpeechRecognitionConstructor {
-  new (): MaadhavSpeechRecognition;
-}
-
-declare global {
-  interface Window {
-    SpeechRecognition?: MaadhavSpeechRecognitionConstructor;
-    webkitSpeechRecognition?: MaadhavSpeechRecognitionConstructor;
-  }
-}
 
 interface MaadhavInputProps {
   onSend: (
     message: string,
     image?: File
-  ) => void;
-
+  ) => void | Promise<void>;
   disabled?: boolean;
 }
+
+interface SpeechRecognitionEventLike {
+  resultIndex: number;
+  results: {
+    [index: number]: {
+      [index: number]: {
+        transcript: string;
+      };
+      isFinal: boolean;
+      length: number;
+    };
+    length: number;
+  };
+}
+
+interface SpeechRecognitionErrorEventLike {
+  error: string;
+}
+
+interface SpeechRecognitionInstance {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+  onresult:
+    | ((event: SpeechRecognitionEventLike) => void)
+    | null;
+  onerror:
+    | ((event: SpeechRecognitionErrorEventLike) => void)
+    | null;
+  onend:
+    | (() => void)
+    | null;
+}
+
+type SpeechRecognitionConstructor =
+  new () => SpeechRecognitionInstance;
 
 export default function MaadhavInput({
   onSend,
@@ -101,7 +67,7 @@ export default function MaadhavInput({
   const [message, setMessage] =
     useState("");
 
-  const [image, setImage] =
+  const [selectedImage, setSelectedImage] =
     useState<File | null>(null);
 
   const [imagePreview, setImagePreview] =
@@ -111,12 +77,10 @@ export default function MaadhavInput({
     useState(false);
 
   const fileInputRef =
-    useRef<HTMLInputElement | null>(
-      null
-    );
+    useRef<HTMLInputElement | null>(null);
 
   const recognitionRef =
-    useRef<MaadhavSpeechRecognition | null>(
+    useRef<SpeechRecognitionInstance | null>(
       null
     );
 
@@ -124,26 +88,21 @@ export default function MaadhavInput({
     const trimmedMessage =
       message.trim();
 
-    /*
-     * Allow:
-     * - text only
-     * - image only
-     * - text + image
-     */
     if (
-      (!trimmedMessage && !image) ||
+      (!trimmedMessage &&
+        !selectedImage) ||
       disabled
     ) {
       return;
     }
 
-    onSend(
-      trimmedMessage,
-      image || undefined
-    );
+    const image =
+      selectedImage || undefined;
+
+    onSend(trimmedMessage, image);
 
     setMessage("");
-    removeImage();
+    clearImage();
   }
 
   function handleSubmit(
@@ -175,35 +134,25 @@ export default function MaadhavInput({
       return;
     }
 
-    if (!file.type.startsWith("image/")) {
-      window.alert(
-        "Please select an image file."
+    if (
+      !file.type.startsWith("image/")
+    ) {
+      return;
+    }
+
+    if (
+      file.size >
+      10 * 1024 * 1024
+    ) {
+      alert(
+        "Please select an image smaller than 10 MB."
       );
 
       event.target.value = "";
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      window.alert(
-        "Please choose an image smaller than 10 MB."
-      );
-
-      event.target.value = "";
-      return;
-    }
-
-    /*
-     * Clean up any previous preview URL
-     * before creating a new one.
-     */
-    if (imagePreview) {
-      URL.revokeObjectURL(
-        imagePreview
-      );
-    }
-
-    setImage(file);
+    setSelectedImage(file);
 
     const previewUrl =
       URL.createObjectURL(file);
@@ -211,20 +160,25 @@ export default function MaadhavInput({
     setImagePreview(previewUrl);
 
     /*
-     * Allow selecting the same file again.
+     * Reset the input so the same image
+     * can be selected again later.
      */
     event.target.value = "";
   }
 
-  function removeImage() {
+  function clearImage() {
     if (imagePreview) {
       URL.revokeObjectURL(
         imagePreview
       );
     }
 
-    setImage(null);
+    setSelectedImage(null);
     setImagePreview(null);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   }
 
   function toggleVoice() {
@@ -232,114 +186,99 @@ export default function MaadhavInput({
       return;
     }
 
-    /*
-     * Stop current recognition.
-     */
     if (listening) {
       recognitionRef.current?.stop();
       return;
     }
 
-    /*
-     * Browser support.
-     *
-     * Chrome generally exposes
-     * webkitSpeechRecognition.
-     */
+    const browserWindow =
+      window as typeof window & {
+        SpeechRecognition?: SpeechRecognitionConstructor;
+        webkitSpeechRecognition?: SpeechRecognitionConstructor;
+      };
+
     const SpeechRecognition =
-      window.SpeechRecognition ??
-      window.webkitSpeechRecognition;
+      browserWindow.SpeechRecognition ||
+      browserWindow.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      window.alert(
+      alert(
         "Voice input is not supported in this browser. Please use Chrome or Edge."
       );
-
       return;
     }
 
     const recognition =
       new SpeechRecognition();
 
-    recognition.lang = "en-IN";
     recognition.continuous = false;
     recognition.interimResults = false;
+    recognition.lang = "en-IN";
 
-    recognition.onstart = () => {
-      setListening(true);
+    recognition.onresult = (
+      event: SpeechRecognitionEventLike
+    ) => {
+      const result =
+        event.results[
+          event.resultIndex
+        ];
+
+      if (!result) {
+        return;
+      }
+
+      const transcript =
+        result[0]?.transcript?.trim();
+
+      if (!transcript) {
+        return;
+      }
+
+      setMessage((current) => {
+        const existing =
+          current.trim();
+
+        if (!existing) {
+          return transcript;
+        }
+
+        return `${existing} ${transcript}`;
+      });
     };
 
-   recognition.onresult = (
-  event: MaadhavSpeechRecognitionEvent
-) => {
-  const result =
-    event.results[event.resultIndex];
-
-  if (!result) {
-    return;
-  }
-
-  const transcript =
-    result[0]?.transcript?.trim();
-
-  if (!transcript) {
-    return;
-  }
-
-  setMessage((current) => {
-    const existing = current.trim();
-
-    if (!existing) {
-      return transcript;
-    }
-
-    return `${existing} ${transcript}`;
-  });
-};
-
     recognition.onerror = (
-      event: MaadhavSpeechRecognitionErrorEvent
+      event: SpeechRecognitionErrorEventLike
     ) => {
       console.error(
-        "Maadhav voice input error:",
+        "Maadhav speech recognition error:",
         event.error
       );
 
+      setListening(false);
+    };
+
+    recognition.onend = () => {
+      setListening(false);
+
       if (
-        event.error ===
-        "not-allowed"
+        recognitionRef.current ===
+        recognition
       ) {
-        window.alert(
-          "Microphone permission was denied. Please allow microphone access and try again."
-        );
-      } else if (
-        event.error ===
-        "audio-capture"
-      ) {
-        window.alert(
-          "No microphone was detected. Please check your microphone and try again."
-        );
+        recognitionRef.current =
+          null;
       }
     };
 
-  recognition.onend = () => {
-  setListening(false);
-
-  if (
-    recognitionRef.current === recognition
-  ) {
-    recognitionRef.current = null;
-  }
-};
-
     recognitionRef.current =
       recognition;
+
+    setListening(true);
 
     try {
       recognition.start();
     } catch (error) {
       console.error(
-        "Could not start voice input:",
+        "Could not start speech recognition:",
         error
       );
 
@@ -368,65 +307,44 @@ export default function MaadhavInput({
       >
         {/* Image preview */}
         {imagePreview && (
-          <div className="mb-2 flex items-start gap-2 px-1">
-            <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+          <div className="mb-2 px-1">
+            <div className="relative inline-block overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
               <img
                 src={imagePreview}
                 alt="Selected image"
-                className="h-20 w-20 object-cover"
+                className="max-h-32 max-w-[220px] object-contain"
               />
 
               <button
                 type="button"
-                onClick={removeImage}
+                onClick={clearImage}
                 disabled={disabled}
                 aria-label="Remove image"
                 className="
                   absolute
-                  right-1
-                  top-1
+                  right-1.5
+                  top-1.5
                   flex
                   h-6
                   w-6
                   items-center
                   justify-center
                   rounded-full
-                  bg-black/60
+                  bg-slate-900/70
                   text-white
                   transition
-                  hover:bg-black/80
+                  hover:bg-slate-900
                   disabled:opacity-50
                 "
               >
                 <X className="h-3.5 w-3.5" />
               </button>
             </div>
-
-            <div className="pt-1">
-              <div className="text-xs font-medium text-[#274472]">
-                Image attached
-              </div>
-
-              <div className="mt-0.5 max-w-[220px] truncate text-[10px] text-slate-400">
-                {image?.name}
-              </div>
-            </div>
           </div>
         )}
 
-        {/* Composer */}
-        <div className="flex items-end gap-1">
-          {/* Image upload */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={
-              handleImageSelect
-            }
-            className="hidden"
-          />
-
+        <div className="flex items-end gap-2">
+          {/* Attachment */}
           <button
             type="button"
             onClick={() =>
@@ -444,18 +362,28 @@ export default function MaadhavInput({
               justify-center
               rounded-[14px]
               text-slate-400
-              transition-all
+              transition
               hover:bg-[#274472]/[0.06]
               hover:text-[#274472]
               disabled:cursor-not-allowed
               disabled:opacity-40
             "
           >
-            <ImageIcon
-              className="h-[18px] w-[18px]"
-              strokeWidth={1.8}
+            <Paperclip
+              className="h-4 w-4"
+              strokeWidth={2}
             />
           </button>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={
+              handleImageSelect
+            }
+            className="hidden"
+          />
 
           {/* Text */}
           <textarea
@@ -467,11 +395,9 @@ export default function MaadhavInput({
             }
             onKeyDown={handleKeyDown}
             placeholder={
-              listening
-                ? "Listening..."
-                : image
-                  ? "Ask Maadhav about this image..."
-                  : "Ask Maadhav anything..."
+              selectedImage
+                ? "Ask Maadhav about this image..."
+                : "Ask Maadhav anything..."
             }
             disabled={disabled}
             rows={1}
@@ -502,11 +428,11 @@ export default function MaadhavInput({
             aria-label={
               listening
                 ? "Stop voice input"
-                : "Use voice input"
+                : "Start voice input"
             }
             title={
               listening
-                ? "Stop listening"
+                ? "Stop voice input"
                 : "Voice input"
             }
             className={`
@@ -523,22 +449,19 @@ export default function MaadhavInput({
               disabled:opacity-40
               ${
                 listening
-                  ? "bg-red-50 text-red-500 ring-1 ring-red-200"
+                  ? "bg-[#E6C06E]/20 text-[#806519] ring-2 ring-[#E6C06E]/20"
                   : "text-slate-400 hover:bg-[#274472]/[0.06] hover:text-[#274472]"
               }
             `}
           >
-            {listening ? (
-              <MicOff
-                className="h-[18px] w-[18px]"
-                strokeWidth={1.8}
-              />
-            ) : (
-              <Mic
-                className="h-[18px] w-[18px]"
-                strokeWidth={1.8}
-              />
-            )}
+            <Mic
+              className={`h-4 w-4 ${
+                listening
+                  ? "animate-pulse"
+                  : ""
+              }`}
+              strokeWidth={2}
+            />
           </button>
 
           {/* Send */}
@@ -547,7 +470,7 @@ export default function MaadhavInput({
             disabled={
               disabled ||
               (!message.trim() &&
-                !image)
+                !selectedImage)
             }
             aria-label="Send message"
             className="
@@ -581,7 +504,8 @@ export default function MaadhavInput({
         </div>
       </div>
 
-      <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5">
+      {/* Input hints */}
+      <div className="mt-2 flex items-center justify-center gap-1.5">
         <span className="text-[11px] text-slate-400">
           Enter to send
         </span>
@@ -604,8 +528,8 @@ export default function MaadhavInput({
       </div>
 
       <p className="mt-1 text-center text-[10px] text-slate-300">
-        Maadhav can make mistakes.
-        Verify important information.
+        Maadhav can make mistakes. Verify
+        important information.
       </p>
     </form>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import MaadhavInput from "./MaadhavInput";
 import MaadhavMessage from "./MaadhavMessage";
@@ -13,6 +13,12 @@ interface Message {
   content: string;
 }
 
+interface ImagePayload {
+  dataUrl: string;
+  mimeType: string;
+  name?: string;
+}
+
 export default function MaadhavChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
@@ -20,8 +26,7 @@ export default function MaadhavChat() {
   const [conversationId, setConversationId] =
     useState<string | null>(null);
 
-  const [historyOpen, setHistoryOpen] =
-    useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const [historyRefreshKey, setHistoryRefreshKey] =
     useState(0);
@@ -82,18 +87,49 @@ export default function MaadhavChat() {
     setHistoryOpen(false);
   }
 
+  async function fileToDataUrl(
+    file: File
+  ): Promise<string> {
+    return new Promise(
+      (resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => {
+          if (
+            typeof reader.result !==
+            "string"
+          ) {
+            reject(
+              new Error(
+                "Could not read the image."
+              )
+            );
+            return;
+          }
+
+          resolve(reader.result);
+        };
+
+        reader.onerror = () => {
+          reject(
+            new Error(
+              "Could not read the image."
+            )
+          );
+        };
+
+        reader.readAsDataURL(file);
+      }
+    );
+  }
+
   async function sendMessage(
     message: string,
     image?: File
   ) {
-    const trimmedMessage = message.trim();
+    const trimmedMessage =
+      message.trim();
 
-    /*
-     * Allow:
-     * 1. Text only
-     * 2. Image only
-     * 3. Text + image
-     */
     if (
       (!trimmedMessage && !image) ||
       loading
@@ -101,55 +137,84 @@ export default function MaadhavChat() {
       return;
     }
 
-    const userMessage: Message = {
-      id: crypto.randomUUID(),
-      role: "user",
-      content:
-        trimmedMessage ||
-        "Please analyze this image.",
-    };
-
-    const conversation = [
-      ...messages,
-      userMessage,
-    ];
-
-    setMessages(conversation);
-    setLoading(true);
+    let imagePayload:
+      | ImagePayload
+      | undefined;
 
     try {
-      /*
-       * Use FormData because the request may contain
-       * an actual image file.
-       */
-      const formData = new FormData();
-
-      formData.append(
-        "message",
-        trimmedMessage
-      );
-
-      if (conversationId) {
-        formData.append(
-          "conversationId",
-          conversationId
-        );
-      }
-
       if (image) {
-        formData.append("image", image);
+        if (
+          !image.type.startsWith(
+            "image/"
+          )
+        ) {
+          throw new Error(
+            "Please select a valid image."
+          );
+        }
+
+        /*
+         * Keep the initial implementation
+         * conservative so very large images
+         * are not accidentally sent.
+         */
+        if (
+          image.size >
+          10 * 1024 * 1024
+        ) {
+          throw new Error(
+            "Image must be smaller than 10 MB."
+          );
+        }
+
+        const dataUrl =
+          await fileToDataUrl(image);
+
+        imagePayload = {
+          dataUrl,
+          mimeType: image.type,
+          name: image.name,
+        };
       }
+
+      const displayContent =
+        trimmedMessage ||
+        "Please analyze this image.";
+
+      const userMessage: Message = {
+        id: crypto.randomUUID(),
+        role: "user",
+        content: image
+          ? `${displayContent}\n\n📷 Image attached`
+          : displayContent,
+      };
+
+      setMessages((current) => [
+        ...current,
+        userMessage,
+      ]);
+
+      setLoading(true);
 
       const response = await fetch(
         "/api/maadhav/chat",
         {
           method: "POST",
           credentials: "include",
-          body: formData,
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            message: trimmedMessage,
+            conversationId,
+            image: imagePayload,
+          }),
         }
       );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
       if (!response.ok) {
         throw new Error(
@@ -158,10 +223,6 @@ export default function MaadhavChat() {
         );
       }
 
-      /*
-       * Save the conversation ID returned by
-       * the server.
-       */
       if (data?.conversationId) {
         const isNewConversation =
           !conversationId;
@@ -170,14 +231,10 @@ export default function MaadhavChat() {
           data.conversationId
         );
 
-        /*
-         * Refresh the history sidebar when
-         * the first message creates a new
-         * conversation.
-         */
         if (isNewConversation) {
           setHistoryRefreshKey(
-            (current) => current + 1
+            (current) =>
+              current + 1
           );
         }
       }
@@ -186,7 +243,8 @@ export default function MaadhavChat() {
         id: crypto.randomUUID(),
         role: "assistant",
         content:
-          typeof data?.content === "string" &&
+          typeof data?.content ===
+            "string" &&
           data.content.trim()
             ? data.content
             : "I couldn't generate a response. Please try again.",
@@ -196,14 +254,6 @@ export default function MaadhavChat() {
         ...current,
         assistantMessage,
       ]);
-
-      /*
-       * Refresh history after every successful
-       * message so updated_at/title stays current.
-       */
-      setHistoryRefreshKey(
-        (current) => current + 1
-      );
     } catch (error) {
       console.error(
         "Maadhav chat error:",
@@ -216,7 +266,9 @@ export default function MaadhavChat() {
           id: crypto.randomUUID(),
           role: "assistant",
           content:
-            "I'm sorry, I couldn't process that right now. Please try again.",
+            error instanceof Error
+              ? error.message
+              : "I'm sorry, I couldn't process that right now. Please try again.",
         },
       ]);
     } finally {
@@ -226,19 +278,29 @@ export default function MaadhavChat() {
 
   return (
     <div className="flex h-full min-h-0 overflow-hidden bg-gradient-to-b from-white/60 to-slate-50/40">
+
       {/* Desktop history */}
       <div className="hidden h-full md:block">
         <MaadhavHistory
-          activeConversationId={conversationId}
-          onSelectConversation={loadConversation}
-          onNewChat={startNewChat}
-          refreshKey={historyRefreshKey}
+          activeConversationId={
+            conversationId
+          }
+          onSelectConversation={
+            loadConversation
+          }
+          onNewChat={
+            startNewChat
+          }
+          refreshKey={
+            historyRefreshKey
+          }
         />
       </div>
 
       {/* Main Maadhav area */}
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        {/* Mobile history button */}
+
+        {/* Mobile history */}
         <div className="flex shrink-0 items-center justify-between border-b border-slate-200/70 bg-white/80 px-4 py-2.5 backdrop-blur-xl md:hidden">
           <button
             type="button"
@@ -256,14 +318,16 @@ export default function MaadhavChat() {
 
           <button
             type="button"
-            onClick={startNewChat}
+            onClick={
+              startNewChat
+            }
             className="rounded-lg bg-[#E6C06E]/15 px-3 py-1.5 text-xs font-semibold text-[#806519] transition hover:bg-[#E6C06E]/25"
           >
             + New Chat
           </button>
         </div>
 
-        {/* Conversation area */}
+        {/* Conversation */}
         <div className="min-h-0 flex-1 overflow-y-auto">
           {messages.length === 0 ? (
             <MaadhavWelcome
@@ -272,16 +336,28 @@ export default function MaadhavChat() {
           ) : (
             <div className="mx-auto flex w-full max-w-4xl flex-col px-4 py-6 sm:px-6 sm:py-8">
               <div className="flex flex-col gap-5">
-                {messages.map((message) => (
-                  <MaadhavMessage
-                    key={message.id}
-                    role={message.role}
-                    content={message.content}
-                    onAction={(action) =>
-                      sendMessage(action)
-                    }
-                  />
-                ))}
+                {messages.map(
+                  (message) => (
+                    <MaadhavMessage
+                      key={
+                        message.id
+                      }
+                      role={
+                        message.role
+                      }
+                      content={
+                        message.content
+                      }
+                      onAction={(
+                        action
+                      ) =>
+                        sendMessage(
+                          action
+                        )
+                      }
+                    />
+                  )
+                )}
 
                 {loading && (
                   <ThinkingIndicator />
@@ -307,7 +383,7 @@ export default function MaadhavChat() {
       {/* Mobile history drawer */}
       {historyOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
-          {/* Backdrop */}
+
           <button
             type="button"
             aria-label="Close history"
@@ -317,7 +393,6 @@ export default function MaadhavChat() {
             className="absolute inset-0 bg-slate-950/30 backdrop-blur-[2px]"
           />
 
-          {/* Drawer */}
           <div className="relative z-10 h-full w-[88%] max-w-sm shadow-2xl">
             <MaadhavHistory
               mobile
@@ -327,11 +402,15 @@ export default function MaadhavChat() {
               onSelectConversation={
                 loadConversation
               }
-              onNewChat={startNewChat}
+              onNewChat={
+                startNewChat
+              }
               onClose={() =>
                 setHistoryOpen(false)
               }
-              refreshKey={historyRefreshKey}
+              refreshKey={
+                historyRefreshKey
+              }
             />
           </div>
         </div>

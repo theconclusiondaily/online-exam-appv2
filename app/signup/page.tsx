@@ -104,9 +104,9 @@ const { data, error } = await supabase.auth.signUp({
 
   options: {
     emailRedirectTo:
-      window.location.hostname === "localhost"
-        ? "http://localhost:3000/auth/callback"
-        : "https://www.theconclusiondaily.com/auth/callback",
+  window.location.hostname === "localhost"
+    ? "http://localhost:3000/auth/callback"
+    : `${window.location.origin}/auth/callback`,
 
   data: {
   name,
