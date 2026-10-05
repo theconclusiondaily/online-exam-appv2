@@ -1226,6 +1226,126 @@ if (
 
   "Student"
 );
+
+
+/*
+ * ==================================================
+ * AUTHORITATIVE EXAM SESSION CHECK
+ * ==================================================
+ *
+ * exam_sessions is the source of truth for whether
+ * this exam has already been submitted/finalized.
+ *
+ * A stale exam_attempts row must NEVER allow the
+ * student to enter the exam again.
+ */
+const {
+  data: submittedSession,
+  error: submittedSessionError,
+} = await supabase
+  .from("exam_sessions")
+  .select("id, status, submitted_at")
+  .eq("exam_id", examId)
+  .eq("user_id", currentUser.id)
+  .not("submitted_at", "is", null)
+  .order("created_at", {
+    ascending: false,
+  })
+  .limit(1)
+  .maybeSingle();
+
+if (submittedSessionError) {
+  console.error(
+    "SUBMITTED SESSION CHECK FAILED:",
+    submittedSessionError
+  );
+
+  setLoading(false);
+
+  toast.error(
+    "Unable to verify your previous exam submission."
+  );
+
+  return;
+}
+
+if (submittedSession) {
+  console.log(
+    "TCD SUBMITTED SESSION FOUND:",
+    submittedSession.id
+  );
+
+  /*
+   * Find the corresponding attempt.
+   */
+  const {
+    data: submittedAttempt,
+    error: submittedAttemptError,
+  } = await supabase
+    .from("exam_attempts")
+    .select("id, score, status")
+    .eq("exam_id", examId)
+    .eq("user_id", currentUser.id)
+    .order("created_at", {
+      ascending: false,
+    })
+    .limit(1)
+    .maybeSingle();
+
+  if (
+    submittedAttemptError ||
+    !submittedAttempt
+  ) {
+    console.error(
+      "SUBMITTED ATTEMPT NOT FOUND:",
+      submittedAttemptError
+    );
+
+    setLoading(false);
+
+    toast.error(
+      "Your exam was submitted, but the result could not be located."
+    );
+
+    return;
+  }
+
+  /*
+   * Remove ALL stale client-side exam state.
+   */
+  localStorage.removeItem(
+    `exam-session-${examId}-${currentUser.id}`
+  );
+
+  localStorage.removeItem(
+    `exam-started-${examId}-${currentUser.id}`
+  );
+
+  localStorage.removeItem(
+    `exam-current-question-${examId}-${currentUser.id}`
+  );
+
+  localStorage.removeItem(
+    `exam-answers-${examId}-${currentUser.id}`
+  );
+
+  localStorage.removeItem(
+    `exam-start-time-${examId}-${currentUser.id}`
+  );
+
+  setResumeAvailable(false);
+  setAlreadyAttempted(false);
+
+  /*
+   * NEVER enter the exam.
+   * NEVER enter fullscreen.
+   */
+  router.replace(
+    `/exam-result/${submittedAttempt.id}`
+  );
+
+  return;
+}
 /*
  * Check whether the student already has an attempt.
  *
@@ -3950,18 +4070,7 @@ async function prefetchQuestionsAhead(
     }
 
 
-if (!isIOSDevice()) {
-  const fullscreenEntered =
-    await enterExamFullscreen();
 
-  if (!fullscreenEntered) {
-    toast.error(
-      "Please enter fullscreen mode before starting the exam."
-    );
-
-    return;
-  }
-}
 /*
  * ==========================================
  * START EXAM SESSION
@@ -4016,16 +4125,95 @@ if (!response.ok) {
     return;
   }
 
+if (
+  result?.error ===
+  "You have already submitted this exam"
+) {
+  console.log(
+    "TCD SERVER: EXAM ALREADY SUBMITTED"
+  );
+
+  /*
+   * Recover the authoritative submitted attempt.
+   */
+  const {
+    data: submittedAttempt,
+    error: submittedAttemptError,
+  } = await supabase
+    .from("exam_attempts")
+    .select("id")
+    .eq("exam_id", examId)
+    .eq("user_id", userId)
+    .order("created_at", {
+      ascending: false,
+    })
+    .limit(1)
+    .maybeSingle();
+
   if (
-    result?.error ===
-    "You have already submitted this exam"
+    submittedAttempt &&
+    !submittedAttemptError
   ) {
     router.replace(
-      `/exam-result/${examId}`
+      `/exam-result/${submittedAttempt.id}`
     );
 
     return;
   }
+
+  toast.error(
+    "Your exam was already submitted, but the result could not be located."
+  );
+
+  return;
+}
+
+if (
+  result?.error ===
+  "Exam submission is already in progress."
+) {
+  console.log(
+    "TCD SERVER: EXAM SUBMISSION ALREADY IN PROGRESS"
+  );
+
+  const {
+    data: existingAttempt,
+    error: existingAttemptError,
+  } = await supabase
+    .from("exam_attempts")
+    .select("id, status")
+    .eq("exam_id", examId)
+    .eq("user_id", userId)
+    .order("created_at", {
+      ascending: false,
+    })
+    .limit(1)
+    .maybeSingle();
+
+  if (
+    existingAttempt &&
+    !existingAttemptError
+  ) {
+    /*
+     * Do not enter fullscreen.
+     *
+     * Do not resume.
+     *
+     * Go to the authoritative attempt result.
+     */
+    router.replace(
+      `/exam-result/${existingAttempt.id}`
+    );
+
+    return;
+  }
+
+  toast.info(
+    "Your exam submission is being finalized. Please wait."
+  );
+
+  return;
+}
 
   toast.error(
     result?.error ||
@@ -4050,7 +4238,23 @@ if (!startedAttemptId) {
 
   return;
 }
+/*
+ * Server has approved the exam session.
+ *
+ * Only NOW may fullscreen begin.
+ */
+if (!isIOSDevice()) {
+  const fullscreenEntered =
+    await enterExamFullscreen();
 
+  if (!fullscreenEntered) {
+    toast.error(
+      "Please enter fullscreen mode before starting the exam."
+    );
+
+    return;
+  }
+}
 setAttemptId(
   startedAttemptId
 );
