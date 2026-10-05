@@ -205,24 +205,48 @@ export async function POST(
      * The question_order column provides the
      * permanent deterministic ordering.
      */
-    const {
-      data: mapping,
-      error: mappingError,
-    } =
-      await supabase
-        .from("exam_questions")
-        .select(
-          "question_id"
-        )
-        .eq(
-          "exam_id",
-          examId
-        )
-        .eq(
-          "question_order",
-          questionIndex
-        )
-        .maybeSingle();
+ /*
+ * ==========================================
+ * 5. GET QUESTION MAPPING
+ * ==========================================
+ *
+ * Client question indexes are ZERO based:
+ *
+ * Question 1 -> index 0
+ * Question 2 -> index 1
+ * Question 3 -> index 2
+ * ...
+ *
+ * Database question_order is ONE based:
+ *
+ * Question 1 -> 1
+ * Question 2 -> 2
+ * Question 3 -> 3
+ * ...
+ *
+ * Convert exactly once at the API boundary.
+ */
+const databaseQuestionOrder =
+  questionIndex + 1;
+
+const {
+  data: mapping,
+  error: mappingError,
+} =
+  await supabase
+    .from("exam_questions")
+    .select(
+      "question_id"
+    )
+    .eq(
+      "exam_id",
+      examId
+    )
+    .eq(
+      "question_order",
+      databaseQuestionOrder
+    )
+    .maybeSingle();
 
     if (
       mappingError
