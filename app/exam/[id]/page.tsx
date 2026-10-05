@@ -1308,42 +1308,84 @@ try {
   return;
 }
 
-/*
- * Existing submitted attempt.
- */
 if (existingAttempt) {
 
+  /*
+   * ==========================================
+   * EXISTING SUBMITTED ATTEMPT
+   * ==========================================
+   *
+   * The server is the source of truth.
+   *
+   * A submitted exam must NEVER:
+   * - enter fullscreen
+   * - show the exam start screen
+   * - offer resume
+   * - create another session
+   *
+   * Go directly to the authoritative result.
+   */
   if (
     existingAttempt.status ===
     "submitted"
   ) {
 
-    setAlreadyAttempted(
-      true
+    console.log(
+      "TCD EXISTING SUBMITTED ATTEMPT:",
+      existingAttempt.id
     );
 
-    setScore(
-      existingAttempt.score
+    /*
+     * Remove stale local exam-session state.
+     */
+    localStorage.removeItem(
+      `exam-session-${examId}-${currentUser.id}`
     );
 
-    setLoading(false);
+    localStorage.removeItem(
+      `exam-started-${examId}-${currentUser.id}`
+    );
+
+    localStorage.removeItem(
+      `exam-current-question-${examId}-${currentUser.id}`
+    );
+
+    localStorage.removeItem(
+      `exam-answers-${examId}-${currentUser.id}`
+    );
+
+    /*
+     * Never show the resume option.
+     */
+    setResumeAvailable(false);
+
+    /*
+     * Redirect directly to the result page.
+     *
+     * IMPORTANT:
+     * Use ATTEMPT ID, not exam ID.
+     */
+    router.replace(
+      `/exam-result/${existingAttempt.id}`
+    );
 
     return;
   }
 
   /*
-   * Existing active attempt.
+   * ==========================================
+   * EXISTING ACTIVE ATTEMPT
+   * ==========================================
    *
-   * Allow the student to resume.
+   * Only an active server-side attempt can
+   * be resumed.
    */
   if (
     existingAttempt.status ===
     "active"
   ) {
 
-    setResumeAvailable(
-      true
-    );
+    setResumeAvailable(true);
   }
 }
 const {
@@ -1476,10 +1518,6 @@ if (savedScore) {
       localStorage.getItem(
         `exam-answers-${examId}-${userId}`
       );
-const savedStarted =
-  localStorage.getItem(
-    `exam-started-${examId}-${userId}`
-  );
 const savedSession =
   localStorage.getItem(
     `exam-session-${examId}-${userId}`
@@ -1492,14 +1530,6 @@ if (savedSession) {
 
   sessionTokenRef.current =
     savedSession;
-}
-if (
-  savedStarted === "true"
-) {
-
-  setResumeAvailable(
-    true
-  );
 }
    if (savedAnswers) {
   try {
@@ -5393,17 +5423,6 @@ break;
 
     return;
   }
-/*
- * ==================================================
- * ALREADY SUBMITTED RECOVERY
- * ==================================================
- *
- * The server has already finalized this attempt.
- * Do NOT assume score/percentage are present in
- * this response.
- *
- * Recover using the authoritative attemptId.
- */
 if (
   result?.alreadySubmitted === true &&
   result?.attemptId
@@ -5413,7 +5432,45 @@ if (
     result.attemptId
   );
 
+  /*
+   * The server has already finalized the attempt.
+   * Perform the same browser cleanup as a normal
+   * successful submission before redirecting.
+   */
+
   submittingRef.current = false;
+
+  setSubmitted(true);
+
+  /* Stop camera */
+  if (streamRef.current) {
+    streamRef.current
+      .getTracks()
+      .forEach((track) => track.stop());
+  }
+
+  /* Exit browser fullscreen */
+  if (document.fullscreenElement) {
+    try {
+      await document.exitFullscreen();
+
+      console.log(
+        "TCD FULLSCREEN EXITED AFTER SUBMISSION"
+      );
+    } catch (error) {
+      console.warn(
+        "Unable to exit fullscreen after submission:",
+        error
+      );
+    }
+  }
+
+  /* Clear exam session */
+  localStorage.removeItem(
+    `exam-session-${examId}-${userId}`
+  );
+
+  sessionTokenRef.current = "";
 
   router.replace(
     `/exam-result/${result.attemptId}`
