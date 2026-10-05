@@ -5393,7 +5393,34 @@ break;
 
     return;
   }
+/*
+ * ==================================================
+ * ALREADY SUBMITTED RECOVERY
+ * ==================================================
+ *
+ * The server has already finalized this attempt.
+ * Do NOT assume score/percentage are present in
+ * this response.
+ *
+ * Recover using the authoritative attemptId.
+ */
+if (
+  result?.alreadySubmitted === true &&
+  result?.attemptId
+) {
+  console.log(
+    "SERVER CONFIRMED EXAM WAS ALREADY SUBMITTED:",
+    result.attemptId
+  );
 
+  submittingRef.current = false;
+
+  router.replace(
+    `/exam-result/${result.attemptId}`
+  );
+
+  return;
+}
   /*
    * ==================================================
    * 6. SERVER CONFIRMED SUBMISSION
