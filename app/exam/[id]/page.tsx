@@ -3338,12 +3338,129 @@ faceDetectionTimeoutRef.current =
   }
 }
 async function resumeExam() {
-  if (!sessionToken) {
-    toast.error(
-      "Session missing"
-    );
+  let activeSessionToken =
+    sessionTokenRef.current ||
+    sessionToken;
 
-    return;
+  /*
+   * If the local session token is missing,
+   * recover the authoritative active session
+   * from the server.
+   */
+  if (!activeSessionToken) {
+    try {
+      const response =
+        await fetchWithTimeout(
+          "/api/exam/start",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              examId,
+            }),
+          }
+        );
+
+      const result =
+        await response.json();
+
+      /*
+       * If the exam was already submitted,
+       * go directly to the result page.
+       */
+      if (!response.ok) {
+        if (
+          result?.error ===
+            "You have already submitted this exam" ||
+          result?.error ===
+            "Exam submission is already in progress."
+        ) {
+          const {
+            data: submittedAttempt,
+          } = await supabase
+            .from("exam_attempts")
+            .select("id")
+            .eq("exam_id", examId)
+            .eq("user_id", userId)
+            .order("created_at", {
+              ascending: false,
+            })
+            .limit(1)
+            .maybeSingle();
+
+          if (submittedAttempt) {
+            router.replace(
+              `/exam-result/${submittedAttempt.id}`
+            );
+            return;
+          }
+        }
+
+        toast.error(
+          result?.error ||
+            "Unable to restore your exam session."
+        );
+
+        return;
+      }
+
+      /*
+       * Recover the active session token
+       * returned by the server.
+       */
+      const recoveredToken =
+        result?.session?.session_token;
+
+      if (!recoveredToken) {
+        toast.error(
+          "No active exam session was found."
+        );
+
+        return;
+      }
+
+      activeSessionToken =
+        recoveredToken;
+
+      setSessionToken(
+        recoveredToken
+      );
+
+      sessionTokenRef.current =
+        recoveredToken;
+
+      localStorage.setItem(
+        `exam-session-${examId}-${userId}`,
+        recoveredToken
+      );
+
+      /*
+       * Restore attempt ID if the server
+       * returned it.
+       */
+      if (result?.attempt_id) {
+        setAttemptId(
+          result.attempt_id
+        );
+
+        attemptIdRef.current =
+          result.attempt_id;
+      }
+    } catch (error) {
+      console.error(
+        "RESUME SESSION RECOVERY FAILED:",
+        error
+      );
+
+      toast.error(
+        "Unable to restore your exam session."
+      );
+
+      return;
+    }
   }
 
   /*
@@ -3401,9 +3518,9 @@ async function resumeExam() {
    * Continue building the rolling buffer
    * from the restored position.
    */
- void prefetchQuestionsAhead(
-  restoredQuestion
-);
+  void prefetchQuestionsAhead(
+    restoredQuestion
+  );
 
   setExamStarted(
     true
