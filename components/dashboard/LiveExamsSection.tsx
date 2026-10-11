@@ -7,11 +7,13 @@ import TCDIcon from "@/components/brand/TCDIcon";
 interface Props {
   liveExams: any[];
   upcomingExams: any[];
+  attemptedExamIds: any[];
 }
 
 export default function LiveExamsSection({
   liveExams,
   upcomingExams,
+  attemptedExamIds,
 }: Props) {
   const safeLiveExams = (liveExams ?? []).filter(Boolean);
 
@@ -232,6 +234,10 @@ export default function LiveExamsSection({
     const isLive =
       !exam.start_time ||
       new Date(exam.start_time) <= now;
+
+const isAttempted =
+  isLive &&
+  attemptedExamIds.includes(exam.id);
 
     const questionCount =
       getQuestionCount(exam);
@@ -622,11 +628,11 @@ export default function LiveExamsSection({
               active:scale-[0.98]
             "
           >
-            Take Challenge
+            {isAttempted ? "ATTEMPTED" : "ATTEMPT NOW"}
 
-            <span className="text-lg">
-              →
-            </span>
+<span className="text-lg">
+  →
+</span>
           </Link>
         </div>
       </div>
@@ -1683,11 +1689,10 @@ export default function LiveExamsSection({
 
                       <Link
                         href={
-                          exam.id ===
-                          "demo-exam"
-                            ? "/demo-exam"
-                            : `/exam/${exam.id}/intro`
-                        }
+  exam.id === "demo-exam"
+    ? "/demo-exam"
+    : `/exam/${exam.id}/intro`
+}
                         className="
                           mt-5
                           block

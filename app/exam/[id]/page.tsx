@@ -494,6 +494,18 @@ const questionCacheRef =
   
   const attemptIdRef =
   useRef<string | null>(null);
+  const [
+  examAttemptMap,
+  setExamAttemptMap
+] = useState<
+  Record<
+    string,
+    {
+      id: string;
+      status: string;
+    }
+  >
+>({});
 const sessionIdRef =
   useRef<string | null>(null);
 useEffect(() => {
@@ -758,7 +770,20 @@ const [resumeAvailable,
 
     const localAnswerChangeRef =
   useRef(false);
+function isDevToolsOpen(): boolean {
+  const widthDifference =
+    window.outerWidth - window.innerWidth;
 
+  const heightDifference =
+    window.outerHeight - window.innerHeight;
+
+  const threshold = 200;
+
+  return (
+    widthDifference > threshold ||
+    heightDifference > threshold
+  );
+}
 const [finalizingExam, setFinalizingExam] =
   useState(false);
   const [cameraAllowed,
@@ -3462,7 +3487,70 @@ async function resumeExam() {
       return;
     }
   }
+/*
+ * Reacquire camera and microphone after
+ * restoring an existing exam session.
+ *
+ * The original MediaStream belongs to the
+ * previous page instance and cannot be relied on
+ * after browser refresh/re-entry.
+ */
+const existingStream =
+  streamRef.current;
 
+const hasLiveCamera =
+  !!existingStream &&
+  existingStream
+    .getVideoTracks()
+    .some(
+      (track) =>
+        track.readyState === "live"
+    );
+
+const hasLiveMicrophone =
+  !!existingStream &&
+  existingStream
+    .getAudioTracks()
+    .some(
+      (track) =>
+        track.readyState === "live"
+    );
+
+if (
+  !hasLiveCamera ||
+  !hasLiveMicrophone
+)  {
+  try {
+    const stream =
+      await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+
+    streamRef.current = stream;
+
+    setCameraStream(stream);
+    setCameraAllowed(true);
+    setMicAllowed(
+      stream.getAudioTracks().length > 0
+    );
+
+    console.log(
+      "TCD CAMERA RESTORED FOR RESUMED EXAM"
+    );
+  } catch (error) {
+    console.error(
+      "TCD CAMERA RESTORE FAILED:",
+      error
+    );
+
+    toast.error(
+      "Camera and microphone are required to resume the exam."
+    );
+
+    return;
+  }
+}
   /*
    * Restore the last question position saved
    * before the browser was refreshed.
@@ -4173,7 +4261,13 @@ async function prefetchQuestionsAhead(
   }
 }
   async function startExam() {
+if (isDevToolsOpen()) {
+  toast.error(
+    "Please close Developer Tools before starting the exam."
+  );
 
+  return;
+}
     if (
       !cameraAllowed ||
       !micAllowed

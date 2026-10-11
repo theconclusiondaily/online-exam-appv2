@@ -2396,6 +2396,7 @@ const handleClaimReward =
 <LiveExamsSection
   liveExams={liveExams}
   upcomingExams={upcomingExams}
+  attemptedExamIds={attempts.map((attempt) => attempt.exam_id)}
 />
 
 {/* UPCOMING EXAMS */}
