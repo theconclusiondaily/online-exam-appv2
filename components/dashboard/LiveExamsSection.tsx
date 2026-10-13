@@ -7,13 +7,13 @@ import TCDIcon from "@/components/brand/TCDIcon";
 interface Props {
   liveExams: any[];
   upcomingExams: any[];
-  attemptedExamIds: any[];
+  attemptedExamIds?: any[];
 }
 
 export default function LiveExamsSection({
   liveExams,
   upcomingExams,
-  attemptedExamIds,
+  attemptedExamIds = [],
 }: Props) {
   const safeLiveExams = (liveExams ?? []).filter(Boolean);
 
