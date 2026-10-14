@@ -770,8 +770,11 @@ const [resumeAvailable,
 
     const localAnswerChangeRef =
   useRef(false);
+
 function isDevToolsOpen(): boolean {
-  if (typeof window === "undefined") return false;
+  if (typeof window === "undefined") {
+    return false;
+  }
 
   const widthDifference =
     window.outerWidth - window.innerWidth;
@@ -781,11 +784,19 @@ function isDevToolsOpen(): boolean {
 
   const threshold = 160;
 
-  return (
+  const windowSizeDetected =
     widthDifference > threshold ||
-    heightDifference > threshold
-  );
+    heightDifference > threshold;
+
+  const debuggerDetected = (() => {
+    const start = performance.now();
+    debugger;
+    return performance.now() - start > 100;
+  })();
+
+  return windowSizeDetected || debuggerDetected;
 }
+
 const [finalizingExam, setFinalizingExam] =
   useState(false);
   const [cameraAllowed,
