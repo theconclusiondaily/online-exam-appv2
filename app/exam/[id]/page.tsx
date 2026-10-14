@@ -771,13 +771,15 @@ const [resumeAvailable,
     const localAnswerChangeRef =
   useRef(false);
 function isDevToolsOpen(): boolean {
+  if (typeof window === "undefined") return false;
+
   const widthDifference =
     window.outerWidth - window.innerWidth;
 
   const heightDifference =
     window.outerHeight - window.innerHeight;
 
-  const threshold = 200;
+  const threshold = 160;
 
   return (
     widthDifference > threshold ||
